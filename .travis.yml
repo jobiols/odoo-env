@@ -3,13 +3,16 @@ sudo: false
 
 python:
   - "2.7"
-  - "3.6"
 
 git:
   depth: 1
 
+install:
+  - pip install codecov
+
 script:
   - python tests/test_oe.py
+  - coverage run tests/test_oe.py
 
 after_success:
   - codecov

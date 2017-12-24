@@ -11,11 +11,12 @@ git:
 install:
   - pip install codecov
   - pip install flake8
+
 script:
   - python tests/test_oe.py
-  - coverage run scripts
-  - flake8 scripts/ --max-line-length=80
+  - coverage run tests/test_oe.py
+  - flake8 tests/test_oe.py
 
 after_success:
   - codecov
-
+  - coveralls

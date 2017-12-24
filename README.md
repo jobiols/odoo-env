@@ -1,10 +1,14 @@
+[![Build Status](https://travis-ci.org/jobiols/docker-odoo-env.svg?branch=master)](https://travis-ci.org/jobiols/docker-odoo-env)
+[![codecov](https://codecov.io/gh/jobiols/docker-odoo-env/branch/master/graph/badge.svg)](https://codecov.io/gh/jobiols/docker-odoo-env)
 
 Odooenv
 =======
 
 Warning
 -------
-This code is not functional is under development (stay tuned)
+This code is not functional, and is under development (stay tuned)
+
+
 
 
 Tool to manage docker based odoo environments

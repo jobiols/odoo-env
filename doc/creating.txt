@@ -1,0 +1,8 @@
+# crear distribucion
+python setup.py sdist
+
+# instalar el ejecutable
+sudo python setup.py install
+
+# upload to PyPI
+python setup.py register

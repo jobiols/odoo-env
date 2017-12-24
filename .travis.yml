@@ -1,0 +1,14 @@
+language: python
+sudo: false
+
+python:
+  - "2.7"
+
+git:
+  depth: 1
+
+script:
+  - python scripts/test.py
+
+after_success:
+  - codecov

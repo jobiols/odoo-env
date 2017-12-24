@@ -1,5 +1,6 @@
 language: python
 sudo: false
+cache: pip
 
 python:
   - "2.7"
@@ -12,7 +13,8 @@ install:
 
 script:
   - python tests/test_oe.py
-  - coverage run tests/test_oe.py
+  - coverage run scripts
 
 after_success:
   - codecov
+

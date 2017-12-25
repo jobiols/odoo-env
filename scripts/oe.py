@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import argparse
-from odooenv import OdooEnv
-from messages import Msg
 
-msg = Msg()
+from options import Options
+
+options = Options()
 
 if __name__ == '__main__':
 
@@ -21,6 +21,4 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.list:
-        oe = OdooEnv()
-        msg.inf('testeando')
-        print oe.list_data()
+        print options.list_data()

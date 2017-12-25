@@ -14,7 +14,7 @@ install:
 
 script:
   - python tests/test_oe.py
-  - coverage run tests/test_oe.py
+  - coverage run scripts/oe.py
   - flake8 tests/test_oe.py
 
 after_success:

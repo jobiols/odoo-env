@@ -6,3 +6,6 @@ sudo python setup.py install
 
 # upload to PyPI
 python setup.py register
+
+# ponemos para que ande en desarrollo
+/usr/local/bin/oe

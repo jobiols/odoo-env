@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/jobiols/docker-odoo-env.svg?branch=master)](https://travis-ci.org/jobiols/docker-odoo-env)
+[![Build Status](https://travis-ci.org/jobiols/odoo-env.svg?branch=master)](https://travis-ci.org/jobiols/odoo-env)
 [![codecov](https://codecov.io/gh/jobiols/docker-odoo-env/branch/master/graph/badge.svg)](https://codecov.io/gh/jobiols/docker-odoo-env)
 
 Odooenv

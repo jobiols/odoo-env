@@ -13,12 +13,12 @@ Functionality so far
 
 usage: oe.py [-h]
 
-======================================================================
-Odoo Environment Manager v0.0.1 by jeo Software jorge.obiols@gmail.com
-======================================================================
+ ======================================================================
+ Odoo Environment Manager v0.0.1 by jeo Software jorge.obiols@gmail.com
+ ======================================================================
 
-optional arguments:
-  -h, --help  show this help message and exit
+ optional arguments:
+   -h, --help  show this help message and exit
 
 
 

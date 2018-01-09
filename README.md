@@ -11,7 +11,7 @@ This code is not functional, and is under development (stay tuned)
 Functionality so far
 --------------------- 
 
-usage: oe.py [-h]
+ usage: oe.py [-h]
 
  ======================================================================
  Odoo Environment Manager v0.0.1 by jeo Software jorge.obiols@gmail.com

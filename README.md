@@ -10,7 +10,6 @@ This code is not functional, and is under development (stay tuned)
 
 Functionality so far
 --------------------- 
-
     usage: oe.py [-h]
     
     ======================================================================
@@ -29,5 +28,5 @@ jeo Software (c) 2018 jorge.obiols@gmail.com
 This code is distributed under the AGPL license
 
 Installation
- 
+------------
     pip install docker-odoo-env

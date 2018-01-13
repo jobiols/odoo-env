@@ -17,19 +17,6 @@ class OdooEnv(object):
         self._args = args
         self._client = False
 
-    @property
-    def client(self):
-        if not self._args.client:
-            Msg().err('need -c option (client name)')
-
-        self._client = Client(self._args.client[0])
-
-        return self._client
-
-    @client.setter
-    def client(self, value):
-        self._client = value
-
     def install_client(self):
         """ Instalacion de cliente,
             Si es la primera vez crea la estructura de directorios
@@ -58,3 +45,20 @@ class OdooEnv(object):
             ret.append(cmd)
 
         return ret
+
+    @property
+    def client(self):
+        if not self._args.client:
+            Msg().err('need -c option (client name)')
+
+        self._client = Client(self, self._args.client[0])
+
+        return self._client
+
+    @client.setter
+    def client(self, value):
+        self._client = value
+
+    @property
+    def args(self):
+        return self._args

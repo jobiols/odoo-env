@@ -32,22 +32,6 @@ class Command(object):
         # el env es requerido
         assert self._env, True
 
-    @property
-    def args(self):
-        return self._args
-
-    @property
-    def usr_msg(self):
-        return self._usr_msg
-
-    @property
-    def command(self):
-        return self._command
-
-    @property
-    def command_args(self):
-        return self._env._args
-
     @staticmethod
     def check_path(path):
         return not os.path.isdir(path) if path else False
@@ -93,4 +77,18 @@ class Command(object):
                     cmd,
                     str(ret)))
 
+    @property
+    def args(self):
+        return self._args
 
+    @property
+    def usr_msg(self):
+        return self._usr_msg
+
+    @property
+    def command(self):
+        return self._command
+
+    @property
+    def command_args(self):
+        return self._env._args

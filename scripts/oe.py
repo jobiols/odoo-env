@@ -24,8 +24,13 @@ Odoo Environment Manager v0.0.1 - by jeo Software <jorge.obiols@gmail.com>
         dest='client',
         help="Client name.")
 
+    parser.add_argument(
+        '-v', '--verbose',
+        action='store_true',
+        help="Go verbose mode. Prints every command")
+
     args = parser.parse_args()
 
     if args.install_cli:
-        command = OdooEnv(parser).install_client()
+        command = OdooEnv(args).install_client()
         Execute(command)

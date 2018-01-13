@@ -2,25 +2,8 @@
 
 from messages import Msg
 from client import Client
-
-
-class Command(object):
-    def __init__(self, param, msg, cmd):
-        self._param = param
-        self._msg = msg
-        self._cmd = cmd
-
-    @property
-    def msg(self):
-        return self._msg
-
-    @property
-    def cmd(self):
-        return self._cmd
-
-    @property
-    def param(self):
-        return self._param
+from command import Command
+from constants import BASE_DIR
 
 
 class OdooEnv(object):
@@ -30,8 +13,8 @@ class OdooEnv(object):
         Si hay mensaje se muestra antes de ejecutar la accion
     """
 
-    def __init__(self, parser):
-        self._args = parser.parse_args()
+    def __init__(self, args):
+        self._args = args
         self._client = False
 
     @property
@@ -54,5 +37,24 @@ class OdooEnv(object):
         msg = 'Installing client {}'.format(self.client.name)
         ret = []
 
-        ret.append(Command('mkdir /odoo', msg, 'comando'))
+        # create base dir with sudo
+        cmd = Command(command='sudo mkdir {}',
+                      args=BASE_DIR,
+                      chck='path.isdir',
+                      usr_msg=msg,
+                      env=self)
+        ret.append(cmd)
+
+        # create all hierarchy
+        for working_dir in ['postgresql', 'config', 'data', 'log', 'sources']:
+            cmd = Command(command='mkdir -p {}',
+                          args='{}odoo-{}/{}'.format(
+                              BASE_DIR,
+                              'odoo-',
+                              self.client.version,
+                              working_dir),
+                          chck='path.isdir',
+                          env=self)
+            ret.append(cmd)
+
         return ret

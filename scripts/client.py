@@ -3,10 +3,9 @@
 
 import os
 from messages import Msg
+from constants import BASE_DIR
 
 msg = Msg()
-
-BASE_DIR = '/odoo_ar/'
 
 
 class Client(object):
@@ -25,13 +24,17 @@ class Client(object):
 
         self._images = manifest.get('images')
         self._repos = manifest.get('repos')
+        self._version = manifest.get('version')[0:3]
         self._name = name
 
         if not self._images:
-            msg.err('There are no images in manifest {}'.format(manifest_file))
+            msg.err('No images in manifest {}'.format(manifest_file))
 
         if not self._repos:
-            msg.err('There are no repos in manifest {}'.format(manifest_file))
+            msg.err('No repos in manifest {}'.format(manifest_file))
+
+        if not self._version:
+            msg.err('No version tag in manifest {}'.format(manifest_file))
 
     @staticmethod
     def load_manifest(filename):
@@ -53,3 +56,7 @@ class Client(object):
     @property
     def name(self):
         return self._name
+
+    @property
+    def version(self):
+        return self._version

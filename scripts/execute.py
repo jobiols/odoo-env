@@ -6,5 +6,9 @@ from messages import Msg
 class Execute(object):
     def __init__(self, commands):
         for command in commands:
-            if command.msg:
-                Msg().inf(command.msg)
+            if command.usr_msg:
+                Msg().inf(command.usr_msg)
+            if command and command.check():
+                command.execute()
+
+

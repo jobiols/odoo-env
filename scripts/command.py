@@ -51,7 +51,7 @@ class Command(object):
         for _cmd in params:
             # if shell = True we do no split
             cmd = _cmd if shell else _cmd.split()
-            if self._parent.options['verbose']:
+            if self._parent.verbose:
                 msg.run(' ')
                 if shell:
                     msg.run(cmd)

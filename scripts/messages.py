@@ -37,7 +37,8 @@ class Msg():
         sys.exit()
 
     def inf(self, msg):
-        print self.yellow_light(msg)
+        if msg:
+            print self.yellow_light(msg)
 
     def warn(self, msg):
         print self.red(msg)

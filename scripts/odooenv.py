@@ -32,9 +32,9 @@ class OdooEnv(object):
 
         ret = []
 
-        #
+        ##################################################################
         # Create base dir with sudo
-        #
+        ##################################################################
 
         cmd = MakedirCommand(self,
                              command='sudo mkdir {}',
@@ -43,35 +43,67 @@ class OdooEnv(object):
                              usr_msg=msg)
         ret.append(cmd)
 
-        #
+        ##################################################################
         # change ownership of base dir
-        #
+        ##################################################################
 
         username = pwd.getpwuid(os.getuid()).pw_name
-        cmd = Command(self, command='sudo chown {}:{} {}',
+        cmd = Command(self,
+                      command='sudo chown {}:{} {}',
                       args=[username, username, BASE_DIR])
         ret.append(cmd)
 
-        #
+        ##################################################################
         # create all hierarchy
-        #
-        for working_dir in ['postgresql', 'config',
-                            'data_dir', 'log', 'sources', 'dist_packages',
-                            'dist_local_packages', 'image_repos']:
+        ##################################################################
+        for working_dir in ['postgresql', 'config', 'data_dir', 'log',
+                            'sources', 'image_repos']:
             cmd = MakedirCommand(self, command='mkdir -p {}',
                                  args=['{}{}'.format(
-                                     self.client.base_dir,
-                                     working_dir)],
+                                     self.client.base_dir, working_dir)],
                                  check='path.isdir')
             ret.append(cmd)
 
-        # nginx y postfix
+        ##################################################################
+        # create dirs for extracting sources only for debug
+        ##################################################################
+        if self.debug:
+            for working_dir in ['dist_packages', 'dist_local_packages']:
+                cmd = MakedirCommand(self, command='mkdir -p {}',
+                                     args=['{}{}'.format(
+                                         self.client.base_dir, working_dir)],
+                                     check='path.isdir')
+                ret.append(cmd)
+
+        ##################################################################
+        # create dirs for nginx & postfix
+        ##################################################################
+
         for working_dir in ['nginx', 'postfix']:
             cmd = MakedirCommand(self, command='mkdir -p {}',
                                  args=['{}{}'.format(
-                                     BASE_DIR,
-                                     working_dir)],
+                                     BASE_DIR, working_dir)],
                                  check='path.isdir')
+            ret.append(cmd)
+
+        ##################################################################
+        # Extracting sources from image if debug enabled
+        ##################################################################
+        if self.debug:
+            module = 'dist-packages'
+            msg = 'Extracting {} from image {}.debug'.format(
+                module, self.client.image('odoo'))
+            command = 'sudo docker run -it --rm '
+            command += '--entrypoint=/extract_{}.sh '.format(module)
+            command += '-v {}{}/:/mnt/{} '.format(self.client.base_dir,
+                                                  module, module)
+            command += '{}.debug '.format(self.client.image('odoo'))
+
+            cmd = MakedirCommand(self, command=command,
+                                 args='{}{}'.format(self.client.base_dir,
+                                                    module),
+                                 check='path.isdir',
+                                 usr_msg=msg)
             ret.append(cmd)
 
         return ret
@@ -85,5 +117,9 @@ class OdooEnv(object):
         self._client = value
 
     @property
-    def options(self):
-        return self._options
+    def debug(self):
+        return self._options['debug']
+
+    @property
+    def verbose(self):
+        return self._options['verbose']

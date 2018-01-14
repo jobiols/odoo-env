@@ -19,7 +19,7 @@ class Client(object):
         # si estamos en test accedo a data
         if name[0:5] == 'test_':
             path = os.path.dirname(os.path.abspath(__file__))
-            manifest = self.get_manifest(path+'/../data')
+            manifest = self.get_manifest(path + '/../data')
         else:
             manifest = self.get_manifest(BASE_DIR)
         if not manifest:
@@ -84,6 +84,20 @@ class Client(object):
                     manifest += line
             ret = eval(manifest)
             return ret
+
+    def image(self, image_name):
+        for img_dict in self._images:
+            if img_dict['name'] == image_name:
+                img = img_dict.get('img')
+                ver = img_dict.get('ver')
+                ret = img_dict.get('usr')
+                if img:
+                    ret += '/' + img
+                if ver:
+                    ret += ':' + ver
+                return ret
+        msg.err('There is no {} image found in this manifest'.format(
+            image_name))
 
     @property
     def name(self):

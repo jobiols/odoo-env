@@ -1,58 +1,65 @@
 # -*- coding: utf-8 -*-
 
-from messages import Msg
 from client import Client
-from command import Command
+from command import Command, MakedirCommand
+import pwd
+import os
 from constants import BASE_DIR
 
 
 class OdooEnv(object):
-    """ Esta clase toma los parametros de parser y con cada metodo, que
+    """
+    Implementa metodos que corresponden a cada una de las acciones que se
+    proveen en la interfase argparse.
+
         corresponde a una opcion, devuelve una lista de tuplas con accion y
         mensaje. El mensaje puede estar o no.
         Si hay mensaje se muestra antes de ejecutar la accion
+
     """
 
-    def __init__(self, args):
-        self._args = args
+    def __init__(self, options):
+        self._options = options
         self._client = False
 
-    def install_client(self):
+    def install_client(self, client_name):
         """ Instalacion de cliente,
             Si es la primera vez crea la estructura de directorios
         """
-        msg = 'Installing client {}'.format(self.client.name)
+        msg = 'Installing client {}'.format(client_name)
+
+        self._client = Client(self, client_name)
+
         ret = []
 
         # create base dir with sudo
-        cmd = Command(command='sudo mkdir {}',
-                      args=BASE_DIR,
-                      chck='path.isdir',
-                      usr_msg=msg,
-                      env=self)
+        cmd = MakedirCommand(self,
+                             command='sudo mkdir {}',
+                             args=[BASE_DIR],
+                             check='path.isdir',
+                             usr_msg=msg)
+        ret.append(cmd)
+
+        # change ownership of base dir
+        username = pwd.getpwuid(os.getuid()).pw_name
+        cmd = Command(self, command='sudo chown {}:{} {}',
+                      args=[username, username, BASE_DIR])
         ret.append(cmd)
 
         # create all hierarchy
-        for working_dir in ['postgresql', 'config', 'data', 'log', 'sources']:
-            cmd = Command(command='mkdir -p {}',
-                          args='{}odoo-{}/{}'.format(
-                              BASE_DIR,
-                              'odoo-',
-                              self.client.version,
-                              working_dir),
-                          chck='path.isdir',
-                          env=self)
+        for working_dir in ['postgresql', 'config',
+                            'data_dir', 'log', 'sources']:
+            cmd = MakedirCommand(self, command='mkdir -p {}',
+                                 args=['{}{}'.format(
+                                     self.client.base_dir,
+                                     working_dir)],
+                                 check='path.isdir')
             ret.append(cmd)
 
         return ret
 
     @property
     def client(self):
-        if not self._args.client:
-            Msg().err('need -c option (client name)')
-
-        self._client = Client(self, self._args.client[0])
-
         return self._client
 
     @client.setter
@@ -60,5 +67,5 @@ class OdooEnv(object):
         self._client = value
 
     @property
-    def args(self):
-        return self._args
+    def options(self):
+        return self._options

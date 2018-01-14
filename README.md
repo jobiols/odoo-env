@@ -8,6 +8,26 @@ Warning
 -------
 This code is not functional, and is under development (stay tuned)
 
+Directory structure
+
+    /odoo
+    ├── nginx
+    ├── odoo-9.0
+    │   └── glinsar
+    │       ├── config               odoo.conf
+    │       ├── data_dir             filestore
+    │       ├── dist_local_packages  packages from image for debug
+    │       ├── dist_packages        pagkages from image for debug
+    │       ├── image_repos          repos from image for debug
+    │       ├── log                  odoo.log
+    │       ├── postgresql           postgres database
+    │       └── sources              custom sources
+    └── postfix
+
+
+
+
+
 Functionality so far
 --------------------- 
     usage: oe.py [-h]

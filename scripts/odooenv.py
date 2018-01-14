@@ -32,7 +32,10 @@ class OdooEnv(object):
 
         ret = []
 
-        # create base dir with sudo
+        #
+        # Create base dir with sudo
+        #
+
         cmd = MakedirCommand(self,
                              command='sudo mkdir {}',
                              args=[BASE_DIR],
@@ -40,18 +43,33 @@ class OdooEnv(object):
                              usr_msg=msg)
         ret.append(cmd)
 
+        #
         # change ownership of base dir
+        #
+
         username = pwd.getpwuid(os.getuid()).pw_name
         cmd = Command(self, command='sudo chown {}:{} {}',
                       args=[username, username, BASE_DIR])
         ret.append(cmd)
 
+        #
         # create all hierarchy
+        #
         for working_dir in ['postgresql', 'config',
-                            'data_dir', 'log', 'sources']:
+                            'data_dir', 'log', 'sources', 'dist_packages',
+                            'dist_local_packages', 'image_repos']:
             cmd = MakedirCommand(self, command='mkdir -p {}',
                                  args=['{}{}'.format(
                                      self.client.base_dir,
+                                     working_dir)],
+                                 check='path.isdir')
+            ret.append(cmd)
+
+        # nginx y postfix
+        for working_dir in ['nginx', 'postfix']:
+            cmd = MakedirCommand(self, command='mkdir -p {}',
+                                 args=['{}{}'.format(
+                                     BASE_DIR,
                                      working_dir)],
                                  check='path.isdir')
             ret.append(cmd)

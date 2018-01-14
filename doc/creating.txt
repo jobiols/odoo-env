@@ -9,3 +9,19 @@ python setup.py register
 
 # ponemos para que ande en desarrollo
 /usr/local/bin/oe
+
+
+/odoo_ar/
+├── nginx
+├── odoo-9.0
+│   └── glinsar
+│       ├── config
+│       ├── data_dir
+│       ├── dist_local_packages
+│       ├── dist_packages
+│       ├── image_repos
+│       ├── log
+│       ├── postgresql
+│       └── sources
+└── postfix
+

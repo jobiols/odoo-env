@@ -16,7 +16,12 @@ class Client(object):
         self._parent = parent
         self._name = name
 
-        manifest = self.get_manifest(BASE_DIR)
+        # si estamos en test accedo a data
+        if name[0:5] == 'test_':
+            path = os.path.dirname(os.path.abspath(__file__))
+            manifest = self.get_manifest(path+'/../data')
+        else:
+            manifest = self.get_manifest(BASE_DIR)
         if not manifest:
             msg.inf('Can not find client {} in this host. Please provide path '
                     'to repo\n where it is or hit Enter to exit.'
@@ -31,23 +36,24 @@ class Client(object):
             msg.inf('Client found!')
             msg.inf('Name {}\nversion {}\n'.format(manifest.get('name'),
                                                    manifest.get('version')))
-            self._images = manifest.get('images')
-            self._repos = manifest.get('repos')
-            self._version = manifest.get('version')[0:3]
 
-            if not self._name == manifest.get('name').lower():
-                msg.err('You intend to install client {} but in manifest name '
-                        'then name is {}'.format(self._name,
-                                                 manifest.get('name')))
+        self._images = manifest.get('images')
+        self._repos = manifest.get('repos')
+        self._version = manifest.get('version')[0:3]
 
-            if not self._images:
-                msg.err('No images in manifest {}'.format(self.name))
+        if not self._name == manifest.get('name').lower():
+            msg.err('You intend to install client {} but in manifest name '
+                    'then name is {}'.format(self._name,
+                                             manifest.get('name')))
 
-            if not self._repos:
-                msg.err('No repos in manifest {}'.format(self.name))
+        if not self._images:
+            msg.err('No images in manifest {}'.format(self.name))
 
-            if not self._version:
-                msg.err('No version tag in manifest {}'.format(self.name))
+        if not self._repos:
+            msg.err('No repos in manifest {}'.format(self.name))
+
+        if not self._version:
+            msg.err('No version tag in manifest {}'.format(self.name))
 
     def get_manifest(self, path):
         """

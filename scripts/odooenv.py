@@ -372,7 +372,7 @@ class OdooEnv(object):
         if not self.debug:
             command += '--logfile=/var/log/odoo/odoo.log '
         else:
-            command += '--logfile=False '
+            command += '--logfile=/dev/stdout '
 
         # You should use 2 worker threads + 1 cron thread per available CPU,
         # and 1 CPU per 10 concurent users. Make sure you tune the memory
@@ -381,6 +381,8 @@ class OdooEnv(object):
             command += '--workers 0 '
         else:
             command += '--workers 3 '
+
+        command += ' --load=web,web_kanban,server_mode,database_tools '
 
         # number of workers dedicated to cron jobs. Defaults to 2. The workers
         # are threads in multithreading mode and processes in multiprocessing

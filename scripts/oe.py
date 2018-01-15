@@ -55,4 +55,6 @@ Odoo Environment Manager v0.0.1 - by jeo Software <jorge.obiols@gmail.com>
         for command in commands:
             if command and command.check():
                 Msg().inf(command.usr_msg)
+                print 'cmd',command._command
+                print 'args', command.args
                 command.execute()

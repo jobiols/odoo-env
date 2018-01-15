@@ -9,13 +9,19 @@ msg = Msg()
 
 
 class Command(object):
-    def __init__(self, parent, command=False, usr_msg=False, args=False,
-                 verbose=False):
+    def __init__(self, parent, command=False, usr_msg=False, args=False):
+        """
+
+        :param parent: El objeto OdooEnv que lo contiene por los parametros
+        :param command: El comando a ejecutar en el shell
+        :param usr_msg: El mensaje a mostrarle al usuario
+        :param args: Argumentos para chequear, define si se ejecuta o no
+        :return: El objeto Comando que se ejecutara luego
+        """
         self._parent = parent
         self._command = command
         self._usr_msg = usr_msg
         self._args = args
-        self._verbose = verbose
 
     def check(self):
         # si no tiene argumentos para chequear no requiere chequeo,

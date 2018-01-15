@@ -59,20 +59,24 @@ class OdooEnv(object):
         ##################################################################
         for w_dir in ['postgresql', 'config', 'data_dir', 'log',
                       'sources', 'image_repos']:
+            r_dir = '{}{}'.format(self.client.base_dir, w_dir)
             cmd = MakedirCommand(
                 self,
-                command='mkdir -p {}{}'.format(self.client.base_dir, w_dir)
+                command='mkdir -p {}'.format(r_dir),
+                args='{}'.format(r_dir)
             )
             ret.append(cmd)
 
         ##################################################################
-        # create dirs for extracting sources only for debug
+        # create dirs for extracting sources, only for debug
         ##################################################################
         if self.debug:
             for w_dir in ['dist-packages', 'dist-local-packages']:
+                r_dir = '{}{}'.format(self.client.base_dir, w_dir)
                 cmd = MakedirCommand(
-                    self, command='mkdir -p {}{}'.format(self.client.base_dir,
-                                                         w_dir)
+                    self,
+                    command='mkdir -p {}'.format(r_dir),
+                    args='{}'.format(r_dir)
                 )
                 ret.append(cmd)
 
@@ -82,10 +86,10 @@ class OdooEnv(object):
 
         if self.debug:
             for w_dir in ['dist-packages', 'dist-local-packages']:
+                r_dir = format(self.client.base_dir, w_dir)
                 cmd = Command(
                     self,
-                    command='chmod o+w {}{}'.format(self.client.base_dir,
-                                                    w_dir)
+                    command='chmod o+w {}'.format(r_dir)
                 )
                 ret.append(cmd)
 
@@ -94,9 +98,11 @@ class OdooEnv(object):
         ##################################################################
 
         for w_dir in ['nginx', 'postfix']:
+            r_dir = '{}'.format(BASE_DIR, w_dir)
             cmd = MakedirCommand(
                 self,
-                command='mkdir -p {}{}'.format(BASE_DIR, w_dir)
+                command='mkdir -p {}'.format(r_dir),
+                args='{}'.format(r_dir)
             )
             ret.append(cmd)
 
@@ -114,9 +120,10 @@ class OdooEnv(object):
                 command += '{}.debug '.format(self.client.image('odoo'))
 
                 cmd = ExtractSourcesCommand(
-                    self, command=command,
+                    self,
+                    command=command,
                     args='{}{}'.format(self.client.base_dir, module),
-                    usr_msg=msg
+                    usr_msg=msg,
                 )
                 ret.append(cmd)
 

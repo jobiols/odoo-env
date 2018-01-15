@@ -71,6 +71,7 @@ class OdooEnv(object):
         # create dirs for extracting sources, only for debug
         ##################################################################
         if self.debug:
+
             for w_dir in ['dist-packages', 'dist-local-packages']:
                 r_dir = '{}{}'.format(self.client.base_dir, w_dir)
                 cmd = MakedirCommand(
@@ -86,7 +87,7 @@ class OdooEnv(object):
 
         if self.debug:
             for w_dir in ['dist-packages', 'dist-local-packages']:
-                r_dir = format(self.client.base_dir, w_dir)
+                r_dir = '{}{}'.format(self.client.base_dir, w_dir)
                 cmd = Command(
                     self,
                     command='chmod o+w {}'.format(r_dir)

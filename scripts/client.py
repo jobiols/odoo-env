@@ -29,7 +29,8 @@ class Client(object):
                     'to repo\n where it is or hit Enter to exit.'
                     '\n'.format(self._name))
 
-            path = raw_input('path = ')
+            #path = raw_input('path = ')
+            path = '/home/jobiols/kk/reves'
             manifest = self.get_manifest(path)
             if not manifest:
                 msg.err('Can not find client {} in this host'.format(name))

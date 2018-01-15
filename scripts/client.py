@@ -29,8 +29,7 @@ class Client(object):
                     'to repo\n where it is or hit Enter to exit.'
                     '\n'.format(self._name))
 
-            # path = raw_input('path = ')
-            path = '/home/jobiols/kk'
+            path = raw_input('path = ')
             manifest = self.get_manifest(path)
             if not manifest:
                 msg.err('Can not find client {} in this host'.format(name))
@@ -40,7 +39,7 @@ class Client(object):
                                                    manifest.get('version')))
 
         # Chequar que este todo bien
-        if not manifest.get('images'):
+        if not manifest.get('docker'):
             msg.err('No images in manifest {}'.format(self.name))
 
         if not manifest.get('repos'):
@@ -60,7 +59,7 @@ class Client(object):
             self._repos.append(Repo(rep))
 
         self._images = []
-        for img in manifest.get('images'):
+        for img in manifest.get('docker'):
             self._images.append(Image(img))
 
         if not self._name == manifest.get('name').lower():
@@ -129,7 +128,7 @@ class Client(object):
 
     @property
     def numeric_ver(self):
-        return int(self.version)
+        return float(self.version[0:2])
 
     @property
     def base_dir(self):

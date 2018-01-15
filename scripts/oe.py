@@ -40,18 +40,36 @@ Odoo Environment Manager v0.0.1 - by jeo Software <jorge.obiols@gmail.com>
              '3.- when doing a pull (option -p) it clones the full repo i.e. '
              'does not issue --depth 1 to git ')
 
-    parser.add_argument('--no-repos',
-                        action='store_true',
-                        help='Does not clone or pull repos used with -i or -p')
+    parser.add_argument(
+        '--no-repos',
+        action='store_true',
+        help='Does not clone or pull repos used with -i or -p')
 
-    parser.add_argument('-R', '--run-env',
-                        action='store_true',
-                        help="Run database and aeroo images.")
+    parser.add_argument(
+        '-R', '--run-env',
+        action='store_true',
+        help="Run database and aeroo images.")
 
-    parser.add_argument('-r', '--run-cli',
-                        action='store_true',
-                        help="Run client odoo, requires -c options")
+    parser.add_argument(
+        '-r', '--run-cli',
+        action='store_true',
+        help="Run client odoo, requires -c options")
 
+    parser.add_argument(
+        '--no-dbfilter',
+        action='store_true',
+        help='Eliminates dbfilter: The client can see any database. '
+             'Without this, the client can only see databases starting with clientname_')
+
+    parser.add_argument(
+        '-S', '--stop-env',
+        action='store_true',
+        help="Stop database and aeroo images.")
+
+    parser.add_argument(
+        '-s', '--stop-cli',
+        action='store_true',
+        help="Stop client images, requires -c options.")
 
     args = parser.parse_args()
     options = {}
@@ -59,23 +77,32 @@ Odoo Environment Manager v0.0.1 - by jeo Software <jorge.obiols@gmail.com>
     options['debug'] = args.debug
     options['no-repos'] = args.no_repos
     options['nginx'] = False
+    options['no-dbfilter'] = args.no_dbfilter
+
+    commands = []
 
     if args.install_cli:
         client_name = get_param(args, 'client')
-        commands = OdooEnv(options).install_client(client_name)
+        commands += OdooEnv(options).install_client(client_name)
+
+    if args.stop_env:
+        client_name = get_param(args, 'client')
+        commands += OdooEnv(options).stop_environment(client_name)
 
     if args.run_env:
         client_name = get_param(args, 'client')
-        commands = OdooEnv(options).run_environment(client_name)
+        commands += OdooEnv(options).run_environment(client_name)
+
+    if args.stop_cli:
+        client_name = get_param(args, 'client')
+        commands += OdooEnv(options).stop_client(client_name)
 
     if args.run_cli:
         client_name = get_param(args, 'client')
-        commands = OdooEnv(options).run_client(client_name)
-
+        commands += OdooEnv(options).run_client(client_name)
 
     # ejecutar comandos
     for command in commands:
-
         if command and command.check():
             Msg().inf(command.usr_msg)
             command.execute()

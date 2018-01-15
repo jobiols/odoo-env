@@ -6,7 +6,7 @@ from command import Command, MakedirCommand, ExtractSourcesCommand, \
 
 import pwd
 import os
-from constants import BASE_DIR
+from constants import BASE_DIR, IN_CONFIG, IN_DATA, IN_LOG, IN_CUSTOM_ADDONS
 
 
 class OdooEnv(object):
@@ -133,6 +133,18 @@ class OdooEnv(object):
                 ret.append(cmd)
 
         ##################################################################
+        # change o+w for config, data and log
+        ##################################################################
+
+        for w_dir in ['config', 'data_dir', 'log']:
+            r_dir = '{}{}'.format(self.client.base_dir, w_dir)
+            cmd = Command(
+                self,
+                command='chmod o+w {}'.format(r_dir)
+            )
+            ret.append(cmd)
+
+        ##################################################################
         # create dirs for nginx & postfix
         ##################################################################
 
@@ -175,6 +187,44 @@ class OdooEnv(object):
         ##################################################################
         # End of job
         ##################################################################
+
+        return ret
+
+    def _add_debug_mountings(self):
+        #    ret = '-v {}{}:/opt/odoo/extra-addons '.format(cli.get_home_dir(), SOURCES_EA)
+
+        ret = '-v {}dist-packages:/usr/lib/python2.7/dist-packages '.format(
+            self.client.base_dir, SOURCES_DP)
+
+        # ret += '-v {}{}:/usr/local/lib/python2.7/dist-packages '.format(cli.get_home_dir(), SOURCES_DLP)
+
+        return ret
+
+        command = ''
+        return command
+
+    def _add_normal_mountings(self):
+        ret = '-v {}config:{} '.format(self.client.base_dir, IN_CONFIG)
+        ret += '-v {}data_dir:{} '.format(self.client.base_dir, IN_DATA)
+        ret += '-v {}log:{} '.format(self.client.base_dir, IN_LOG)
+        ret += '-v {}sources:{} '.format(self.client.base_dir,
+                                         IN_CUSTOM_ADDONS)
+        return ret
+
+        return ret
+
+    def stop_environment(self, client_name):
+        self._client = Client(self, client_name)
+        ret = []
+
+        for image in ['postgres', 'aeroo']:
+
+            cmd = Command(
+                self,
+                command='sudo docker rm -f {}'.format(image),
+                usr_msg='Stopping image {}'.format(image),
+            )
+            ret.append(cmd)
 
         return ret
 
@@ -230,18 +280,27 @@ class OdooEnv(object):
 
         return ret
 
-    def run_client(self, client_name):
-        """
+    def stop_client(self, client_name):
+        ret = []
 
-        :return:
-        """
+        cmd = Command(
+            self,
+            command='sudo docker rm -f {}'.format(client_name),
+            usr_msg='Stopping image {}'.format(client_name),
+        )
+        ret.append(cmd)
+
+        return ret
+
+    def run_client(self, client_name):
 
         self._client = Client(self, client_name)
         ret = []
 
-        msg = 'runing image for client {} '.format(client_name)
-        if self.debug:
-            msg += 'w/ debug mode enabled on port {}'.format(self.client.port)
+        msg = 'Starting image for client {} on port {}'.format(
+            client_name,
+            self.client.port
+        )
 
         if self.debug:
             command = 'sudo docker run --rm -it '
@@ -264,9 +323,9 @@ class OdooEnv(object):
             # exponer puerto para longpolling
             command += '-p 8072:8072 '
 
-        command += add_normal_mountings()
+        command += self._add_normal_mountings()
         if self.debug:
-            params += debug_mountings()
+            command += self._add_debug_mountings()
 
         command += '--link postgres:db '
 
@@ -285,7 +344,7 @@ class OdooEnv(object):
             command += '-- --db-filter={}_.* '.format(self.client.name)
 
         if not self.debug:
-            command += '--logfile=/var/log/odoo.log '
+            command += '--logfile=/var/log/odoo/odoo.log '
         else:
             command += '--logfile=False '
 
@@ -355,3 +414,7 @@ class OdooEnv(object):
     @property
     def nginx(self):
         return self._options['nginx']
+
+    @property
+    def no_dbfilter(self):
+        return self._options['no-dbfilter']

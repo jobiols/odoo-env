@@ -42,9 +42,9 @@ class OdooEnv(object):
             cmd = CloneRepo(
                 self,
                 usr_msg='clonning {}'.format(repo.formatted),
-                command='git -C {} {}'.format(self.client.sources_com,
+                command='git -C {} {}'.format(self.client.sources_dir,
                                                     repo.clone),
-                args='{}{}'.format(self.client.sources_com, repo.dir_name)
+                args='{}{}'.format(self.client.sources_dir, repo.dir_name)
             )
             ret.append(cmd)
 
@@ -55,10 +55,10 @@ class OdooEnv(object):
             cmd = PullRepo(
                 self,
                 usr_msg='pulling {}'.format(repo.formatted),
-                command='git -C {}{} {}'.format(self.client.sources_com,
+                command='git -C {}{} {}'.format(self.client.sources_dir,
                                                      repo.dir_name,
                                                      repo.pull),
-                args='{}{}'.format(self.client.sources_com, repo.dir_name)
+                args='{}{}'.format(self.client.sources_dir, repo.dir_name)
             )
             ret.append(cmd)
 
@@ -66,15 +66,15 @@ class OdooEnv(object):
             # Create simbolic link
             ##############################################################
 
-            cmd = MakedirCommand(
-                self,
-                usr_msg='simlinking {}'.format(repo.formatted),
-                command='ln -s {}{} {}{}'.format(
-                    self.client.sources_com, repo.dir_name,
-                    self.client.sources_dir, repo.dir_name),
-                args='{}{}'.format(self.client.sources_dir, repo.dir_name)
-            )
-            ret.append(cmd)
+            #cmd = MakedirCommand(
+            #    self,
+            #    usr_msg='simlinking {}'.format(repo.formatted),
+            #    command='ln -s {}{} {}{}'.format(
+            #        self.client.sources_com, repo.dir_name,
+            #        self.client.sources_dir, repo.dir_name),
+            #    args='{}{}'.format(self.client.sources_dir, repo.dir_name)
+            #)
+            #ret.append(cmd)
 
         return ret
 
@@ -124,13 +124,13 @@ class OdooEnv(object):
         # create dir for common sources
         ##################################################################
 
-        r_dir = '{}'.format(self.client.sources_com)
-        cmd = MakedirCommand(
-            self,
-            command='mkdir -p {}'.format(r_dir),
-            args='{}'.format(r_dir)
-        )
-        ret.append(cmd)
+        #r_dir = '{}'.format(self.client.sources_com)
+        #cmd = MakedirCommand(
+        #    self,
+        #    command='mkdir -p {}'.format(r_dir),
+        #    args='{}'.format(r_dir)
+        #)
+        #ret.append(cmd)
 
         ##################################################################
         # create dirs for extracting sources, only for debug

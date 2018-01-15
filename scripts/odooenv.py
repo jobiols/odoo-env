@@ -218,7 +218,6 @@ class OdooEnv(object):
         ret = []
 
         for image in ['postgres', 'aeroo']:
-
             cmd = Command(
                 self,
                 command='sudo docker rm -f {}'.format(image),
@@ -390,6 +389,30 @@ class OdooEnv(object):
             self,
             command=command,
             usr_msg=msg,
+        )
+        ret.append(cmd)
+
+        return ret
+
+    def update_all(self, client_name, database, modules):
+        self._client = Client(self, client_name)
+        ret = []
+
+        command = 'sudo docker run --rm -it '
+        command += self._add_normal_mountings()
+        if self.debug:
+            command += self._add_debug_mountings()
+        command += '--link postgres:db '
+        command += '{} -- '.format(self.client.get_image('odoo').name)
+        command += '--stop-after-init '
+        command += '--logfile=false '
+        command += '-d {} '.format(database)
+        command += '-u {} '.format(', '.join(modules))
+
+        cmd = Command(
+            self,
+            command=command,
+            usr_msg='Performing update all on database {}'.format(database)
         )
         ret.append(cmd)
 

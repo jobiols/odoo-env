@@ -71,6 +71,26 @@ Odoo Environment Manager v0.0.1 - by jeo Software <jorge.obiols@gmail.com>
         action='store_true',
         help="Stop client images, requires -c options.")
 
+    parser.add_argument(
+        '-u', '--update-all',
+        action='store_true',
+        help="Update database requires -d -c and -m options. "
+             "Use --debug to force update with host sources")
+
+    parser.add_argument(
+        '-d',
+        action='store',
+        nargs=1,
+        dest='database',
+        help="Database name.")
+
+    parser.add_argument(
+        '-m',
+        action='append',
+        dest='module',
+        help="Module to update or all for updating all the registered "
+             "modules. You can specify multiple -m options.")
+
     args = parser.parse_args()
     options = {}
     options['verbose'] = args.verbose
@@ -100,6 +120,12 @@ Odoo Environment Manager v0.0.1 - by jeo Software <jorge.obiols@gmail.com>
     if args.run_cli:
         client_name = get_param(args, 'client')
         commands += OdooEnv(options).run_client(client_name)
+
+    if args.update_all:
+        client_name = get_param(args, 'client')
+        database = get_param(args, 'database')
+        modules = get_param(args, 'module')
+        commands += OdooEnv(options).update_all(client_name, database, modules)
 
     # ejecutar comandos
     for command in commands:

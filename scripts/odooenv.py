@@ -39,9 +39,9 @@ class OdooEnv(object):
             cmd = CloneRepo(
                 self,
                 usr_msg='clonning {}'.format(repo.formatted),
-                command='git -C {} clone {}'.format(self.client.sources_dir,
+                command='git -C {} clone {}'.format(self.client.sources_com,
                                                     repo.url),
-                args='{}{}'.format(self.client.sources_dir, repo.dir_name)
+                args='{}{}'.format(self.client.sources_com, repo.dir_name)
             )
             ret.append(cmd)
 
@@ -52,9 +52,23 @@ class OdooEnv(object):
             cmd = PullRepo(
                 self,
                 usr_msg='pulling {}'.format(repo.formatted),
-                command='git -C {}{} pull {}'.format(self.client.sources_dir,
+                command='git -C {}{} pull {}'.format(self.client.sources_com,
                                                      repo.dir_name,
                                                      repo.url),
+                args='{}{}'.format(self.client.sources_com, repo.dir_name)
+            )
+            ret.append(cmd)
+
+            ##############################################################
+            # Create simbolic link
+            ##############################################################
+
+            cmd = MakedirCommand(
+                self,
+                usr_msg='simlinking {}'.format(repo.formatted),
+                command='ln -s {}{} {}{}'.format(
+                    self.client.sources_com, repo.dir_name,
+                    self.client.sources_dir, repo.dir_name),
                 args='{}{}'.format(self.client.sources_dir, repo.dir_name)
             )
             ret.append(cmd)
@@ -63,7 +77,6 @@ class OdooEnv(object):
 
     def install_client(self, client_name):
         """ Instalacion de cliente,
-            Si es la primera vez crea la estructura de directorios
         """
 
         self._client = Client(self, client_name)
@@ -93,10 +106,9 @@ class OdooEnv(object):
         ret.append(cmd)
 
         ##################################################################
-        # create all hierarchy
+        # create all client hierarchy
         ##################################################################
-        for w_dir in ['postgresql', 'config', 'data_dir', 'log',
-                      'sources', 'image_repos']:
+        for w_dir in ['postgresql', 'config', 'data_dir', 'log', 'sources']:
             r_dir = '{}{}'.format(self.client.base_dir, w_dir)
             cmd = MakedirCommand(
                 self,
@@ -106,12 +118,25 @@ class OdooEnv(object):
             ret.append(cmd)
 
         ##################################################################
+        # create dir for common sources
+        ##################################################################
+
+        r_dir = '{}'.format(self.client.sources_com)
+        cmd = MakedirCommand(
+            self,
+            command='mkdir -p {}'.format(r_dir),
+            args='{}'.format(r_dir)
+        )
+        ret.append(cmd)
+
+        ##################################################################
         # create dirs for extracting sources, only for debug
         ##################################################################
         if self.debug:
 
-            for w_dir in ['dist-packages', 'dist-local-packages']:
-                r_dir = '{}{}'.format(self.client.base_dir, w_dir)
+            for w_dir in ['dist-packages', 'dist-local-packages',
+                          'extra-addons']:
+                r_dir = '{}{}'.format(self.client.version_dir, w_dir)
                 cmd = MakedirCommand(
                     self,
                     command='mkdir -p {}'.format(r_dir),
@@ -120,12 +145,13 @@ class OdooEnv(object):
                 ret.append(cmd)
 
         ##################################################################
-        # change o+w of both dirs
+        # change o+w for those dirs
         ##################################################################
 
         if self.debug:
-            for w_dir in ['dist-packages', 'dist-local-packages']:
-                r_dir = '{}{}'.format(self.client.base_dir, w_dir)
+            for w_dir in ['dist-packages', 'dist-local-packages',
+                          'extra-addons']:
+                r_dir = '{}{}'.format(self.client.version_dir, w_dir)
                 cmd = Command(
                     self,
                     command='chmod o+w {}'.format(r_dir)
@@ -149,7 +175,7 @@ class OdooEnv(object):
         ##################################################################
 
         for w_dir in ['nginx', 'postfix']:
-            r_dir = '{}'.format(BASE_DIR, w_dir)
+            r_dir = '{}{}'.format(BASE_DIR, w_dir)
             cmd = MakedirCommand(
                 self,
                 command='mkdir -p {}'.format(r_dir),
@@ -161,19 +187,21 @@ class OdooEnv(object):
         # Extracting sources from image if debug enabled
         ##################################################################
         if self.debug:
-            for module in ['dist-packages', 'dist-local-packages']:
+            for module in ['dist-packages', 'dist-local-packages',
+                           'extra-addons']:
                 msg = 'Extracting {} from image {}.debug'.format(
-                    module, self.client.image('odoo'))
+                    module, self.client.get_image('odoo').name)
                 command = 'sudo docker run -it --rm '
                 command += '--entrypoint=/extract_{}.sh '.format(module)
-                command += '-v {}{}/:/mnt/{} '.format(self.client.base_dir,
+                command += '-v {}{}/:/mnt/{} '.format(self.client.version_dir,
                                                       module, module)
-                command += '{}.debug '.format(self.client.image('odoo'))
+                command += '{}.debug '.format(
+                    self.client.get_image('odoo').name)
 
                 cmd = ExtractSourcesCommand(
                     self,
                     command=command,
-                    args='{}{}'.format(self.client.base_dir, module),
+                    args='{}{}'.format(self.client.version_dir, module),
                     usr_msg=msg,
                 )
                 ret.append(cmd)

@@ -100,7 +100,7 @@ class Client(object):
 
     def image(self, image_name):
         for img_dict in self._images:
-            if img_dict['name'] == image_name:
+            if img_dict.get('name') == image_name:
                 img = img_dict.get('img')
                 ver = img_dict.get('ver')
                 ret = img_dict.get('usr')
@@ -132,10 +132,6 @@ class Client(object):
         return float(self.version[0:2])
 
     @property
-    def base_dir(self):
-        return '{}odoo-{}/{}/'.format(BASE_DIR, self._version, self._name)
-
-    @property
     def repos(self):
         return self._repos
 
@@ -144,13 +140,27 @@ class Client(object):
         return self._images
 
     @property
-    def sources_dir(self):
-        return self.base_dir + 'sources/'
+    def port(self):
+        return self._port
 
     @property
     def psql_dir(self):
         return self.base_dir + 'postgresql/'
 
     @property
-    def port(self):
-        return self._port
+    def base_dir(self):
+        return '{}odoo-{}/{}/'.format(BASE_DIR, self._version, self._name)
+
+    @property
+    def version_dir(self):
+        return '{}odoo-{}/'.format(BASE_DIR, self._version)
+
+    @property
+    def sources_dir(self):
+        """ links to repos for this client only pointing to sources_com """
+        return self.base_dir + 'sources/'
+
+    @property
+    def sources_com(self):
+        """ real repos for this odoo Version, all clients """
+        return '{}odoo-{}/sources/'.format(BASE_DIR, self._version)

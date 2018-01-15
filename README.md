@@ -12,16 +12,17 @@ Directory structure
 
     /odoo
     ├── odoo-9.0
-    │   └── glinsar
-    │       ├── config               odoo.conf
-    │       ├── data_dir             filestore
-    │       ├── log                  odoo.log
-    │       ├── image_repos          repos from image for debug
-    │       ├── postgresql           postgres database
-    │       ├── sources              custom sources
+    │   ├── glinsar
+    │   │    ├── config               odoo.conf
+    │   │    ├── data_dir             filestore
+    │   │    ├── log                  odoo.log
+    │   │    ├── postgresql           postgres database
+    │   │    └── sources              custom sources
+    │   ├── sources
 
-    │       ├── dist_local_packages  packages from image for debug
-    │       └── dist_packages        pagkages from image for debug
+    │   ├── extra-addons         repos from image for debug
+    │   ├── dist-local-packages  packages from image for debug
+    │   └── dist-packages        pagkages from image for debug
     ├── nginx
     └── postfix
 

@@ -40,16 +40,28 @@ Odoo Environment Manager v0.0.1 - by jeo Software <jorge.obiols@gmail.com>
              '3.- when doing a pull (option -p) it clones the full repo i.e. '
              'does not issue --depth 1 to git ')
 
+    parser.add_argument('--no-repos',
+                        action='store_true',
+                        help='Does not clone or pull repos used with -i or -p')
+
+    parser.add_argument('-R', '--run-env',
+                        action='store_true',
+                        help="Run database and aeroo images.")
+
+
     args = parser.parse_args()
     options = {}
     options['verbose'] = args.verbose
     options['debug'] = args.debug
+    options['no-repos'] = args.no_repos
 
     if args.install_cli:
-        # obtener parametros
         client_name = get_param(args, 'client')
-        # invocar instancia
         commands = OdooEnv(options).install_client(client_name)
+
+    if args.run_env:
+        client_name = get_param(args, 'client')
+        commands = OdooEnv(options).run_environment(client_name)
 
         # ejecutar comandos
         for command in commands:

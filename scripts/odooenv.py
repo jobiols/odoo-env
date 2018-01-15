@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from client import Client
-from command import Command, MakedirCommand, ExtractSourcesCommand
+from command import Command, MakedirCommand, ExtractSourcesCommand, \
+    CloneRepo, PullRepo
 
 import pwd
 import os
@@ -22,6 +23,43 @@ class OdooEnv(object):
     def __init__(self, options):
         self._options = options
         self._client = False
+
+    def _update_repos(self):
+        ret = []
+        # do nothing if no-repos option is true
+
+        if self.no_repos:
+            return ret
+
+        for repo in self.client.repos:
+            ##############################################################
+            # Clone repo if not exist
+            ##############################################################
+
+            cmd = CloneRepo(
+                self,
+                usr_msg='clonning {}'.format(repo.formatted),
+                command='git -C {} clone {}'.format(self.client.sources_dir,
+                                                    repo.url),
+                args='{}{}'.format(self.client.sources_dir, repo.dir_name)
+            )
+            ret.append(cmd)
+
+            ##############################################################
+            # Update repo if exist
+            ##############################################################
+
+            cmd = PullRepo(
+                self,
+                usr_msg='pulling {}'.format(repo.formatted),
+                command='git -C {}{} pull {}'.format(self.client.sources_dir,
+                                                     repo.dir_name,
+                                                     repo.url),
+                args='{}{}'.format(self.client.sources_dir, repo.dir_name)
+            )
+            ret.append(cmd)
+
+        return ret
 
     def install_client(self, client_name):
         """ Instalacion de cliente,
@@ -129,18 +167,70 @@ class OdooEnv(object):
                 ret.append(cmd)
 
         ##################################################################
+        # Clone or update repos as needed
+        ##################################################################
+
+        ret += self._update_repos()
+
+        ##################################################################
         # End of job
         ##################################################################
+
+        return ret
+
+    def run_environment(self, client_name):
+        """
+        :return: devuelve los comandos en una lista
+        """
+        self._client = Client(self, client_name)
+        ret = []
+
+        ##################################################################
+        # Launching postgres Image
+        ##################################################################
+
+        image = self.client.get_image('postgres')
+
+        msg = 'Starting postgres image v{}'.format(image.version)
+        command = 'sudo docker run -d '
+        if self.debug:
+            command += '-p 5432:5432 '
+        command += '-e POSTGRES_USER=odoo '
+        command += '-e POSTGRES_PASSWORD=odoo '
+        command += '-v {}:/var/lib/postgresql/data '.format(
+            self.client.psql_dir)
+        command += '--restart=always '
+        command += '--name {} '.format(image.short_name)
+        command += image.name
+
+        cmd = Command(
+            self,
+            command=command,
+            usr_msg=msg,
+        )
+        ret.append(cmd)
+
+        ##################################################################
+        # Launching aeroo Image if v < 10
+        ##################################################################
+
+        msg = 'Starting aeroo image'
+        params = 'sudo docker run -d '
+        params += '--name={} '.format(image.short_name)
+        params += '--restart=always '
+        params += image.image
+        cmd = Command(
+            self,
+            command=command,
+            usr_msg=msg,
+        )
+        ret.append(cmd)
 
         return ret
 
     @property
     def client(self):
         return self._client
-
-    @client.setter
-    def client(self, value):
-        self._client = value
 
     @property
     def debug(self):
@@ -149,3 +239,7 @@ class OdooEnv(object):
     @property
     def verbose(self):
         return self._options['verbose']
+
+    @property
+    def no_repos(self):
+        return self._options['no-repos']

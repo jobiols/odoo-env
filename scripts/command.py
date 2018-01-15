@@ -92,3 +92,19 @@ class ExtractSourcesCommand(Command):
         # si el directorio tiene archivos no copiamos los fuentes
         return os.listdir(path) == []
 
+
+class CloneRepo(Command):
+    @staticmethod
+    def check_args(path):
+        # si el directorio no existe dejamos clonar
+        print 'checking clone', path
+        return not os.path.isdir(path)
+
+
+class PullRepo(Command):
+    @staticmethod
+    def check_args(path):
+        # si el directorio existe dejamos pulear
+        print 'checking pull', path
+        return os.path.isdir(path)
+

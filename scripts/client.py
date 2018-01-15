@@ -4,6 +4,8 @@
 import os
 from messages import Msg
 from constants import BASE_DIR
+from repos import Repo
+from images import Image
 
 msg = Msg()
 
@@ -37,23 +39,30 @@ class Client(object):
             msg.inf('Name {}\nversion {}\n'.format(manifest.get('name'),
                                                    manifest.get('version')))
 
-        self._images = manifest.get('images')
-        self._repos = manifest.get('repos')
+        # Chequar que este todo bien
+        if not manifest.get('images'):
+            msg.err('No images in manifest {}'.format(self.name))
+
+        if not manifest.get('repos'):
+            msg.err('No repos in manifest {}'.format(self.name))
+
         self._version = manifest.get('version')[0:3]
+        if not self._version:
+            msg.err('No version tag in manifest {}'.format(self.name))
+
+        # Crear imagenes y repos
+        self._repos = []
+        for rep in manifest.get('repos'):
+            self._repos.append(Repo(rep))
+
+        self._images = []
+        for img in manifest.get('images'):
+            self._images.append(Image(img))
 
         if not self._name == manifest.get('name').lower():
             msg.err('You intend to install client {} but in manifest name '
                     'then name is {}'.format(self._name,
                                              manifest.get('name')))
-
-        if not self._images:
-            msg.err('No images in manifest {}'.format(self.name))
-
-        if not self._repos:
-            msg.err('No repos in manifest {}'.format(self.name))
-
-        if not self._version:
-            msg.err('No version tag in manifest {}'.format(self.name))
 
     def get_manifest(self, path):
         """
@@ -99,6 +108,11 @@ class Client(object):
         msg.err('There is no {} image found in this manifest'.format(
             image_name))
 
+    def get_image(self, value):
+        for image in self._images:
+            if image.name == value:
+                return image
+
     @property
     def name(self):
         return self._name
@@ -110,3 +124,19 @@ class Client(object):
     @property
     def base_dir(self):
         return '{}odoo-{}/{}/'.format(BASE_DIR, self._version, self._name)
+
+    @property
+    def repos(self):
+        return self._repos
+
+    @property
+    def images(self):
+        return self._images
+
+    @property
+    def sources_dir(self):
+        return self.base_dir + 'sources/'
+
+    @property
+    def psql_dir(self):
+        return self.base_dir + 'postgresql/'

@@ -6,7 +6,8 @@ from command import Command, MakedirCommand, ExtractSourcesCommand, \
 
 import pwd
 import os
-from constants import BASE_DIR, IN_CONFIG, IN_DATA, IN_LOG, IN_CUSTOM_ADDONS
+from constants import BASE_DIR, IN_CONFIG, IN_DATA, IN_LOG, IN_CUSTOM_ADDONS, \
+    IN_DIST_LOCAL_PACKAGES, IN_DIST_PACKAGES, IN_EXTRA_ADDONS
 
 
 class OdooEnv(object):
@@ -24,7 +25,9 @@ class OdooEnv(object):
         self._options = options
         self._client = False
 
-    def _update_repos(self):
+    def _process_repos(self):
+        """ Clone or update repos as needed
+        """
         ret = []
         # do nothing if no-repos option is true
 
@@ -33,14 +36,14 @@ class OdooEnv(object):
 
         for repo in self.client.repos:
             ##############################################################
-            # Clone repo if not exist
+            # Clone repo if it not exist
             ##############################################################
 
             cmd = CloneRepo(
                 self,
                 usr_msg='clonning {}'.format(repo.formatted),
-                command='git -C {} clone {}'.format(self.client.sources_com,
-                                                    repo.url),
+                command='git -C {} {}'.format(self.client.sources_com,
+                                                    repo.clone),
                 args='{}{}'.format(self.client.sources_com, repo.dir_name)
             )
             ret.append(cmd)
@@ -52,9 +55,9 @@ class OdooEnv(object):
             cmd = PullRepo(
                 self,
                 usr_msg='pulling {}'.format(repo.formatted),
-                command='git -C {}{} pull {}'.format(self.client.sources_com,
+                command='git -C {}{} {}'.format(self.client.sources_com,
                                                      repo.dir_name,
-                                                     repo.url),
+                                                     repo.pull),
                 args='{}{}'.format(self.client.sources_com, repo.dir_name)
             )
             ret.append(cmd)
@@ -210,7 +213,7 @@ class OdooEnv(object):
         # Clone or update repos as needed
         ##################################################################
 
-        ret += self._update_repos()
+        ret += self._process_repos()
 
         ##################################################################
         # End of job
@@ -219,17 +222,13 @@ class OdooEnv(object):
         return ret
 
     def _add_debug_mountings(self):
-        #    ret = '-v {}{}:/opt/odoo/extra-addons '.format(cli.get_home_dir(), SOURCES_EA)
-
-        ret = '-v {}dist-packages:/usr/lib/python2.7/dist-packages '.format(
-            self.client.base_dir, SOURCES_DP)
-
-        # ret += '-v {}{}:/usr/local/lib/python2.7/dist-packages '.format(cli.get_home_dir(), SOURCES_DLP)
-
+        ret = '-v {}extra-addons:{} '.format(
+            self.client.version_dir, IN_EXTRA_ADDONS)
+        ret += '-v {}dist-packages:{} '.format(
+            self.client.version_dir, IN_DIST_PACKAGES)
+        ret += '-v {}dist-local-packages:{} '.format(
+            self.client.version_dir, IN_DIST_LOCAL_PACKAGES)
         return ret
-
-        command = ''
-        return command
 
     def _add_normal_mountings(self):
         ret = '-v {}config:{} '.format(self.client.base_dir, IN_CONFIG)

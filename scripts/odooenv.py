@@ -215,10 +215,118 @@ class OdooEnv(object):
         ##################################################################
 
         msg = 'Starting aeroo image'
-        params = 'sudo docker run -d '
-        params += '--name={} '.format(image.short_name)
-        params += '--restart=always '
-        params += image.image
+        image = self.client.get_image('aeroo')
+
+        command = 'sudo docker run -d '
+        command += '--name={} '.format(image.short_name)
+        command += '--restart=always '
+        command += image.name
+        cmd = Command(
+            self,
+            command=command,
+            usr_msg=msg,
+        )
+        ret.append(cmd)
+
+        return ret
+
+    def run_client(self, client_name):
+        """
+
+        :return:
+        """
+
+        self._client = Client(self, client_name)
+        ret = []
+
+        msg = 'runing image for client {} '.format(client_name)
+        if self.debug:
+            msg += 'w/ debug mode enabled on port {}'.format(self.client.port)
+
+        if self.debug:
+            command = 'sudo docker run --rm -it '
+        else:
+            command = 'sudo docker run -d '
+
+        # a partir de la 10 no se usa aeroo
+        if self.client.numeric_ver < 10:
+            command += '--link aeroo:aeroo '
+
+        # open port for wdb
+        if self.debug:
+            command += '-p 1984:1984 '
+
+        # exponer el puerto solo si no tenemos nginx
+        if not self.nginx:
+            command += '-p {}:8069 '.format(self.client.port)
+
+        if not self.debug:
+            # exponer puerto para longpolling
+            command += '-p 8072:8072 '
+
+        command += add_normal_mountings()
+        if self.debug:
+            params += debug_mountings()
+
+        command += '--link postgres:db '
+
+        if not self.debug:
+            command += '--restart=always '
+
+        command += '--name {} '.format(self.client.name)
+
+        # si estamos en modo debug agregarlo al nombre de la imagen
+        if self.debug:
+            command += '{}.debug '.format(self.client.get_image('odoo').name)
+        else:
+            command += '{} '.format(self.client.get_image('odoo').name)
+
+        if not self.no_dbfilter:
+            command += '-- --db-filter={}_.* '.format(self.client.name)
+
+        if not self.debug:
+            command += '--logfile=/var/log/odoo.log '
+        else:
+            command += '--logfile=False '
+
+        # You should use 2 worker threads + 1 cron thread per available CPU,
+        # and 1 CPU per 10 concurent users. Make sure you tune the memory
+        # limits and cpu limits in your configuration file.
+        if self.debug:
+            command += '--workers 0 '
+        else:
+            command += '--workers 3 '
+
+        # number of workers dedicated to cron jobs. Defaults to 2. The workers
+        # are threads in multithreading mode and processes in multiprocessing
+        # mode.
+        command += '--max-cron-threads 1 '
+
+        # Number of requests a worker will process before being recycled and
+        # restarted. Defaults to 8196
+        command += '--limit-request 8196 '
+
+        # Maximum allowed virtual memory per worker. If the limit is exceeded,
+        # the worker is killed and recycled at the end of the current request.
+        # Defaults to 640MB
+        command += '--limit-memory-soft 2147483648 '
+
+        # Hard limit on virtual memory, any worker exceeding the limit will be
+        # immediately killed without waiting for the end of the current request
+        # processing. Defaults to 768MB.
+        command += '--limit-memory-hard 2684354560 '
+
+        # Prevents the worker from using more than CPU seconds for each
+        # request. If the limit is exceeded, the worker is killed. Defaults
+        # to 60.
+        command += '--limit-time-cpu 1600 '
+
+        # Prevents the worker from taking longer than seconds to process a
+        # request. If the limit is exceeded, the worker is killed. Defaults to
+        # 120. Differs from --limit-time-cpu in that this is a "wall time"
+        # limit including e.g. SQL queries.
+        command += '--limit-time-real 3200 '
+
         cmd = Command(
             self,
             command=command,
@@ -243,3 +351,7 @@ class OdooEnv(object):
     @property
     def no_repos(self):
         return self._options['no-repos']
+
+    @property
+    def nginx(self):
+        return self._options['nginx']

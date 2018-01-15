@@ -46,6 +46,10 @@ class Client(object):
         if not manifest.get('repos'):
             msg.err('No repos in manifest {}'.format(self.name))
 
+        self._port = manifest.get('port')
+        if not self._port:
+            msg.err('No port in manifest {}'.format(self.name))
+
         self._version = manifest.get('version')[0:3]
         if not self._version:
             msg.err('No version tag in manifest {}'.format(self.name))
@@ -110,8 +114,10 @@ class Client(object):
 
     def get_image(self, value):
         for image in self._images:
-            if image.name == value:
+            if image.short_name == value:
                 return image
+        msg.err('No image {} found'.format(value))
+
 
     @property
     def name(self):
@@ -120,6 +126,10 @@ class Client(object):
     @property
     def version(self):
         return self._version
+
+    @property
+    def numeric_ver(self):
+        return int(self.version)
 
     @property
     def base_dir(self):
@@ -140,3 +150,7 @@ class Client(object):
     @property
     def psql_dir(self):
         return self.base_dir + 'postgresql/'
+
+    @property
+    def port(self):
+        return self._port

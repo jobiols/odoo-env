@@ -48,12 +48,17 @@ Odoo Environment Manager v0.0.1 - by jeo Software <jorge.obiols@gmail.com>
                         action='store_true',
                         help="Run database and aeroo images.")
 
+    parser.add_argument('-r', '--run-cli',
+                        action='store_true',
+                        help="Run client odoo, requires -c options")
+
 
     args = parser.parse_args()
     options = {}
     options['verbose'] = args.verbose
     options['debug'] = args.debug
     options['no-repos'] = args.no_repos
+    options['nginx'] = False
 
     if args.install_cli:
         client_name = get_param(args, 'client')
@@ -63,8 +68,14 @@ Odoo Environment Manager v0.0.1 - by jeo Software <jorge.obiols@gmail.com>
         client_name = get_param(args, 'client')
         commands = OdooEnv(options).run_environment(client_name)
 
-        # ejecutar comandos
-        for command in commands:
-            if command and command.check():
-                Msg().inf(command.usr_msg)
-                command.execute()
+    if args.run_cli:
+        client_name = get_param(args, 'client')
+        commands = OdooEnv(options).run_client(client_name)
+
+
+    # ejecutar comandos
+    for command in commands:
+
+        if command and command.check():
+            Msg().inf(command.usr_msg)
+            command.execute()

@@ -55,5 +55,6 @@
          {'name': 'odoo', 'usr': 'jobiols', 'img': 'odoo-jeo', 'ver': '9.0'},
          {'name': 'postgres', 'usr': 'postgres', 'ver': '9.5'},
          {'name': 'nginx', 'usr': 'nginx', 'ver': 'latest'}
-     ]
+     ],
+    'port': '8069'
 }

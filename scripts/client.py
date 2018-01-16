@@ -62,6 +62,7 @@ class Client(object):
         for img in manifest.get('docker'):
             self._images.append(Image(img))
 
+        # todo codigo repetido
         # get first word of name in lowercase
         name = manifest.get('name').lower()
         if not self._name == name.split()[0]:
@@ -78,7 +79,11 @@ class Client(object):
                 if file in files:
                     manifest_file = '{}/{}'.format(root, file)
                     manifest = self.load_manifest(manifest_file)
-                    if manifest.get('name').lower() == self._name:
+                    # todo codigo repetido
+                    # get first word of name in lowercase
+                    name = manifest.get('name').lower()
+                    name = name.split()[0]
+                    if name == self._name:
                         return manifest
 
         return False

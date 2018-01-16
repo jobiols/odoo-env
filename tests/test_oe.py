@@ -7,6 +7,7 @@ class TestRepository(unittest.TestCase):
     def test_test(self):
         options = {
             'debug': False,
+            'no-repos': False,
         }
 
         oe = OdooEnv(options)

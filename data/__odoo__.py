@@ -50,7 +50,7 @@
          {'usr': 'jobiols', 'repo': 'web', 'branch': '9.0'},
          {'usr': 'ingadhoc', 'repo': 'odoo-support', 'branch': '8.0'},
      ],
-     'images': [
+     'docker': [
          {'name': 'aeroo', 'usr': 'jobiols', 'img': 'aeroo-docs'},
          {'name': 'odoo', 'usr': 'jobiols', 'img': 'odoo-jeo', 'ver': '9.0'},
          {'name': 'postgres', 'usr': 'postgres', 'ver': '9.5'},

@@ -62,10 +62,11 @@ class Client(object):
         for img in manifest.get('docker'):
             self._images.append(Image(img))
 
-        if not self._name == manifest.get('name').lower():
-            msg.err('You intend to install client {} but in manifest name '
-                    'then name is {}'.format(self._name,
-                                             manifest.get('name')))
+        # get first word of name in lowercase
+        name = manifest.get('name').lower()
+        if not self._name == name.split()[0]:
+            msg.err('You intend to install client {} but in manifest, '
+                    'the name is {}'.format(self._name, manifest.get('name')))
 
     def get_manifest(self, path):
         """
@@ -116,7 +117,6 @@ class Client(object):
             if image.short_name == value:
                 return image
         msg.err('No image {} found'.format(value))
-
 
     @property
     def name(self):

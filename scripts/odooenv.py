@@ -43,7 +43,7 @@ class OdooEnv(object):
                 self,
                 usr_msg='clonning {}'.format(repo.formatted),
                 command='git -C {} {}'.format(self.client.sources_dir,
-                                                    repo.clone),
+                                              repo.clone),
                 args='{}{}'.format(self.client.sources_dir, repo.dir_name)
             )
             ret.append(cmd)
@@ -56,8 +56,8 @@ class OdooEnv(object):
                 self,
                 usr_msg='pulling {}'.format(repo.formatted),
                 command='git -C {}{} {}'.format(self.client.sources_dir,
-                                                     repo.dir_name,
-                                                     repo.pull),
+                                                repo.dir_name,
+                                                repo.pull),
                 args='{}{}'.format(self.client.sources_dir, repo.dir_name)
             )
             ret.append(cmd)
@@ -66,15 +66,15 @@ class OdooEnv(object):
             # Create simbolic link
             ##############################################################
 
-            #cmd = MakedirCommand(
+            # cmd = MakedirCommand(
             #    self,
             #    usr_msg='simlinking {}'.format(repo.formatted),
             #    command='ln -s {}{} {}{}'.format(
             #        self.client.sources_com, repo.dir_name,
             #        self.client.sources_dir, repo.dir_name),
             #    args='{}{}'.format(self.client.sources_dir, repo.dir_name)
-            #)
-            #ret.append(cmd)
+            # )
+            # ret.append(cmd)
 
         return ret
 
@@ -124,13 +124,13 @@ class OdooEnv(object):
         # create dir for common sources
         ##################################################################
 
-        #r_dir = '{}'.format(self.client.sources_com)
-        #cmd = MakedirCommand(
+        # r_dir = '{}'.format(self.client.sources_com)
+        # cmd = MakedirCommand(
         #    self,
         #    command='mkdir -p {}'.format(r_dir),
         #    args='{}'.format(r_dir)
-        #)
-        #ret.append(cmd)
+        # )
+        # ret.append(cmd)
 
         ##################################################################
         # create dirs for extracting sources, only for debug
@@ -244,7 +244,9 @@ class OdooEnv(object):
         self._client = Client(self, client_name)
         ret = []
 
-        for image in ['postgres', 'aeroo']:
+        img2 = 'postgres-{}'.format(self.client.name)
+
+        for image in ['aeroo', img2]:
             cmd = Command(
                 self,
                 command='sudo docker rm -f {}'.format(image),
@@ -276,7 +278,7 @@ class OdooEnv(object):
         command += '-v {}:/var/lib/postgresql/data '.format(
             self.client.psql_dir)
         command += '--restart=always '
-        command += '--name {} '.format(image.short_name)
+        command += '--name {}-{} '.format(image.short_name, self.client.name)
         command += image.name
 
         cmd = Command(
@@ -353,7 +355,7 @@ class OdooEnv(object):
         if self.debug:
             command += self._add_debug_mountings()
 
-        command += '--link postgres:db '
+        command += '--link postgres-{}:db '.format(self.client.name)
 
         if not self.debug:
             command += '--restart=always '
@@ -382,7 +384,7 @@ class OdooEnv(object):
         if self.debug:
             command += '--workers 0 '
         else:
-            command += '--workers 3 '
+            command += '--workers 0 '
 
         command += ' --load=web,web_kanban,server_mode,database_tools '
 

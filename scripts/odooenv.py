@@ -362,8 +362,10 @@ class OdooEnv(object):
 
         # si estamos en modo debug agregarlo al nombre de la imagen
         if self.debug:
+            command += '-e SERVER_MODE=test '
             command += '{}.debug '.format(self.client.get_image('odoo').name)
         else:
+            command += '-e SERVER_MODE= '
             command += '{} '.format(self.client.get_image('odoo').name)
 
         if not self.no_dbfilter:

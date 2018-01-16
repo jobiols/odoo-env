@@ -137,8 +137,8 @@ class OdooEnv(object):
         ##################################################################
         if self.debug:
 
-            for w_dir in ['dist-packages', 'dist-local-packages',
-                          'extra-addons']:
+            # no sacamos dist-local-packages
+            for w_dir in ['dist-packages', 'extra-addons']:
                 r_dir = '{}{}'.format(self.client.version_dir, w_dir)
                 cmd = MakedirCommand(
                     self,
@@ -152,8 +152,8 @@ class OdooEnv(object):
         ##################################################################
 
         if self.debug:
-            for w_dir in ['dist-packages', 'dist-local-packages',
-                          'extra-addons']:
+            # no sacamos dist-local-packages
+            for w_dir in ['dist-packages', 'extra-addons']:
                 r_dir = '{}{}'.format(self.client.version_dir, w_dir)
                 cmd = Command(
                     self,
@@ -190,8 +190,8 @@ class OdooEnv(object):
         # Extracting sources from image if debug enabled
         ##################################################################
         if self.debug:
-            for module in ['dist-packages', 'dist-local-packages',
-                           'extra-addons']:
+            # no sacamos dist-local-packages
+            for module in ['dist-packages', 'extra-addons']:
                 msg = 'Extracting {} from image {}.debug'.format(
                     module, self.client.get_image('odoo').name)
                 command = 'sudo docker run -it --rm '
@@ -226,8 +226,9 @@ class OdooEnv(object):
             self.client.version_dir, IN_EXTRA_ADDONS)
         ret += '-v {}dist-packages:{} '.format(
             self.client.version_dir, IN_DIST_PACKAGES)
-        ret += '-v {}dist-local-packages:{} '.format(
-            self.client.version_dir, IN_DIST_LOCAL_PACKAGES)
+        # no sacamos dist-local-packages
+        #ret += '-v {}dist-local-packages:{} '.format(
+        #    self.client.version_dir, IN_DIST_LOCAL_PACKAGES)
         return ret
 
     def _add_normal_mountings(self):

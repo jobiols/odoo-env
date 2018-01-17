@@ -1,6 +1,6 @@
 language: python
-sudo: false
-cache: pip
+#sudo: false
+#cache: pip
 
 python:
   - "2.7"
@@ -8,12 +8,12 @@ python:
 git:
   depth: 1
 
-install:
-  - pip install codecov
-  - pip install flake8
+#install:
+#  - pip install codecov
+#  - pip install flake8
 
-#script:
-#  - python tests/test_oe.py
+script:
+  - python tests/test_oe.py
 #  - coverage run scripts/oe.py
 #  - flake8 tests/test_oe.py
 

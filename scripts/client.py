@@ -101,7 +101,10 @@ class Client(object):
                 if line.strip() and line.strip()[0] != '#':
                     manifest += line
             ret = eval(manifest)
-            return ret
+            if isinstance(ret, dict):
+                return ret
+            else:
+                msg.err('bad formed manifest: \n{}'.format(manifest))
 
     def image(self, image_name):
         for img_dict in self._images:

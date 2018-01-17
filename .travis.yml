@@ -13,9 +13,9 @@ install:
   - pip install flake8
 
 script:
-  - python tests/test_oe.py
+  - python scripts/test_oe.py
   - coverage run scripts/oe.py
-  - flake8 tests/test_oe.py
+  - flake8 scripts/test_oe.py
 
 after_success:
   - codecov

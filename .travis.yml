@@ -9,15 +9,15 @@ python:
 git:
   depth: 1
 
-#install:
-#  - pip install codecov
-#  - pip install flake8
+install:
+  - pip install codecov
+  - pip install flake8
 
 script:
   - python tests/test_oe.py
-#  - coverage run scripts/oe.py
-#  - flake8 tests/test_oe.py
+  - coverage run scripts/oe.py
+  - flake8 tests/test_oe.py
 
-#after_success:
-#  - codecov
-#  - coveralls
+after_success:
+  - codecov
+  - coveralls

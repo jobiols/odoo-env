@@ -74,5 +74,6 @@ Installation
     
     for now: 
     clone the repo odoo-env in your home dir
-    execute install_scripts from the data folder
+    execute install_scripts from the data folder with sudo 
+    
     

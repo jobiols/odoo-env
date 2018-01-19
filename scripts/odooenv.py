@@ -41,7 +41,7 @@ class OdooEnv(object):
 
             cmd = CloneRepo(
                 self,
-                usr_msg='clonning {}'.format(repo.formatted),
+                usr_msg='cloning {}'.format(repo.formatted),
                 command='git -C {} {}'.format(self.client.sources_dir,
                                               repo.clone),
                 args='{}{}'.format(self.client.sources_dir, repo.dir_name)

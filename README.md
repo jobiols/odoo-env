@@ -70,4 +70,9 @@ This code is distributed under the AGPL license
 
 Installation
 ------------
-    pip install docker-odoo-env
+    some day : pip install docker-odoo-env
+    
+    for now: 
+    clone the repo odoo-env in your home dir
+    execute install_scripts from the data folder
+    

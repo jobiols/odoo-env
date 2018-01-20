@@ -8,7 +8,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description="""
 ==========================================================================
-Odoo Environment Manager v0.0.1 - by jeo Software <jorge.obiols@gmail.com>
+Odoo Environment Manager v0.0.2 - by jeo Software <jorge.obiols@gmail.com>
 ==========================================================================
 """)
 
@@ -33,9 +33,10 @@ Odoo Environment Manager v0.0.1 - by jeo Software <jorge.obiols@gmail.com>
     parser.add_argument(
         '--debug',
         action='store_true',
-        help='This option has three efects: '
-             '1.- when doing an update database, (option -u) it forces debug '
-             'mode. 2.- When running environment (option -R) it opens port '
+        help='This option has the following efects: '
+             '1.- when doing an update all, (option -u) it forces debug '
+             'mode. '
+             '2.- When running environment (option -R) it opens port '
              '5432 to access postgres server databases. '
              '3.- when doing a pull (option -p) it clones the full repo i.e. '
              'does not issue --depth 1 to git ')
@@ -48,7 +49,7 @@ Odoo Environment Manager v0.0.1 - by jeo Software <jorge.obiols@gmail.com>
     parser.add_argument(
         '-R', '--run-env',
         action='store_true',
-        help="Run database and aeroo images.")
+        help="Run postgres and aeroo images.")
 
     parser.add_argument(
         '-r', '--run-cli',
@@ -64,7 +65,7 @@ Odoo Environment Manager v0.0.1 - by jeo Software <jorge.obiols@gmail.com>
     parser.add_argument(
         '-S', '--stop-env',
         action='store_true',
-        help="Stop database and aeroo images.")
+        help="Stop postgres and aeroo images.")
 
     parser.add_argument(
         '-s', '--stop-cli',
@@ -74,7 +75,7 @@ Odoo Environment Manager v0.0.1 - by jeo Software <jorge.obiols@gmail.com>
     parser.add_argument(
         '-u', '--update-all',
         action='store_true',
-        help="Update database requires -d -c and -m options. "
+        help="Update all requires -d -c and -m options. "
              "Use --debug to force update with host sources")
 
     parser.add_argument(
@@ -82,14 +83,16 @@ Odoo Environment Manager v0.0.1 - by jeo Software <jorge.obiols@gmail.com>
         action='store',
         nargs=1,
         dest='database',
-        help="Database name.")
+        help="Database name. Note that there is a dbfilter option by default "
+             "the database name must begin with clientname_")
 
     parser.add_argument(
         '-m',
         action='append',
         dest='module',
         help="Module to update or all for updating all the registered "
-             "modules. You can specify multiple -m options.")
+             "modules. You can specify multiple -m options. i.e. -m all for"
+             "all modules -m sales stock for updating sales and stock modules")
 
     args = parser.parse_args()
     options = {}

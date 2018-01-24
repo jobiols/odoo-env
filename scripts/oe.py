@@ -94,12 +94,13 @@ Odoo Environment Manager v0.1.0 - by jeo Software <jorge.obiols@gmail.com>
              "modules. You can specify multiple -m options. i.e. -m all for"
              "all modules -m sales stock for updating sales and stock modules")
 
-    parser.add_argument('--nginx',
-                        action='store_true',
-                        help='add nginx to installation, with -i creates nginx dir w/ sample config file '
-                             'and certificates. with -r starts an nginx container linked to odoo'
-                             'you must change certificates and review nginx.conf file.'
-                             'WARNING: for now the -i option will overwrite nginx.conf')
+    parser.add_argument(
+        '--nginx',
+        action='store_true',
+        help='Add nginx to installation: With -i creates nginx dir w/ sample '
+             'config file. with -r starts an nginx container linked to odoo'
+             'with -s stops nginx containcer. You must add certificates and '
+             'review nginx.conf file.')
 
     args = parser.parse_args()
     options = {

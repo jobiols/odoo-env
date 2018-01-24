@@ -2,7 +2,7 @@
 
 from client import Client
 from command import Command, MakedirCommand, ExtractSourcesCommand, \
-    CloneRepo, PullRepo
+    CloneRepo, PullRepo, CreateNginxTemplate
 
 import pwd
 import os
@@ -174,11 +174,39 @@ class OdooEnv(object):
             ret.append(cmd)
 
         ##################################################################
-        # create dirs for nginx & postfix
+        # create dirs for nginx if needed
         ##################################################################
 
-        for w_dir in ['nginx', 'postfix']:
-            r_dir = '{}{}'.format(BASE_DIR, w_dir)
+        if self.nginx:
+            for w_dir in ['cert', 'conf', 'log']:
+                r_dir = '{}{}'.format(BASE_DIR, 'nginx/' + w_dir)
+                cmd = MakedirCommand(
+                    self,
+                    command='mkdir -p {}'.format(r_dir),
+                    args='{}'.format(r_dir)
+                )
+                ret.append(cmd)
+
+        ##################################################################
+        # create nginx.conf template if needed. Do not overwrite
+        ##################################################################
+
+        if self.nginx:
+            r_dir = '{}{}'.format(BASE_DIR, 'nginx/conf/')
+            cmd = CreateNginxTemplate(
+                self,
+                command='{}nginx.conf'.format(r_dir),
+                args='{}nginx.conf'.format(r_dir),
+                usr_msg='Generating nginx.conf template'
+            )
+            ret.append(cmd)
+
+        ##################################################################
+        # create dirs for postfix
+        ##################################################################
+
+        if self.postfix:
+            r_dir = '{}{}'.format(BASE_DIR, 'postfix')
             cmd = MakedirCommand(
                 self,
                 command='mkdir -p {}'.format(r_dir),
@@ -227,7 +255,7 @@ class OdooEnv(object):
         ret += '-v {}dist-packages:{} '.format(
             self.client.version_dir, IN_DIST_PACKAGES)
         # no sacamos dist-local-packages
-        #ret += '-v {}dist-local-packages:{} '.format(
+        # ret += '-v {}dist-local-packages:{} '.format(
         #    self.client.version_dir, IN_DIST_LOCAL_PACKAGES)
         return ret
 
@@ -426,6 +454,34 @@ class OdooEnv(object):
         )
         ret.append(cmd)
 
+        ##################################################################
+        # Launching nginx proxy if needed
+        ##################################################################
+
+        if self.nginx:
+            msg = 'Starting nginx reverse proxy'
+            image = self.client.get_image('nginx')
+
+            nginx_dir = self.client.nginx_dir
+            command = 'sudo docker run -d '
+            command += '-v {}conf:/etc/nginx/conf.d:ro '.format(nginx_dir)
+            command += '-v {}cert:/etc/letsencrypt/live/certificadositio '.format(
+                nginx_dir)
+            command += '-v {}log:/var/log/nginx/ '.format(nginx_dir)
+            command += '-p 80:80 '
+            command += '-p 443:443 '
+            command += '--name={} '.format(image.short_name)
+            command += '--link {}:odoo '.format(client_name)
+            command += '--restart=always '
+
+            command += image.name
+            cmd = Command(
+                self,
+                command=command,
+                usr_msg=msg,
+            )
+            ret.append(cmd)
+
         return ret
 
     def update_all(self, client_name, database, modules):
@@ -475,3 +531,11 @@ class OdooEnv(object):
     @property
     def no_dbfilter(self):
         return self._options['no-dbfilter']
+
+    @property
+    def nginx(self):
+        return self._options['nginx']
+
+    @property
+    def postfix(self):
+        return self._options['postfix']

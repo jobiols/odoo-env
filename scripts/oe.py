@@ -94,14 +94,22 @@ Odoo Environment Manager v0.0.2 - by jeo Software <jorge.obiols@gmail.com>
              "modules. You can specify multiple -m options. i.e. -m all for"
              "all modules -m sales stock for updating sales and stock modules")
 
-    args = parser.parse_args()
-    options = {}
-    options['verbose'] = args.verbose
-    options['debug'] = args.debug
-    options['no-repos'] = args.no_repos
-    options['nginx'] = False
-    options['no-dbfilter'] = args.no_dbfilter
+    parser.add_argument('--nginx',
+                        action='store_true',
+                        help='add nginx to installation, with -i creates nginx dir w/ sample config file '
+                             'and certificates. with -r starts an nginx container linked to odoo'
+                             'you must change certificates and review nginx.conf file.'
+                             'WARNING: for now the -i option will overwrite nginx.conf')
 
+    args = parser.parse_args()
+    options = {
+        'verbose': args.verbose,
+        'debug': args.debug,
+        'no-repos': args.no_repos,
+        'nginx': args.nginx,
+        'postfix': False,
+        'no-dbfilter': args.no_dbfilter
+    }
     commands = []
 
     if args.install_cli:
@@ -130,7 +138,9 @@ Odoo Environment Manager v0.0.2 - by jeo Software <jorge.obiols@gmail.com>
         modules = get_param(args, 'module')
         commands += OdooEnv(options).update_all(client_name, database, modules)
 
+    # #####################################################################
     # ejecutar comandos
+    # ######################################################################
     for command in commands:
         if command and command.check():
             Msg().inf(command.usr_msg)

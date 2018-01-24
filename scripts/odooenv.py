@@ -347,6 +347,14 @@ class OdooEnv(object):
         )
         ret.append(cmd)
 
+        if self.nginx:
+            cmd = Command(
+                self,
+                command='sudo docker rm -f nginx',
+                usr_msg='Stopping image nginx',
+            )
+            ret.append(cmd)
+
         return ret
 
     def run_client(self, client_name):

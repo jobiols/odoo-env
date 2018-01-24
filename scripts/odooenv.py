@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from client import Client
+from messages import Msg
 from command import Command, MakedirCommand, ExtractSourcesCommand, \
     CloneRepo, PullRepo, CreateNginxTemplate
 
@@ -514,6 +515,56 @@ class OdooEnv(object):
         )
         ret.append(cmd)
 
+    def qa(self, client_name, database, module_name, repo_name, test_file,
+           client_test=False):
+        """
+        Corre un test especifico, los parametros necesarios son:
+
+        :param client_name: parametro -c
+        :param database: parametro -d
+        :param modules: parametro -m (es una lista)
+        :return: lista con los comandos para correr
+        """
+
+        # solo para que corran los tests
+        if client_test:
+            self._client = client_test
+        else:
+            self._client = Client(self, client_name)
+        ret = []
+
+        # chequear si el repo está dentro de los repos del cliente
+        repos_lst = []
+        for repo in self.client.repos:
+            repos_lst.append(repo.name)
+        if repo_name not in repos_lst:
+            Msg().err('Client "{}" does not own "{}" repo'.format(
+                client_name, repo.name))
+
+        command = 'sudo docker run --rm -it '
+        command += self._add_normal_mountings()
+        if self.debug:
+            command += self._add_debug_mountings()
+
+        command += '--link postgres-{}:db '.format(self.client.name)
+        command += '{}.debug -- '.format(self.client.get_image('odoo').name)
+        command += '--stop-after-init '
+        command += '--logfile=false '
+        command += '-d {} '.format(database)
+        command += '--log-level=test '
+        command += '--no-xmlrpc '
+        command += '--test-file={}/{}/{}/tests/{} '.format(
+            IN_CUSTOM_ADDONS, repo_name, module_name, test_file)
+
+        msg = 'Performing test {} on repo {} for client {} ' \
+              'and database {}'.format(test_file, repo_name, client_name,
+                                       database)
+        cmd = Command(
+            self,
+            command=command,
+            usr_msg=msg
+        )
+        ret.append(cmd)
         return ret
 
     @property

@@ -8,7 +8,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description="""
 ==========================================================================
-Odoo Environment Manager v0.1.0 - by jeo Software <jorge.obiols@gmail.com>
+Odoo Environment Manager v0.2.0 - by jeo Software <jorge.obiols@gmail.com>
 ==========================================================================
 """)
 
@@ -102,6 +102,18 @@ Odoo Environment Manager v0.1.0 - by jeo Software <jorge.obiols@gmail.com>
              'with -s stops nginx containcer. You must add certificates and '
              'review nginx.conf file.')
 
+    parser.add_argument(
+        '-Q', '--quality-assurance',
+        action='store',
+        metavar=('repo', 'test_file'),
+        nargs=2,
+        dest='quality_assurance',
+        help="Perform QA running tests, arguments are Repo where test lives, "
+             "and yml/py test file to run (please include extension). "
+             "Need -d, -m and -c options "
+             "Note: for the test to run there must be an admin user with "
+             "password admin")
+
     args = parser.parse_args()
     options = {
         'verbose': args.verbose,
@@ -138,6 +150,15 @@ Odoo Environment Manager v0.1.0 - by jeo Software <jorge.obiols@gmail.com>
         database = get_param(args, 'database')
         modules = get_param(args, 'module')
         commands += OdooEnv(options).update_all(client_name, database, modules)
+
+    if args.quality_assurance:
+        print args
+        client_name = get_param(args, 'client')
+        database = get_param(args, 'database')
+        modules = get_param(args, 'module')
+        commands += OdooEnv(options).qa(client_name, database, modules[0],
+                                        args.quality_assurance[0],
+                                        args.quality_assurance[1])
 
     # #####################################################################
     # ejecutar comandos

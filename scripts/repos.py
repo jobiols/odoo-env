@@ -7,6 +7,10 @@ class Repo(object):
         self._dict = dict
 
     @property
+    def name(self):
+        return self._dict.get('repo')
+
+    @property
     def dir_name(self):
         return self._dict.get('repo')
 

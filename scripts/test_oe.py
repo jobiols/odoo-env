@@ -3,6 +3,7 @@
 import unittest
 from odooenv import OdooEnv
 from command import Command, MakedirCommand, CreateNginxTemplate
+from client import Client
 
 
 class TestRepository(unittest.TestCase):
@@ -14,7 +15,7 @@ class TestRepository(unittest.TestCase):
             'postfix': False
         }
 
-        base_dir = '/odoo_ar_test/'
+        base_dir = '/odoo_ar/'
         oe = OdooEnv(options)
         cmds = oe.install_client('test_client')
         self.assertEqual(
@@ -54,3 +55,40 @@ class TestRepository(unittest.TestCase):
         c = CreateNginxTemplate(oe, command='cmd', args='no_exist',
                                 usr_msg='Testing msg')
         self.assertEqual(c.usr_msg, 'Testing msg')
+
+    def test_qa(self):
+        options = {
+            'debug': False
+        }
+        client_name = 'test_client'
+        database = 'cliente_test'
+        modules = 'modulo_a_testear'
+        repo = 'odoo-addons'
+        test_file = 'test_01.py'
+
+        oe = OdooEnv(options)
+        client = Client(oe, client_name)
+
+        cmds = oe.qa(client_name, database, modules, repo, test_file,
+                     client_test=client)
+
+        cmd = cmds[0]
+        self.assertEqual(cmd.usr_msg, 'Performing test test_01.py on repo '
+                                      'odoo-addons for client test_client '
+                                      'and database cliente_test')
+
+        command = "sudo docker run --rm -it " \
+                  "-v /odoo_ar/odoo-9.0/test_client/config:/opt/odoo/etc/ " \
+                  "-v /odoo_ar/odoo-9.0/test_client/data_dir:/opt/odoo/data " \
+                  "-v /odoo_ar/odoo-9.0/test_client/log:/var/log/odoo " \
+                  "-v /odoo_ar/odoo-9.0/test_client/sources:/opt/odoo/custom-addons " \
+                  "--link postgres-test_client:db jobiols/odoo-jeo:9.0.debug -- " \
+                  "--stop-after-init " \
+                  "--logfile=false " \
+                  "-d cliente_test " \
+                  "--log-level=test " \
+                  "--no-xmlrpc " \
+                  "--test-file=/opt/odoo/custom-addons/odoo-addons/modulo_a_testear/tests/test_01.py "
+
+        self.assertEqual(cmd.command, command)
+

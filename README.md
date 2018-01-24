@@ -79,4 +79,11 @@ Installation
     clone the repo odoo-env in your home dir
     execute install_scripts from the data folder with sudo 
     
-    
+Changelog
+---------
+
+0.1.0   Nginx support, 
+        Script to install docker (in script folder, execute manually)
+        sd command (short for sudo docker plus some enhacements)
+0.0.2   minor fixex
+0.0.1   starting version

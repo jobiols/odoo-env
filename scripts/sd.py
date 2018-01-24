@@ -48,7 +48,6 @@ def process_input(params):
         print 'sd rmall         - remove all images in memory'
 
     params = ' '.join(params)
-    print params
     return params
 
 

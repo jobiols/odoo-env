@@ -13,15 +13,18 @@ Directory structure
     /odoo
     ├── odoo-9.0
     │   ├── glinsar
-    │   │    ├── config               odoo.conf
-    │   │    ├── data_dir             filestore
-    │   │    ├── log                  odoo.log
-    │   │    ├── postgresql           postgres database
-    │   │    └── sources              custom sources
-    │   ├── extra-addons         repos from image for debug
-    │   ├── dist-local-packages  packages from image for debug
-    │   └── dist-packages        pagkages from image for debug
+    │   │    ├── config             odoo.conf
+    │   │    ├── data_dir           filestore
+    │   │    ├── log                odoo.log
+    │   │    ├── postgresql         postgres database
+    │   │    └── sources            custom sources
+    │   ├── extra-addons            repos from image for debug
+    │   ├── dist-local-packages     packages from image for debug
+    │   └── dist-packages           pagkages from image for debug
     ├── nginx
+    │   ├── conf
+    │   ├── log
+    │   └── cert
     └── postfix
 
 
@@ -31,7 +34,7 @@ usage: oe.py [-h] [-i] [-c CLIENT] [-v] [--debug] [--no-repos] [-R] [-r]
              [--no-dbfilter] [-S] [-s] [-u] [-d DATABASE] [-m MODULE]
 
     ==========================================================================
-    Odoo Environment Manager v0.2.0 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.2.1 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:

@@ -86,16 +86,19 @@ Installation
 ------------
     some day : pip install docker-odoo-env
     
-    for now: 
-    clone the repo odoo-env in your home dir
-    execute install_scripts from the data folder with sudo 
+    for now:
+    cd
+    git clone https://github.com/jobiols/odoo-env.git
+    sudo ./odoo-env/data/install_scripts
+ 
     
 Changelog
 ---------
-
-0.2.0   Quality Assurance support
+0.2.1   On QA, expose port 1984 for debug purpoes with WDB
+0.2.0   Quality Assurance support, add script for docker install, add
+        command sd rmall for removing all docker imagages in memory
 0.1.0   Nginx support, 
         Script to install docker (in script folder, execute manually)
         sd command (short for sudo docker plus some enhacements)
-0.0.2   minor fixex
+0.0.2   minor fixes
 0.0.1   starting version

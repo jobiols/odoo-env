@@ -548,6 +548,7 @@ class OdooEnv(object):
 
         command += '--link postgres-{}:db '.format(self.client.name)
         command += '{}.debug -- '.format(self.client.get_image('odoo').name)
+        command += '-p 1984:1984 ' # exponemos el puerto 1498 para debug
         command += '--stop-after-init '
         command += '--logfile=false '
         command += '-d {} '.format(database)

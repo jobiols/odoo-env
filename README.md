@@ -97,11 +97,11 @@ Installation
     
 Changelog
 ---------
-0.2.1   On QA, expose port 1984 for debug purpoes with WDB
-0.2.0   Quality Assurance support, add script for docker install, add
-        command sd rmall for removing all docker imagages in memory
-0.1.0   Nginx support, 
-        Script to install docker (in script folder, execute manually)
-        sd command (short for sudo docker plus some enhacements)
-0.0.2   minor fixes
-0.0.1   starting version
+- [0.2.1]   On QA, expose port 1984 for debug purpoes with WDB
+- [0.2.0]   Quality Assurance support, add script for docker install, add
+            command sd rmall for removing all docker imagages in memory
+- [0.1.0]   Nginx support, 
+            Script to install docker (in script folder, execute manually)
+            sd command (short for sudo docker plus some enhacements)
+- [0.0.2]   minor fixes
+- [0.0.1]   starting version

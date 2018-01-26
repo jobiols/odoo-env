@@ -27,6 +27,27 @@ def process_input(params):
         except Exception as ex:
             params = []
 
+    if params[2] == 'rmall':
+        try:
+            print 'removing all images in memory'
+            params[2:3] = ['rm', '-f', '$(sudo docker ps -a -q)']
+        except Exception as ex:
+            params = []
+
+    if params[2] == 'rmdiskall':
+        try:
+            print 'removing all images in disk'
+            params[2:3] = ['rm', '-f', '$(sudo docker images -q)']
+        except Exception as ex:
+            params = []
+
+    if params[2] == 'help':
+        print 'Help for sd'
+        print 'sd               - short for sudo docker'
+        print 'sd inside image  - open console inside image'
+        print 'sd rmall         - remove all images in memory'
+
+    params = ' '.join(params)
     return params
 
 
@@ -34,6 +55,6 @@ if __name__ == '__main__':
     params = process_input(sys.argv)
     try:
         if len(params) > 1:
-            exit(subprocess.call(params))
+            exit(subprocess.call(params,shell=True))
     except Exception as ex:
         print ex

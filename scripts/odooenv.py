@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from client import Client
+from messages import Msg
 from command import Command, MakedirCommand, ExtractSourcesCommand, \
-    CloneRepo, PullRepo
+    CloneRepo, PullRepo, CreateNginxTemplate
 
 import pwd
 import os
@@ -174,11 +175,39 @@ class OdooEnv(object):
             ret.append(cmd)
 
         ##################################################################
-        # create dirs for nginx & postfix
+        # create dirs for nginx if needed
         ##################################################################
 
-        for w_dir in ['nginx', 'postfix']:
-            r_dir = '{}{}'.format(BASE_DIR, w_dir)
+        if self.nginx:
+            for w_dir in ['cert', 'conf', 'log']:
+                r_dir = '{}{}'.format(BASE_DIR, 'nginx/' + w_dir)
+                cmd = MakedirCommand(
+                    self,
+                    command='mkdir -p {}'.format(r_dir),
+                    args='{}'.format(r_dir)
+                )
+                ret.append(cmd)
+
+        ##################################################################
+        # create nginx.conf template if needed. Do not overwrite
+        ##################################################################
+
+        if self.nginx:
+            r_dir = '{}{}'.format(BASE_DIR, 'nginx/conf/')
+            cmd = CreateNginxTemplate(
+                self,
+                command='{}nginx.conf'.format(r_dir),
+                args='{}nginx.conf'.format(r_dir),
+                usr_msg='Generating nginx.conf template'
+            )
+            ret.append(cmd)
+
+        ##################################################################
+        # create dirs for postfix
+        ##################################################################
+
+        if self.postfix:
+            r_dir = '{}{}'.format(BASE_DIR, 'postfix')
             cmd = MakedirCommand(
                 self,
                 command='mkdir -p {}'.format(r_dir),
@@ -227,7 +256,7 @@ class OdooEnv(object):
         ret += '-v {}dist-packages:{} '.format(
             self.client.version_dir, IN_DIST_PACKAGES)
         # no sacamos dist-local-packages
-        #ret += '-v {}dist-local-packages:{} '.format(
+        # ret += '-v {}dist-local-packages:{} '.format(
         #    self.client.version_dir, IN_DIST_LOCAL_PACKAGES)
         return ret
 
@@ -318,6 +347,14 @@ class OdooEnv(object):
             usr_msg='Stopping image {}'.format(client_name),
         )
         ret.append(cmd)
+
+        if self.nginx:
+            cmd = Command(
+                self,
+                command='sudo docker rm -f nginx',
+                usr_msg='Stopping image nginx',
+            )
+            ret.append(cmd)
 
         return ret
 
@@ -426,6 +463,34 @@ class OdooEnv(object):
         )
         ret.append(cmd)
 
+        ##################################################################
+        # Launching nginx proxy if needed
+        ##################################################################
+
+        if self.nginx:
+            msg = 'Starting nginx reverse proxy'
+            image = self.client.get_image('nginx')
+
+            nginx_dir = self.client.nginx_dir
+            command = 'sudo docker run -d '
+            command += '-v {}conf:/etc/nginx/conf.d:ro '.format(nginx_dir)
+            command += '-v {}cert:/etc/letsencrypt/live/certificadositio '.format(
+                nginx_dir)
+            command += '-v {}log:/var/log/nginx/ '.format(nginx_dir)
+            command += '-p 80:80 '
+            command += '-p 443:443 '
+            command += '--name={} '.format(image.short_name)
+            command += '--link {}:odoo '.format(client_name)
+            command += '--restart=always '
+
+            command += image.name
+            cmd = Command(
+                self,
+                command=command,
+                usr_msg=msg,
+            )
+            ret.append(cmd)
+
         return ret
 
     def update_all(self, client_name, database, modules):
@@ -450,6 +515,57 @@ class OdooEnv(object):
         )
         ret.append(cmd)
 
+    def qa(self, client_name, database, module_name, repo_name, test_file,
+           client_test=False):
+        """
+        Corre un test especifico, los parametros necesarios son:
+
+        :param client_name: parametro -c
+        :param database: parametro -d
+        :param modules: parametro -m (es una lista)
+        :return: lista con los comandos para correr
+        """
+
+        # solo para que corran los tests
+        if client_test:
+            self._client = client_test
+        else:
+            self._client = Client(self, client_name)
+        ret = []
+
+        # chequear si el repo está dentro de los repos del cliente
+        repos_lst = []
+        for repo in self.client.repos:
+            repos_lst.append(repo.name)
+        if repo_name not in repos_lst:
+            Msg().err('Client "{}" does not own "{}" repo'.format(
+                client_name, repo.name))
+
+        command = 'sudo docker run --rm -it '
+        command += self._add_normal_mountings()
+        if self.debug:
+            command += self._add_debug_mountings()
+        command += '-p 1984:1984 ' # exponemos el puerto 1498 para debug
+
+        command += '--link postgres-{}:db '.format(self.client.name)
+        command += '{}.debug -- '.format(self.client.get_image('odoo').name)
+        command += '--stop-after-init '
+        command += '--logfile=false '
+        command += '-d {} '.format(database)
+        command += '--log-level=test '
+        command += '--no-xmlrpc '
+        command += '--test-file={}/{}/{}/tests/{} '.format(
+            IN_CUSTOM_ADDONS, repo_name, module_name, test_file)
+
+        msg = 'Performing test {} on repo {} for client {} ' \
+              'and database {}'.format(test_file, repo_name, client_name,
+                                       database)
+        cmd = Command(
+            self,
+            command=command,
+            usr_msg=msg
+        )
+        ret.append(cmd)
         return ret
 
     @property
@@ -475,3 +591,11 @@ class OdooEnv(object):
     @property
     def no_dbfilter(self):
         return self._options['no-dbfilter']
+
+    @property
+    def nginx(self):
+        return self._options['nginx']
+
+    @property
+    def postfix(self):
+        return self._options['postfix']

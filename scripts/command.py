@@ -8,7 +8,7 @@ import subprocess
 msg = Msg()
 
 
-class Command(object):
+class Command():
     def __init__(self, parent, command=False, usr_msg=False, args=False):
         """
 
@@ -30,7 +30,7 @@ class Command(object):
             return True
 
         # le pasamos el chequeo al objeto especifico
-        return self.check_args(self.args)
+        return self.check_args()
 
     def execute(self):
         cmd = self.command
@@ -80,31 +80,40 @@ class Command(object):
 
 
 class MakedirCommand(Command):
-    @staticmethod
-    def check_args(path):
+    def check_args(self):
         # si el directorio existe no lo creamos
-        return not os.path.isdir(path)
+        return not os.path.isdir(self._args)
 
 
 class ExtractSourcesCommand(Command):
-    @staticmethod
-    def check_args(path):
+    def check_args(self):
         # si el directorio tiene archivos no copiamos los fuentes
-        return os.listdir(path) == []
+        return os.listdir(self._args) == []
 
 
 class CloneRepo(Command):
-    @staticmethod
-    def check_args(path):
+    def check_args(self):
         # si el directorio no existe dejamos clonar
-        print 'checking clone', path
-        return not os.path.isdir(path)
+        return not os.path.isdir(self._args)
 
 
 class PullRepo(Command):
-    @staticmethod
-    def check_args(path):
+    def check_args(self):
         # si el directorio existe dejamos pulear
-        print 'checking pull', path
-        return os.path.isdir(path)
+        return os.path.isdir(self._args)
 
+
+class CreateNginxTemplate(Command):
+    def check_args(self):
+        # si el archivo existe no lo dejamos pasar
+        return not os.path.isfile(self._args)
+
+    def execute(self):
+        # crear el nginx.conf
+        path = os.path.dirname(os.path.abspath(__file__))
+        path = path.replace('scripts', 'data')
+        with open(path + '/nginx.conf', 'r') as f:
+            conf = f.read()
+
+        with open(self._command, 'w') as f:
+            f.write(conf)

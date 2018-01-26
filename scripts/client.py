@@ -11,17 +11,19 @@ msg = Msg()
 
 
 class Client(object):
-    def __init__(self, parent, name):
+    def __init__(self, odooenv, name):
         """ Busca el cliente en la estructura de directorios, pero si no lo
-            encuentra pide un directorio donde esta el repo que contiene al
+            encuentra pide un directorio donde esta el repo que lo contiene
         """
-        self._parent = parent
+        # parent es siempre un objeto OdooEnv
+        self._parent = odooenv
         self._name = name
 
         # si estamos en test accedo a data
         if name[0:5] == 'test_':
             path = os.path.dirname(os.path.abspath(__file__))
-            manifest = self.get_manifest(path + '/../data')
+            path = path.replace('scripts', 'data')
+            manifest = self.get_manifest(path)
         else:
             manifest = self.get_manifest(BASE_DIR)
         if not manifest:
@@ -171,3 +173,8 @@ class Client(object):
     def sources_com(self):
         """ real repos for this odoo Version, all clients """
         return '{}odoo-{}/sources/'.format(BASE_DIR, self._version)
+
+    @property
+    def nginx_dir(self):
+        """ Base dir for nginx """
+        return '{}nginx/'.format(BASE_DIR)

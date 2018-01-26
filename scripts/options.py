@@ -9,11 +9,13 @@ def get_param(args, param):
             return args.client[0]
         else:
             Msg().err('Need -c option (client name). Process aborted')
+
     if param == 'database':
         if args.client:
             return args.database[0]
         else:
             Msg().err('Need -d option (database name). Process aborted')
+
     if param == 'module':
         if args.client:
             return args.module

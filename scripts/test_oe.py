@@ -77,18 +77,20 @@ class TestRepository(unittest.TestCase):
                                       'odoo-addons for client test_client '
                                       'and database cliente_test')
 
-        command = "sudo docker run --rm -it " \
-                  "-v /odoo_ar/odoo-9.0/test_client/config:/opt/odoo/etc/ " \
-                  "-v /odoo_ar/odoo-9.0/test_client/data_dir:/opt/odoo/data " \
-                  "-v /odoo_ar/odoo-9.0/test_client/log:/var/log/odoo " \
-                  "-v /odoo_ar/odoo-9.0/test_client/sources:/opt/odoo/custom-addons " \
-                  "--link postgres-test_client:db jobiols/odoo-jeo:9.0.debug -- " \
-                  "--stop-after-init " \
-                  "--logfile=false " \
-                  "-d cliente_test " \
-                  "--log-level=test " \
-                  "--no-xmlrpc " \
-                  "--test-file=/opt/odoo/custom-addons/odoo-addons/modulo_a_testear/tests/test_01.py "
+        command = \
+            "sudo docker run --rm -it " \
+            "-v /odoo_ar/odoo-9.0/test_client/config:/opt/odoo/etc/ " \
+            "-v /odoo_ar/odoo-9.0/test_client/data_dir:/opt/odoo/data " \
+            "-v /odoo_ar/odoo-9.0/test_client/log:/var/log/odoo " \
+            "-v /odoo_ar/odoo-9.0/test_client/sources:" \
+            "/opt/odoo/custom-addons " \
+            "--link postgres-test_client:db jobiols/odoo-jeo:9.0.debug -- " \
+            "--stop-after-init " \
+            "--logfile=false " \
+            "-d cliente_test " \
+            "--log-level=test " \
+            "--no-xmlrpc " \
+            "--test-file=/opt/odoo/custom-addons/odoo-addons/" \
+            "modulo_a_testear/tests/test_01.py "
 
         self.assertEqual(cmd.command, command)
-

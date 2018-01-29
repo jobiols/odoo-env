@@ -422,7 +422,7 @@ class OdooEnv(object):
         if self.debug:
             command += '--workers 0 '
         else:
-            command += '--workers 0 '
+            command += '--workers 3 '
 
         command += ' --load=web,web_kanban,server_mode,database_tools '
 

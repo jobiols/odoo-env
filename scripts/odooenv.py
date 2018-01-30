@@ -514,6 +514,7 @@ class OdooEnv(object):
             usr_msg='Performing update all on database {}'.format(database)
         )
         ret.append(cmd)
+        return ret
 
     def qa(self, client_name, database, module_name, repo_name, test_file,
            client_test=False):

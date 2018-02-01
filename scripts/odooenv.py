@@ -3,12 +3,12 @@
 from client import Client
 from messages import Msg
 from command import Command, MakedirCommand, ExtractSourcesCommand, \
-    CloneRepo, PullRepo, CreateNginxTemplate
+    CloneRepo, PullRepo, CreateNginxTemplate, MessageOnly
 
 import pwd
 import os
 from constants import BASE_DIR, IN_CONFIG, IN_DATA, IN_LOG, IN_CUSTOM_ADDONS, \
-    IN_DIST_LOCAL_PACKAGES, IN_DIST_PACKAGES, IN_EXTRA_ADDONS
+    IN_DIST_PACKAGES, IN_EXTRA_ADDONS, IN_BACKUP_DIR
 
 
 class OdooEnv(object):
@@ -79,6 +79,67 @@ class OdooEnv(object):
 
         return ret
 
+    def backup_list(self, client_name):
+        """ Listar los archivos disponibles para restore
+        """
+        self._client = Client(self, client_name)
+        ret = []
+
+        filenames = []
+        # walk the backup dir
+        for root, dirs, files in os.walk(self.client.backup_dir):
+            for filedesc in files:
+                filename, file_extension = os.path.splitext(filedesc)
+                if file_extension == '.zip':
+                    filenames.append(filedesc)
+
+        if len(filenames):
+            filenames.sort()
+            msg = 'List of available backups for client {} \n'.format(
+                client_name)
+            for filedesc in filenames:
+                msg += filedesc + '\n'
+        else:
+            msg = 'There are no files to restore'
+
+        cmd = MessageOnly(
+            self,
+            command=False,
+            usr_msg=msg,
+        )
+        ret.append(cmd)
+        return ret
+
+    def restore(self, client_name, database, backup_file):
+        """ Restaurar un backup desde el directorio backup_dir
+        """
+
+        self._client = Client(self, client_name)
+        image = self.client.get_image('postgres')
+
+        ret = []
+
+        msg = 'Restoring database {}'.format(
+            database
+        )
+
+        command = 'sudo docker run --rm -i '
+        command += '--link {}-{}:db '.format(image.short_name, client_name)
+        command += '-v {}:/backup '.format(self.client.backup_dir)
+        command += '-v {}data_dir/filestore:/filestore '.format(
+            self.client.base_dir)
+        command += '--env ZIPFILE={} '.format(backup_file)
+        command += '--env NEW_DBNAME={} '.format(database)
+        command += 'jobiols/restore:8.0 '
+
+        cmd = Command(
+            self,
+            command=command,
+            usr_msg=msg,
+        )
+        ret.append(cmd)
+        return ret
+
     def install_client(self, client_name):
         """ Instalacion de cliente,
         """
@@ -112,7 +173,8 @@ class OdooEnv(object):
         ##################################################################
         # create all client hierarchy
         ##################################################################
-        for w_dir in ['postgresql', 'config', 'data_dir', 'log', 'sources']:
+        for w_dir in ['postgresql', 'config', 'data_dir', 'backup_dir', 'log',
+                      'sources']:
             r_dir = '{}{}'.format(self.client.base_dir, w_dir)
             cmd = MakedirCommand(
                 self,
@@ -163,10 +225,10 @@ class OdooEnv(object):
                 ret.append(cmd)
 
         ##################################################################
-        # change o+w for config, data and log
+        # change o+w for config, data, log and backup_dir
         ##################################################################
 
-        for w_dir in ['config', 'data_dir', 'log']:
+        for w_dir in ['config', 'data_dir', 'log', 'backup_dir']:
             r_dir = '{}{}'.format(self.client.base_dir, w_dir)
             cmd = Command(
                 self,
@@ -266,6 +328,8 @@ class OdooEnv(object):
         ret += '-v {}log:{} '.format(self.client.base_dir, IN_LOG)
         ret += '-v {}sources:{} '.format(self.client.base_dir,
                                          IN_CUSTOM_ADDONS)
+        ret += '-v {}backup_dir:{} '.format(self.client.base_dir,
+                                            IN_BACKUP_DIR)
         return ret
 
         return ret
@@ -546,7 +610,7 @@ class OdooEnv(object):
         command += self._add_normal_mountings()
         if self.debug:
             command += self._add_debug_mountings()
-        command += '-p 1984:1984 ' # exponemos el puerto 1498 para debug
+        command += '-p 1984:1984 '  # exponemos el puerto 1498 para debug
 
         command += '--link postgres-{}:db '.format(self.client.name)
         command += '{}.debug -- '.format(self.client.get_image('odoo').name)

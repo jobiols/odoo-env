@@ -114,6 +114,22 @@ Odoo Environment Manager v0.2.1 - by jeo Software <jorge.obiols@gmail.com>
              "Note: for the test to run there must be an admin user with "
              "password admin")
 
+    parser.add_argument(
+        '--restore',
+        action='store_true',
+        help="Restores a backup from backup_dir")
+
+    parser.add_argument(
+        '--backup-list',
+        action='store_true',
+        help="List all backup files available for restore")
+
+    parser.add_argument(
+        '-f',
+        action='append',
+        dest='backup_file',
+        help="Filename to restore")
+
     args = parser.parse_args()
     options = {
         'verbose': args.verbose,
@@ -121,9 +137,22 @@ Odoo Environment Manager v0.2.1 - by jeo Software <jorge.obiols@gmail.com>
         'no-repos': args.no_repos,
         'nginx': args.nginx,
         'postfix': False,
-        'no-dbfilter': args.no_dbfilter
+        'no-dbfilter': args.no_dbfilter,
+        'backup_file': args.backup_file
     }
     commands = []
+
+    if args.backup_list:
+        client_name = get_param(args, 'client')
+        commands += OdooEnv(options).backup_list(client_name)
+
+    if args.restore:
+        client_name = get_param(args, 'client')
+        database = get_param(args, 'database')
+        backup_file = get_param(args, 'backup_file')
+        commands += OdooEnv(options).restore(client_name,
+                                             database,
+                                             backup_file)
 
     if args.install_cli:
         client_name = get_param(args, 'client')

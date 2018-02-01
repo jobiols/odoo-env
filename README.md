@@ -12,9 +12,10 @@ Directory structure
 
     /odoo
     ├── odoo-9.0
-    │   ├── glinsar
+    │   ├── client_one
     │   │    ├── config             odoo.conf
     │   │    ├── data_dir           filestore
+    │   │    ├── backup_dir         zip files with backups
     │   │    ├── log                odoo.log
     │   │    ├── postgresql         postgres database
     │   │    └── sources            custom sources
@@ -29,10 +30,13 @@ Directory structure
 
 
 Functionality so far
---------------------- 
-usage: oe.py [-h] [-i] [-c CLIENT] [-v] [--debug] [--no-repos] [-R] [-r]
-             [--no-dbfilter] [-S] [-s] [-u] [-d DATABASE] [-m MODULE]
+-------------------- 
 
+    usage: oe.py [-h] [-i] [-c CLIENT] [-v] [--debug] [--no-repos] [-R] [-r]
+                 [--no-dbfilter] [-S] [-s] [-u] [-d DATABASE] [-m MODULE]
+                 [--nginx] [-Q repo test_file] [--restore] [--backup-list]
+                 [-f BACKUP_FILE]
+    
     ==========================================================================
     Odoo Environment Manager v0.2.1 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
@@ -77,6 +81,9 @@ usage: oe.py [-h] [-i] [-c CLIENT] [-v] [--debug] [--no-repos] [-R] [-r]
                             include extension). Need -d, -m and -c options Note:
                             for the test to run there must be an admin user with
                             password admin
+      --restore             Restores a backup from backup_dir
+      --backup-list         List all backup files available for restore
+      -f BACKUP_FILE        Filename to restore
 
 
 Tool to manage docker based odoo environments
@@ -97,11 +104,16 @@ Installation
     
 Changelog
 ---------
-- [0.2.1]   On QA, expose port 1984 for debug purpoes with WDB
-- [0.2.0]   Quality Assurance support, add script for docker install, add
-            command sd rmall for removing all docker imagages in memory
-- [0.1.0]   Nginx support, 
-            Script to install docker (in script folder, execute manually)
-            sd command (short for sudo docker plus some enhacements)
-- [0.0.2]   minor fixes
-- [0.0.1]   starting version
+- [0.3.0]   - Restore any automatic backup made with database_tools 
+              module.
+            - List all available backup files
+- [0.2.1]   - bug On QA, expose port 1984 for debug purpoes with WDB
+- [0.2.0]   - Quality Assurance support, 
+            - Add command sd rmall for removing all docker imagages in 
+              memory
+- [0.1.0]   - Nginx support, 
+            - Script to install docker (in script folder, for now you
+              have to execute manually)
+            - sd command (short for sudo docker plus some enhacements)
+- [0.0.2]   - Minor fixes
+- [0.0.1]   - Starting version

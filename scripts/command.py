@@ -117,3 +117,15 @@ class CreateNginxTemplate(Command):
 
         with open(self._command, 'w') as f:
             f.write(conf)
+
+
+class MessageOnly(Command):
+    @staticmethod
+    def check_args(self):
+        """ Siempre lo dejamos pasar
+        """
+        return True
+
+    @staticmethod
+    def execute():
+        pass

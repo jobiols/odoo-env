@@ -178,3 +178,7 @@ class Client(object):
     def nginx_dir(self):
         """ Base dir for nginx """
         return '{}nginx/'.format(BASE_DIR)
+
+    @property
+    def backup_dir(self):
+        return self.base_dir + 'backup_dir/'

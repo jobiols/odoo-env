@@ -130,6 +130,11 @@ Odoo Environment Manager v0.2.1 - by jeo Software <jorge.obiols@gmail.com>
         dest='backup_file',
         help="Filename to restore")
 
+    parser.add_argument(
+        '-H', '--server-help',
+        action='store_true',
+        help="List server help requires -c option ")
+
     args = parser.parse_args()
     options = {
         'verbose': args.verbose,
@@ -141,6 +146,10 @@ Odoo Environment Manager v0.2.1 - by jeo Software <jorge.obiols@gmail.com>
         'backup_file': args.backup_file
     }
     commands = []
+
+    if args.server_help:
+        client_name = get_param(args, 'client')
+        commands += OdooEnv(options).server_help(client_name)
 
     if args.backup_list:
         client_name = get_param(args, 'client')

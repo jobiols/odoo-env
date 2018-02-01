@@ -84,6 +84,7 @@ Functionality so far
       --restore             Restores a backup from backup_dir
       --backup-list         List all backup files available for restore
       -f BACKUP_FILE        Filename to restore
+      -H, --server-help     List server help requires -c option
 
 
 Tool to manage docker based odoo environments
@@ -107,6 +108,7 @@ Changelog
 - [0.3.0]   - Restore any automatic backup made with database_tools 
               module.
             - List all available backup files
+            - add help option -H
 - [0.2.1]   - bug On QA, expose port 1984 for debug purpoes with WDB
 - [0.2.0]   - Quality Assurance support, 
             - Add command sd rmall for removing all docker imagages in 

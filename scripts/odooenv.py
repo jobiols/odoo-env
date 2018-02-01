@@ -95,7 +95,7 @@ class OdooEnv(object):
 
         if len(filenames):
             filenames.sort()
-            msg = 'List of available backups for client {} \n'.format(
+            msg = 'List of available backups for client {} \n\n'.format(
                 client_name)
             for filedesc in filenames:
                 msg += filedesc + '\n'
@@ -420,6 +420,26 @@ class OdooEnv(object):
             )
             ret.append(cmd)
 
+        return ret
+
+    def server_help(self, client_name):
+        ret = []
+        self._client = Client(self, client_name)
+
+        command = 'sudo docker run --rm -it '
+#        command += self._add_normal_mountings()
+        command += '--link postgres-{}:db '.format(self.client.name)
+        command += '--name help '
+        command += '{} '.format(self.client.get_image('odoo').name)
+        command += '-- '
+        command += '--help '
+
+        cmd = Command(
+            self,
+            command=command,
+            usr_msg='Getting odoo help',
+        )
+        ret.append(cmd)
         return ret
 
     def run_client(self, client_name):

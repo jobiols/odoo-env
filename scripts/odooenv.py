@@ -517,28 +517,28 @@ class OdooEnv(object):
 
         # Number of requests a worker will process before being recycled and
         # restarted. Defaults to 8196
-#        command += '--limit-request 8196 '
+        command += '--limit-request 1196 '
 
         # Maximum allowed virtual memory per worker. If the limit is exceeded,
         # the worker is killed and recycled at the end of the current request.
         # Defaults to 640MB
-#        command += '--limit-memory-soft 2147483648 '
+        command += '--limit-memory-soft 450000 '
 
         # Hard limit on virtual memory, any worker exceeding the limit will be
         # immediately killed without waiting for the end of the current request
         # processing. Defaults to 768MB.
-#        command += '--limit-memory-hard 2684354560 '
+        command += '--limit-memory-hard 500000 '
 
         # Prevents the worker from using more than CPU seconds for each
         # request. If the limit is exceeded, the worker is killed. Defaults
         # to 60.
-#        command += '--limit-time-cpu 1600 '
+        command += '--limit-time-cpu 60 '
 
         # Prevents the worker from taking longer than seconds to process a
         # request. If the limit is exceeded, the worker is killed. Defaults to
         # 120. Differs from --limit-time-cpu in that this is a "wall time"
         # limit including e.g. SQL queries.
-#        command += '--limit-time-real 3200 '
+        command += '--limit-time-real 120 '
 
         cmd = Command(
             self,

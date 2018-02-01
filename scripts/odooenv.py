@@ -427,7 +427,7 @@ class OdooEnv(object):
         self._client = Client(self, client_name)
 
         command = 'sudo docker run --rm -it '
-#        command += self._add_normal_mountings()
+        #        command += self._add_normal_mountings()
         command += '--link postgres-{}:db '.format(self.client.name)
         command += '--name help '
         command += '{} '.format(self.client.get_image('odoo').name)
@@ -522,12 +522,12 @@ class OdooEnv(object):
         # Maximum allowed virtual memory per worker. If the limit is exceeded,
         # the worker is killed and recycled at the end of the current request.
         # Defaults to 640MB
-        command += '--limit-memory-soft 450000 '
+        command += '--limit-memory-soft 640000000 '
 
         # Hard limit on virtual memory, any worker exceeding the limit will be
         # immediately killed without waiting for the end of the current request
         # processing. Defaults to 768MB.
-        command += '--limit-memory-hard 500000 '
+        command += '--limit-memory-hard 760000000 '
 
         # Prevents the worker from using more than CPU seconds for each
         # request. If the limit is exceeded, the worker is killed. Defaults

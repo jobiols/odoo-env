@@ -130,7 +130,7 @@ class OdooEnv(object):
             self.client.base_dir)
         command += '--env ZIPFILE={} '.format(backup_file)
         command += '--env NEW_DBNAME={} '.format(database)
-        command += 'jobiols/restore:8.0 '
+        command += 'jobiols/restore '
 
         cmd = Command(
             self,

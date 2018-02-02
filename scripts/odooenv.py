@@ -140,7 +140,17 @@ class OdooEnv(object):
         ret.append(cmd)
         return ret
 
-    def install_client(self, client_name):
+    def write_config(self, client_name):
+        """ Escribe el config file
+        """
+        self._client = Client(self, client_name)
+        ret = []
+
+        ret += self.run_client(client_name, write_config=True)
+
+        return ret
+
+    def install(self, client_name):
         """ Instalacion de cliente,
         """
 
@@ -306,10 +316,6 @@ class OdooEnv(object):
 
         ret += self._process_repos()
 
-        ##################################################################
-        # End of job
-        ##################################################################
-
         return ret
 
     def _add_debug_mountings(self):
@@ -364,6 +370,7 @@ class OdooEnv(object):
         image = self.client.get_image('postgres')
 
         msg = 'Starting postgres image v{}'.format(image.version)
+
         command = 'sudo docker run -d '
         if self.debug:
             command += '-p 5432:5432 '
@@ -442,20 +449,70 @@ class OdooEnv(object):
         ret.append(cmd)
         return ret
 
-    def run_client(self, client_name):
+    def set_config_environment(self):
+        ret = []
+
+        command = '-e SERVER_WIDE_MODULES=web,web_kanban,server_mode,' \
+                  'database_tools '
+
+        # You should use 2 worker threads + 1 cron thread per available CPU,
+        # and 1 CPU per 10 concurent users. Make sure you tune the memory
+        # limits and cpu limits in your configuration file.
+        if self.debug:
+            command += '-e WORKERS=0 '
+        else:
+            command += '-e WORKERS=3 '
+
+        # number of workers dedicated to cron jobs. Defaults to 2. The workers
+        # are threads in multithreading mode and processes in multiprocessing
+        # mode.
+        command += '-e MAX_CRON_THREADS=1 '
+
+        # Number of requests a worker will process before being recycled and
+        # restarted. Defaults to 8196
+        # command += '--limit-request 8196 '
+
+        # Maximum allowed virtual memory per worker. If the limit is exceeded,
+        # the worker is killed and recycled at the end of the current request.
+        # Defaults to 640MB
+        # command += '--limit-memory-soft 640000000 '
+
+        # Hard limit on virtual memory, any worker exceeding the limit will be
+        # immediately killed without waiting for the end of the current request
+        # processing. Defaults to 768MB.
+        # command += '--limit-memory-hard 760000000 '
+
+        # Prevents the worker from using more than CPU seconds for each
+        # request. If the limit is exceeded, the worker is killed. Defaults
+        # to 60.
+        command += '-e LIMIT_TIME_CPU=60 '
+
+        # Prevents the worker from taking longer than seconds to process a
+        # request. If the limit is exceeded, the worker is killed. Defaults to
+        # 120. Differs from --limit-time-cpu in that this is a "wall time"
+        # limit including e.g. SQL queries.
+        command += '-e LIMIT_TIME_REAL=120 '
+
+        return command
+
+    def run_client(self, client_name, write_config=False):
 
         self._client = Client(self, client_name)
         ret = []
 
-        msg = 'Starting image for client {} on port {}'.format(
-            client_name,
-            self.client.port
-        )
-
-        if self.debug:
-            command = 'sudo docker run --rm -it '
+        if write_config:
+            msg = 'Writing config file for client {}'.format(client_name)
         else:
-            command = 'sudo docker run -d '
+            msg = 'Starting image for client {} on port {}'.format(
+                client_name, self.client.port)
+
+        if write_config:
+            command = 'sudo docker run --rm '
+        else:
+            if self.debug:
+                command = 'sudo docker run --rm -it '
+            else:
+                command = 'sudo docker run -d '
 
         # a partir de la 10 no se usa aeroo
         if self.client.numeric_ver < 10:
@@ -479,10 +536,15 @@ class OdooEnv(object):
 
         command += '--link postgres-{}:db '.format(self.client.name)
 
-        if not self.debug:
+        if not (self.debug or write_config):
             command += '--restart=always '
 
         command += '--name {} '.format(self.client.name)
+
+        if write_config:
+            command += self.set_config_environment()
+        else:
+            command += '-e ODOO_CONF=/dev/null '
 
         # si estamos en modo debug agregarlo al nombre de la imagen
         if self.debug:
@@ -500,45 +562,8 @@ class OdooEnv(object):
         else:
             command += '--logfile=/dev/stdout '
 
-        # You should use 2 worker threads + 1 cron thread per available CPU,
-        # and 1 CPU per 10 concurent users. Make sure you tune the memory
-        # limits and cpu limits in your configuration file.
-        if self.debug:
-            command += '--workers 0 '
-        else:
-            command += '--workers 6 '
-
-        command += ' --load=web,web_kanban,server_mode,database_tools '
-
-        # number of workers dedicated to cron jobs. Defaults to 2. The workers
-        # are threads in multithreading mode and processes in multiprocessing
-        # mode.
-        command += '--max-cron-threads 1 '
-
-        # Number of requests a worker will process before being recycled and
-        # restarted. Defaults to 8196
-        command += '--limit-request 1196 '
-
-        # Maximum allowed virtual memory per worker. If the limit is exceeded,
-        # the worker is killed and recycled at the end of the current request.
-        # Defaults to 640MB
-        command += '--limit-memory-soft 640000000 '
-
-        # Hard limit on virtual memory, any worker exceeding the limit will be
-        # immediately killed without waiting for the end of the current request
-        # processing. Defaults to 768MB.
-        command += '--limit-memory-hard 760000000 '
-
-        # Prevents the worker from using more than CPU seconds for each
-        # request. If the limit is exceeded, the worker is killed. Defaults
-        # to 60.
-        command += '--limit-time-cpu 60 '
-
-        # Prevents the worker from taking longer than seconds to process a
-        # request. If the limit is exceeded, the worker is killed. Defaults to
-        # 120. Differs from --limit-time-cpu in that this is a "wall time"
-        # limit including e.g. SQL queries.
-        command += '--limit-time-real 120 '
+        if write_config:
+            command += '--stop-after-init '
 
         cmd = Command(
             self,

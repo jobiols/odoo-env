@@ -8,16 +8,47 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description="""
 ==========================================================================
-Odoo Environment Manager v0.2.1 - by jeo Software <jorge.obiols@gmail.com>
+Odoo Environment Manager v0.3.0 - by jeo Software <jorge.obiols@gmail.com>
 ==========================================================================
 """)
 
     parser.add_argument(
         '-i',
-        '--install-cli',
+        '--install',
         action='store_true',
-        help="Install client, requires -c option. Creates dir structure, Pull "
-             "repos and images, and generate odoo config file")
+        help="Install, requires -c option. Creates dir structure, and pull "
+             "repos")
+
+    parser.add_argument(
+        '-w', '--write-config',
+        action='store_true',
+        help="Write config file.")
+
+    parser.add_argument(
+        '-R', '--run-env',
+        action='store_true',
+        help="Run postgres and aeroo images.")
+
+    parser.add_argument(
+        '-r', '--run-cli',
+        action='store_true',
+        help="Run client odoo, requires -c option")
+
+    parser.add_argument(
+        '-S', '--stop-env',
+        action='store_true',
+        help="Stop postgres and aeroo images.")
+
+    parser.add_argument(
+        '-s', '--stop-cli',
+        action='store_true',
+        help="Stop client images, requires -c options.")
+
+    parser.add_argument(
+        '-u', '--update-all',
+        action='store_true',
+        help="Update all requires -d -c and -m options. "
+             "Use --debug to force update with host sources")
 
     parser.add_argument(
         '-c',
@@ -47,36 +78,11 @@ Odoo Environment Manager v0.2.1 - by jeo Software <jorge.obiols@gmail.com>
         help='Does not clone or pull repos used with -i or -p')
 
     parser.add_argument(
-        '-R', '--run-env',
-        action='store_true',
-        help="Run postgres and aeroo images.")
-
-    parser.add_argument(
-        '-r', '--run-cli',
-        action='store_true',
-        help="Run client odoo, requires -c options")
-
-    parser.add_argument(
         '--no-dbfilter',
         action='store_true',
         help='Eliminates dbfilter: The client can see any database. '
-             'Without this, the client can only see databases starting with clientname_')
-
-    parser.add_argument(
-        '-S', '--stop-env',
-        action='store_true',
-        help="Stop postgres and aeroo images.")
-
-    parser.add_argument(
-        '-s', '--stop-cli',
-        action='store_true',
-        help="Stop client images, requires -c options.")
-
-    parser.add_argument(
-        '-u', '--update-all',
-        action='store_true',
-        help="Update all requires -d -c and -m options. "
-             "Use --debug to force update with host sources")
+             'Without this, the client can only see databases starting with '
+             'clientname_')
 
     parser.add_argument(
         '-d',
@@ -115,20 +121,20 @@ Odoo Environment Manager v0.2.1 - by jeo Software <jorge.obiols@gmail.com>
              "password admin")
 
     parser.add_argument(
-        '--restore',
-        action='store_true',
-        help="Restores a backup from backup_dir")
-
-    parser.add_argument(
         '--backup-list',
         action='store_true',
         help="List all backup files available for restore")
 
     parser.add_argument(
+        '--restore',
+        action='store_true',
+        help="Restores a backup from backup_dir")
+
+    parser.add_argument(
         '-f',
         action='append',
         dest='backup_file',
-        help="Filename to restore")
+        help="Filename to restore used with --restore")
 
     parser.add_argument(
         '-H', '--server-help',
@@ -147,6 +153,10 @@ Odoo Environment Manager v0.2.1 - by jeo Software <jorge.obiols@gmail.com>
     }
     commands = []
 
+    if args.write_config:
+        client_name = get_param(args, 'client')
+        commands += OdooEnv(options).write_config(client_name)
+
     if args.server_help:
         client_name = get_param(args, 'client')
         commands += OdooEnv(options).server_help(client_name)
@@ -163,9 +173,9 @@ Odoo Environment Manager v0.2.1 - by jeo Software <jorge.obiols@gmail.com>
                                              database,
                                              backup_file)
 
-    if args.install_cli:
+    if args.install:
         client_name = get_param(args, 'client')
-        commands += OdooEnv(options).install_client(client_name)
+        commands += OdooEnv(options).install(client_name)
 
     if args.stop_env:
         client_name = get_param(args, 'client')

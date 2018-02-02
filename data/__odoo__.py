@@ -31,7 +31,7 @@
     'images': [],
 
     'repos': [
-        {'usr': 'jobiols', 'repo': 'cl-glinsar', 'branch': '9.0'},
+        {'usr': 'jobiols', 'repo': 'cl-test-client', 'branch': '9.0'},
         {'usr': 'jobiols', 'repo': 'odoo-addons', 'branch': '9.0'},
     ],
     'docker': [

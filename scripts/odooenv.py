@@ -485,7 +485,7 @@ class OdooEnv(object):
         # Prevents the worker from using more than CPU seconds for each
         # request. If the limit is exceeded, the worker is killed. Defaults
         # to 60.
-        command += '-e LIMIT_TIME_CPU=60 '
+        command += '-e LIMIT_TIME_CPU=600 '
 
         # Prevents the worker from taking longer than seconds to process a
         # request. If the limit is exceeded, the worker is killed. Defaults to

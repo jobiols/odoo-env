@@ -29,16 +29,16 @@ Directory structure
     └── postfix
 
 
-Functionality so far
--------------------- 
+Functionality
+------------- 
 
     usage: oe.py [-h] [-i] [-w] [-R] [-r] [-S] [-s] [-u] [-c CLIENT] [-v]
                  [--debug] [--no-repos] [--no-dbfilter] [-d DATABASE] [-m MODULE]
-                 [--nginx] [-Q repo test_file] [--backup-list] [--restore]
-                 [-f BACKUP_FILE] [-H]
+                 [--nginx] [-Q repo] [--backup-list] [--restore] [-f BACKUP_FILE]
+                 [-H]
     
     ==========================================================================
-    Odoo Environment Manager v0.3.2 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.4.0 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:
@@ -75,17 +75,15 @@ Functionality so far
                             container linked to odoowith -s stops nginx
                             containcer. You must add certificates and review
                             nginx.conf file.
-      -Q repo test_file, --quality-assurance repo test_file
-                            Perform QA running tests, arguments are Repo where
-                            test lives, and yml/py test file to run (please
-                            include extension). Need -d, -m and -c options Note:
-                            for the test to run there must be an admin user with
+      -Q repo, --quality-assurance repo
+                            Perform QA running tests, argument are Repo to test.
+                            Need -d, -m and -c options Note: for the test to run
+                            in thedatabase there must be an admin user with
                             password admin
       --backup-list         List all backup files available for restore
       --restore             Restores a backup from backup_dir
       -f BACKUP_FILE        Filename to restore used with --restore
       -H, --server-help     List server help requires -c option
-
 
 Tool to manage docker based odoo environments
 
@@ -105,6 +103,7 @@ Installation
     
 Changelog
 ---------
+- [0.4.0]   - Change QA invocation 
 - [0.3.2]   - do not overwrite config while making QA 
 - [0.3.1]   - Stop images instead of kill them on -s or -S 
 - [0.3.0]   - Restore any automatic backup made with database_tools 

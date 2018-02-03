@@ -639,7 +639,7 @@ class OdooEnv(object):
         ret.append(cmd)
         return ret
 
-    def qa(self, client_name, database, module_name, repo_name, test_file,
+    def qa(self, client_name, database, module_name, repo_name,
            client_test=False):
         """
         Corre un test especifico, los parametros necesarios son:
@@ -663,7 +663,7 @@ class OdooEnv(object):
             repos_lst.append(repo.name)
         if repo_name not in repos_lst:
             Msg().err('Client "{}" does not own "{}" repo'.format(
-                client_name, repo.name))
+                client_name, repo_name))
 
         command = 'sudo docker run --rm -it '
         command += self._add_normal_mountings()
@@ -673,16 +673,14 @@ class OdooEnv(object):
         command += '-e ODOO_CONF=/dev/null '
         command += '--link postgres-{}:db '.format(self.client.name)
         command += '{}.debug -- '.format(self.client.get_image('odoo').name)
-        command += '--stop-after-init '
-        command += '--logfile=false '
         command += '-d {} '.format(database)
+        command += '--stop-after-init '
         command += '--log-level=test '
-        command += '--no-xmlrpc '
-        command += '--test-file={}/{}/{}/tests/{} '.format(
-            IN_CUSTOM_ADDONS, repo_name, module_name, test_file)
+        command += '--test-enable '
+        command += '-u {} '.format(module_name)
 
-        msg = 'Performing test {} on repo {} for client {} ' \
-              'and database {}'.format(test_file, repo_name, client_name,
+        msg = 'Performing tests on repo {} for client {} ' \
+              'and database {}'.format(repo_name, client_name,
                                        database)
         cmd = Command(
             self,

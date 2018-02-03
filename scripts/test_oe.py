@@ -224,6 +224,7 @@ class TestRepository(unittest.TestCase):
             "/opt/odoo/custom-addons " \
             "-v /odoo_ar/odoo-9.0/test_client/backup_dir:/var/odoo/backups/ " \
             "-p 1984:1984 " \
+            "-e ODOO_CONF=/dev/null " \
             "--link postgres-test_client:db jobiols/odoo-jeo:9.0.debug -- " \
             "--stop-after-init " \
             "--logfile=false " \

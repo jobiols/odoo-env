@@ -38,7 +38,7 @@ Functionality so far
                  [-f BACKUP_FILE] [-H]
     
     ==========================================================================
-    Odoo Environment Manager v0.3.1 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.3.2 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:
@@ -105,6 +105,7 @@ Installation
     
 Changelog
 ---------
+- [0.3.2]   - do not overwrite config while making QA 
 - [0.3.1]   - Stop images instead of kill them on -s or -S 
 - [0.3.0]   - Restore any automatic backup made with database_tools 
               module.

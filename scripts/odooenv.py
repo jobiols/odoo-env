@@ -349,8 +349,16 @@ class OdooEnv(object):
         for image in ['aeroo', img2]:
             cmd = Command(
                 self,
-                command='sudo docker rm -f {}'.format(image),
+                command='sudo docker stop {}'.format(image),
                 usr_msg='Stopping image {}'.format(image),
+            )
+            ret.append(cmd)
+
+        for image in ['aeroo', img2]:
+            cmd = Command(
+                self,
+                command='sudo docker rm {}'.format(image),
+                usr_msg='Removing image {}'.format(image),
             )
             ret.append(cmd)
 
@@ -414,8 +422,14 @@ class OdooEnv(object):
 
         cmd = Command(
             self,
-            command='sudo docker rm -f {}'.format(client_name),
+            command='sudo docker stop {}'.format(client_name),
             usr_msg='Stopping image {}'.format(client_name),
+        )
+        ret.append(cmd)
+        cmd = Command(
+            self,
+            command='sudo docker rm {}'.format(client_name),
+            usr_msg='Removing image {}'.format(client_name),
         )
         ret.append(cmd)
 

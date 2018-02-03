@@ -20,6 +20,13 @@ def process_input(params):
     params[0:0] = ['sudo', 'docker']
 
     # pseudo sintaxis
+
+    if params[2] == 'help':
+        print 'Help for sd'
+        print 'sd               - short for sudo docker'
+        print 'sd inside image  - open console inside image'
+        print 'sd rmall         - remove all images in memory'
+
     if params[2] == 'inside':
         try:
             print 'going inside image ' + params[3]
@@ -41,11 +48,6 @@ def process_input(params):
         except Exception as ex:
             params = []
 
-    if params[2] == 'help':
-        print 'Help for sd'
-        print 'sd               - short for sudo docker'
-        print 'sd inside image  - open console inside image'
-        print 'sd rmall         - remove all images in memory'
 
     params = ' '.join(params)
     return params

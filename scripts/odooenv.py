@@ -350,7 +350,7 @@ class OdooEnv(object):
             cmd = Command(
                 self,
                 command='sudo docker stop {}'.format(image),
-                usr_msg='Stopping image {}'.format(image),
+                usr_msg='Stopping image {} please wait...'.format(image),
             )
             ret.append(cmd)
 
@@ -423,7 +423,7 @@ class OdooEnv(object):
         cmd = Command(
             self,
             command='sudo docker stop {}'.format(client_name),
-            usr_msg='Stopping image {}'.format(client_name),
+            usr_msg='Stopping image {} please wait...'.format(client_name),
         )
         ret.append(cmd)
         cmd = Command(
@@ -437,7 +437,7 @@ class OdooEnv(object):
             cmd = Command(
                 self,
                 command='sudo docker rm -f nginx',
-                usr_msg='Stopping image nginx',
+                usr_msg='Killing image nginx',
             )
             ret.append(cmd)
 
@@ -639,8 +639,7 @@ class OdooEnv(object):
         ret.append(cmd)
         return ret
 
-    def qa(self, client_name, database, module_name, repo_name,
-           client_test=False):
+    def qa(self, client_name, database, module_name, client_test=False):
         """
         Corre un test especifico, los parametros necesarios son:
 
@@ -657,14 +656,6 @@ class OdooEnv(object):
             self._client = Client(self, client_name)
         ret = []
 
-        # chequear si el repo está dentro de los repos del cliente
-        repos_lst = []
-        for repo in self.client.repos:
-            repos_lst.append(repo.name)
-        if repo_name not in repos_lst:
-            Msg().err('Client "{}" does not own "{}" repo'.format(
-                client_name, repo_name))
-
         command = 'sudo docker run --rm -it '
         command += self._add_normal_mountings()
         if self.debug:
@@ -679,9 +670,8 @@ class OdooEnv(object):
         command += '--test-enable '
         command += '-u {} '.format(module_name)
 
-        msg = 'Performing tests on repo {} for client {} ' \
-              'and database {}'.format(repo_name, client_name,
-                                       database)
+        msg = 'Performing tests on module {} for client {} ' \
+              'and database {}'.format(module_name, client_name, database)
         cmd = Command(
             self,
             command=command,

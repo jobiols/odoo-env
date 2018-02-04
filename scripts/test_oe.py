@@ -206,12 +206,12 @@ class TestRepository(unittest.TestCase):
         oe = OdooEnv(options)
         client = Client(oe, client_name)
 
-        cmds = oe.qa(client_name, database, modules, repo, client_test=client)
+        cmds = oe.qa(client_name, database, modules, client_test=client)
 
         cmd = cmds[0]
-        self.assertEqual(cmd.usr_msg, 'Performing tests on repo '
-                                      'odoo-addons for client test_client '
-                                      'and database cliente_test')
+        self.assertEqual(cmd.usr_msg, 'Performing tests on module '
+                                      'modulo_a_testear for client '
+                                      'test_client and database cliente_test')
 
         command = \
             "sudo docker run --rm -it " \

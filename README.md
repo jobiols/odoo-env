@@ -103,6 +103,7 @@ Installation
     
 Changelog
 ---------
+- [0.4.1]   - Fixes in test invocation 
 - [0.4.0]   - Change QA invocation 
 - [0.3.2]   - do not overwrite config while making QA 
 - [0.3.1]   - Stop images instead of kill them on -s or -S 

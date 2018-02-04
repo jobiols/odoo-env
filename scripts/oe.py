@@ -109,9 +109,9 @@ Odoo Environment Manager v0.4.0 - by jeo Software <jorge.obiols@gmail.com>
              'review nginx.conf file.')
 
     parser.add_argument(
-        '-Q', '--quality-assurance',
+        '-Q',
         action='store',
-        metavar=('repo'),
+        metavar='repo',
         nargs=1,
         dest='quality_assurance',
         help="Perform QA running tests, argument are Repo to test. "
@@ -200,9 +200,7 @@ Odoo Environment Manager v0.4.0 - by jeo Software <jorge.obiols@gmail.com>
     if args.quality_assurance:
         client_name = get_param(args, 'client')
         database = get_param(args, 'database')
-        modules = get_param(args, 'module')
-        commands += OdooEnv(options).qa(client_name, database, modules[0],
-                                        args.quality_assurance[0])
+        commands += OdooEnv(options).qa(client_name, database, args.quality_assurance[0])
 
     # #####################################################################
     # ejecutar comandos

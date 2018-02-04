@@ -20,7 +20,7 @@ def get_param(args, param):
         if args.module:
             return args.module
         else:
-            Msg().err('Need -d option (database name). Process aborted')
+            Msg().err('Need -m option (module(s) name). Process aborted')
 
     if param == 'backup_file':
         if args.backup_file:

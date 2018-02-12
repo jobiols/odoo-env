@@ -540,9 +540,8 @@ class OdooEnv(object):
         if not self.nginx:
             command += '-p {}:8069 '.format(self.client.port)
 
-        if not self.debug:
-            # exponer puerto para longpolling
-            command += '-p 8072:8072 '
+        # exponer puerto para longpolling
+        command += '-p 8072:8072 '
 
         command += self._add_normal_mountings()
         if self.debug:

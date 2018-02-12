@@ -4,10 +4,6 @@
 Odooenv
 =======
 
-Warning
--------
-This code is is under development (stay tuned)
-
 Directory structure
 
     /odoo
@@ -26,7 +22,7 @@ Directory structure
     │   ├── conf
     │   ├── log
     │   └── cert
-    └── postfix
+    └── postfix                     for future use
 
 
 Functionality
@@ -103,6 +99,7 @@ Installation
     
 Changelog
 ---------
+- [0.4.2]   - Expose longpolling port in debug mode
 - [0.4.1]   - Fixes in test invocation 
 - [0.4.0]   - Change QA invocation 
 - [0.3.2]   - do not overwrite config while making QA 

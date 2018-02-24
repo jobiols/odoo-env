@@ -201,7 +201,6 @@ class TestRepository(unittest.TestCase):
         client_name = 'test_client'
         database = 'cliente_test'
         modules = 'modulo_a_testear'
-        repo = 'odoo-addons'
 
         oe = OdooEnv(options)
         client = Client(oe, client_name)
@@ -218,7 +217,8 @@ class TestRepository(unittest.TestCase):
             "-v /odoo_ar/odoo-9.0/test_client/config:/opt/odoo/etc/ " \
             "-v /odoo_ar/odoo-9.0/test_client/data_dir:/opt/odoo/data " \
             "-v /odoo_ar/odoo-9.0/test_client/log:/var/log/odoo " \
-            "-v /odoo_ar/odoo-9.0/test_client/sources:/opt/odoo/custom-addons " \
+            "-v /odoo_ar/odoo-9.0/test_client/sources:" \
+            "/opt/odoo/custom-addons " \
             "-v /odoo_ar/odoo-9.0/test_client/backup_dir:/var/odoo/backups/ " \
             "-p 1984:1984 " \
             "-e ODOO_CONF=/dev/null " \
@@ -253,7 +253,8 @@ class TestRepository(unittest.TestCase):
             "-v /odoo_ar/odoo-9.0/test_client/config:/opt/odoo/etc/ " \
             "-v /odoo_ar/odoo-9.0/test_client/data_dir:/opt/odoo/data " \
             "-v /odoo_ar/odoo-9.0/test_client/log:/var/log/odoo " \
-            "-v /odoo_ar/odoo-9.0/test_client/sources:/opt/odoo/custom-addons " \
+            "-v /odoo_ar/odoo-9.0/test_client/sources:" \
+            "/opt/odoo/custom-addons " \
             "-v /odoo_ar/odoo-9.0/test_client/backup_dir:/var/odoo/backups/ " \
             "--link postgres-test_client:db " \
             "--restart=always " \

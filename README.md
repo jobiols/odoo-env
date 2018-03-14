@@ -99,6 +99,7 @@ Installation
     
 Changelog
 ---------
+- [0.4.3]   - No more rewriting config on update all
 - [0.4.2]   - Expose longpolling port in debug mode
 - [0.4.1]   - Fixes in test invocation 
 - [0.4.0]   - Change QA invocation 

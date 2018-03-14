@@ -624,6 +624,7 @@ class OdooEnv(object):
         if self.debug:
             command += self._add_debug_mountings()
         command += '--link postgres-{}:db '.format(self.client.name)
+        command += '-e ODOO_CONF=/dev/null '
         command += '{} -- '.format(self.client.get_image('odoo').name)
         command += '--stop-after-init '
         command += '--logfile=false '

@@ -34,7 +34,7 @@ Functionality
                  [-H]
     
     ==========================================================================
-    Odoo Environment Manager v0.4.0 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.4.5 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:
@@ -99,6 +99,8 @@ Installation
     
 Changelog
 ---------
+- [0.4.5]   - Install_scripts now install python and docker
+- [0.4.4]   - Do not expose 8072 when using Nginx
 - [0.4.4]   - Do not expose 8072 when using Nginx
 - [0.4.3]   - No more rewriting config on update all
 - [0.4.2]   - Expose longpolling port in debug mode

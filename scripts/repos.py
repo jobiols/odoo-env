@@ -20,8 +20,9 @@ class Repo(object):
 
     @property
     def url(self):
-        return 'https://github.com/{}/{}'.format(self._dict.get('usr'),
-                                                 self._dict.get('repo'))
+        return 'https://{}/{}/{}'.format(self._dict.get('host', 'github.com'),
+                                         self._dict.get('usr'),
+                                         self._dict.get('repo'))
 
     @property
     def formatted(self):
@@ -36,4 +37,3 @@ class Repo(object):
     @property
     def pull(self):
         return 'pull'
-

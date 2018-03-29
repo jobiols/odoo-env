@@ -34,52 +34,50 @@ Functionality
                  [-H]
     
     ==========================================================================
-    Odoo Environment Manager v0.4.5 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.5.0 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:
-      -h, --help            show this help message and exit
-      -i, --install         Install, requires -c option. Creates dir structure,
-                            and pull repos
-      -w, --write-config    Write config file.
-      -R, --run-env         Run postgres and aeroo images.
-      -r, --run-cli         Run client odoo, requires -c option
-      -S, --stop-env        Stop postgres and aeroo images.
-      -s, --stop-cli        Stop client images, requires -c options.
-      -u, --update-all      Update all requires -d -c and -m options. Use --debug
-                            to force update with host sources
-      -c CLIENT             Client name.
-      -v, --verbose         Go verbose mode. Prints every command
-      --debug               This option has the following efects: 1.- when doing
-                            an update all, (option -u) it forces debug mode. 2.-
-                            When running environment (option -R) it opens port
-                            5432 to access postgres server databases. 3.- when
-                            doing a pull (option -p) it clones the full repo i.e.
-                            does not issue --depth 1 to git
-      --no-repos            Does not clone or pull repos used with -i or -p
-      --no-dbfilter         Eliminates dbfilter: The client can see any database.
-                            Without this, the client can only see databases
-                            starting with clientname_
-      -d DATABASE           Database name. Note that there is a dbfilter option by
-                            default the database name must begin with clientname_
-      -m MODULE             Module to update or all for updating all the
-                            registered modules. You can specify multiple -m
-                            options. i.e. -m all forall modules -m sales stock for
-                            updating sales and stock modules
-      --nginx               Add nginx to installation: With -i creates nginx dir
-                            w/ sample config file. with -r starts an nginx
-                            container linked to odoowith -s stops nginx
-                            containcer. You must add certificates and review
-                            nginx.conf file.
-      -Q repo, --quality-assurance repo
-                            Perform QA running tests, argument are Repo to test.
-                            Need -d, -m and -c options Note: for the test to run
-                            in thedatabase there must be an admin user with
-                            password admin
-      --backup-list         List all backup files available for restore
-      --restore             Restores a backup from backup_dir
-      -f BACKUP_FILE        Filename to restore used with --restore
-      -H, --server-help     List server help requires -c option
+      -h, --help          show this help message and exit
+      -i, --install       Install, requires -c option. Creates dir structure, and
+                          pull repos
+      -w, --write-config  Write config file.
+      -R, --run-env       Run postgres and aeroo images.
+      -r, --run-cli       Run client odoo, requires -c option
+      -S, --stop-env      Stop postgres and aeroo images.
+      -s, --stop-cli      Stop client images, requires -c options.
+      -u, --update-all    Update all requires -d -c and -m options. Use --debug to
+                          force update with host sources
+      -c CLIENT           Client name.
+      -v, --verbose       Go verbose mode. Prints every command
+      --debug             This option has the following efects: 1.- when doing an
+                          update all, (option -u) it forces debug mode. 2.- When
+                          running environment (option -R) it opens port 5432 to
+                          access postgres server databases. 3.- when doing a pull
+                          (option -p) it clones the full repo i.e. does not issue
+                          --depth 1 to git
+      --no-repos          Does not clone or pull repos used with -i or -p
+      --no-dbfilter       Eliminates dbfilter: The client can see any database.
+                          Without this, the client can only see databases starting
+                          with clientname_
+      -d DATABASE         Database name. Note that there is a dbfilter option by
+                          default the database name must begin with clientname_
+      -m MODULE           Module to update or all for updating all the registered
+                          modules. You can specify multiple -m options. i.e. -m
+                          all forall modules -m sales stock for updating sales and
+                          stock modules
+      --nginx             Add nginx to installation: With -i creates nginx dir w/
+                          sample config file. with -r starts an nginx container
+                          linked to odoowith -s stops nginx containcer. You must
+                          add certificates and review nginx.conf file.
+      -Q repo             Perform QA running tests, argument are Repo to test.
+                          Need -d, -m and -c options Note: for the test to run in
+                          thedatabase there must be an admin user with password
+                          admin
+      --backup-list       List all backup files available for restore
+      --restore           Restores a backup from backup_dir
+      -f BACKUP_FILE      Filename to restore used with --restore
+      -H, --server-help   List server help requires -c option
 
 Tool to manage docker based odoo environments
 
@@ -99,6 +97,7 @@ Installation
     
 Changelog
 ---------
+- [0.5.0]   - support for non git repos, (i.e. cl-agt repo) 
 - [0.4.6]   - Odoo v10 do not run aeroo, find manifest
 - [0.4.5]   - Install_scripts now installs python and docker
 - [0.4.4]   - Do not expose 8072 when using Nginx

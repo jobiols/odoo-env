@@ -77,7 +77,7 @@ class Client(object):
         :return: parsed manifest file as dictionary
         """
         for root, dirs, files in os.walk(path):
-            for file in ['__openerp__.py', '__odoo__.py']:
+            for file in ['__openerp__.py', '__manifest__.py']:
                 if file in files:
                     manifest_file = '{}/{}'.format(root, file)
                     manifest = self.load_manifest(manifest_file)

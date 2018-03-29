@@ -401,19 +401,20 @@ class OdooEnv(object):
         # Launching aeroo Image if v < 10
         ##################################################################
 
-        msg = 'Starting aeroo image'
-        image = self.client.get_image('aeroo')
+        if self.client.numeric_ver < 10:
+            msg = 'Starting aeroo image'
+            image = self.client.get_image('aeroo')
 
-        command = 'sudo docker run -d '
-        command += '--name={} '.format(image.short_name)
-        command += '--restart=always '
-        command += image.name
-        cmd = Command(
-            self,
-            command=command,
-            usr_msg=msg,
-        )
-        ret.append(cmd)
+            command = 'sudo docker run -d '
+            command += '--name={} '.format(image.short_name)
+            command += '--restart=always '
+            command += image.name
+            cmd = Command(
+                self,
+                command=command,
+                usr_msg=msg,
+            )
+            ret.append(cmd)
 
         return ret
 

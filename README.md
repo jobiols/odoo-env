@@ -99,7 +99,8 @@ Installation
     
 Changelog
 ---------
-- [0.4.5]   - Install_scripts now install python and docker
+- [0.4.6]   - Odoo v10 do not run aeroo, find manifest
+- [0.4.5]   - Install_scripts now installs python and docker
 - [0.4.4]   - Do not expose 8072 when using Nginx
 - [0.4.4]   - Do not expose 8072 when using Nginx
 - [0.4.3]   - No more rewriting config on update all

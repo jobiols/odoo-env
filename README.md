@@ -34,7 +34,7 @@ Functionality
                  [-H]
     
     ==========================================================================
-    Odoo Environment Manager v0.5.0 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.5.1 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:
@@ -97,6 +97,7 @@ Installation
     
 Changelog
 ---------
+- [0.5.1]   - change postgres container name 
 - [0.5.0]   - support for non git repos, (i.e. cl-agt repo) 
 - [0.4.6]   - Odoo v10 do not run aeroo, find manifest
 - [0.4.5]   - Install_scripts now installs python and docker
@@ -115,7 +116,7 @@ Changelog
             - add help option -H
 - [0.2.1]   - bug On QA, expose port 1984 for debug purpoes with WDB
 - [0.2.0]   - Quality Assurance support, 
-            - Add command sd rmall for removing all docker imagages in 
+            - Add command sd rmall for removing all docker images in 
               memory
 - [0.1.0]   - Nginx support, 
             - Script to install docker (in script folder, for now you

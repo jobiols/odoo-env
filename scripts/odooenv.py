@@ -344,9 +344,14 @@ class OdooEnv(object):
         self._client = Client(self, client_name)
         ret = []
 
-        img2 = 'postgres-{}'.format(self.client.name)
+        img2 = 'pg-{}'.format(self.client.name)
 
-        for image in ['aeroo', img2]:
+        images = []
+        if self._client.numeric_ver < 10:
+            images.append('aeroo')
+        images.append(img2)
+
+        for image in images:
             cmd = Command(
                 self,
                 command='sudo docker stop {}'.format(image),
@@ -354,7 +359,7 @@ class OdooEnv(object):
             )
             ret.append(cmd)
 
-        for image in ['aeroo', img2]:
+        for image in images:
             cmd = Command(
                 self,
                 command='sudo docker rm {}'.format(image),
@@ -387,7 +392,7 @@ class OdooEnv(object):
         command += '-v {}:/var/lib/postgresql/data '.format(
             self.client.psql_dir)
         command += '--restart=always '
-        command += '--name {}-{} '.format(image.short_name, self.client.name)
+        command += '--name pg-{} '.format(self.client.name)
         command += image.name
 
         cmd = Command(
@@ -450,7 +455,7 @@ class OdooEnv(object):
 
         command = 'sudo docker run --rm -it '
         #        command += self._add_normal_mountings()
-        command += '--link postgres-{}:db '.format(self.client.name)
+        command += '--link pg-{}:db '.format(self.client.name)
         command += '--name help '
         command += '{} '.format(self.client.get_image('odoo').name)
         command += '-- '
@@ -546,7 +551,7 @@ class OdooEnv(object):
         if self.debug:
             command += self._add_debug_mountings()
 
-        command += '--link postgres-{}:db '.format(self.client.name)
+        command += '--link pg-{}:db '.format(self.client.name)
 
         if not (self.debug or write_config):
             command += '--restart=always '
@@ -622,7 +627,7 @@ class OdooEnv(object):
         command += self._add_normal_mountings()
         if self.debug:
             command += self._add_debug_mountings()
-        command += '--link postgres-{}:db '.format(self.client.name)
+        command += '--link pg-{}:db '.format(self.client.name)
         command += '-e ODOO_CONF=/dev/null '
         command += '{} -- '.format(self.client.get_image('odoo').name)
         command += '--stop-after-init '
@@ -661,7 +666,7 @@ class OdooEnv(object):
             command += self._add_debug_mountings()
         command += '-p 1984:1984 '  # exponemos el puerto 1498 para debug
         command += '-e ODOO_CONF=/dev/null '
-        command += '--link postgres-{}:db '.format(self.client.name)
+        command += '--link pg-{}:db '.format(self.client.name)
         command += '{}.debug -- '.format(self.client.get_image('odoo').name)
         command += '-d {} '.format(database)
         command += '--stop-after-init '

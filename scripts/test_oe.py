@@ -222,7 +222,7 @@ class TestRepository(unittest.TestCase):
             "-v /odoo_ar/odoo-9.0/test_client/backup_dir:/var/odoo/backups/ " \
             "-p 1984:1984 " \
             "-e ODOO_CONF=/dev/null " \
-            "--link postgres-test_client:db jobiols/odoo-jeo:9.0.debug -- " \
+            "--link pg-test_client:db jobiols/odoo-jeo:9.0.debug -- " \
             "-d cliente_test " \
             "--stop-after-init " \
             "--log-level=test " \
@@ -256,7 +256,7 @@ class TestRepository(unittest.TestCase):
             "-v /odoo_ar/odoo-9.0/test_client/sources:" \
             "/opt/odoo/custom-addons " \
             "-v /odoo_ar/odoo-9.0/test_client/backup_dir:/var/odoo/backups/ " \
-            "--link postgres-test_client:db " \
+            "--link pg-test_client:db " \
             "--restart=always " \
             "--name test_client " \
             "-e ODOO_CONF=/dev/null " \

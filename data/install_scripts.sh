@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# update system
+echo
+echo "upgrade system"
+sudo apt-get update && sudo apt-get upgrade -y
+
 # install sd and oe
 echo
 echo "installing oe"
@@ -12,7 +17,7 @@ cp odoo-env/scripts/sd.py /usr/local/bin/sd
 # install python 2.7
 echo
 echo "installing python"
-apt-get install python
+apt-get install python -y
 
 # install docker
 echo

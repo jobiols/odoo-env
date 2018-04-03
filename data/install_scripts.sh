@@ -22,6 +22,6 @@ apt-get install python -y
 # install docker
 echo
 echo "installing docker"
-git clone https://github.com/docker/docker-install.git ~/tmp
-bash ~/tmp/install.sh
-rm -r /tmp
+git clone https://github.com/docker/docker-install.git ~/temp
+bash ~/temp/install.sh
+rm -r /temp

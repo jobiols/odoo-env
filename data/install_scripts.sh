@@ -12,7 +12,7 @@ echo "~/odoo-env/scripts/oe.py \$*" > /usr/local/bin/oe
 chmod +x /usr/local/bin/oe
 echo
 echo "installing sd"
-cp odoo-env/scripts/sd.py /usr/local/bin/sd
+cp ~/odoo-env/scripts/sd.py /usr/local/bin/sd
 
 # install python 2.7
 echo

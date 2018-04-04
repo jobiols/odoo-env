@@ -34,7 +34,7 @@ Functionality
                  [-H]
     
     ==========================================================================
-    Odoo Environment Manager v0.5.2 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.5.3 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:
@@ -97,6 +97,7 @@ Installation
     
 Changelog
 ---------
+- [0.5.3]   - restore database with bad image 
 - [0.5.2]   - sd not copied to /usr/local/bin 
 - [0.5.1]   - change postgres container name 
 - [0.5.0]   - support for non git repos, (i.e. cl-agt repo) 

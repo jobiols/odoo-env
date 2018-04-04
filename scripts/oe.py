@@ -8,7 +8,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description="""
 ==========================================================================
-Odoo Environment Manager v0.5.2 - by jeo Software <jorge.obiols@gmail.com>
+Odoo Environment Manager v0.5.3 - by jeo Software <jorge.obiols@gmail.com>
 ==========================================================================
 """)
 

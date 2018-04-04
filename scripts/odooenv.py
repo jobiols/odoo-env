@@ -124,7 +124,7 @@ class OdooEnv(object):
         )
 
         command = 'sudo docker run --rm -i '
-        command += '--link {}-{}:db '.format(image.short_name, client_name)
+        command += '--link pg-{}:db '.format(client_name)
         command += '-v {}:/backup '.format(self.client.backup_dir)
         command += '-v {}data_dir/filestore:/filestore '.format(
             self.client.base_dir)

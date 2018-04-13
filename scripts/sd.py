@@ -21,11 +21,14 @@ def process_input(params):
 
     # pseudo sintaxis
 
-    if params[2] == 'help':
+    if params[2] == '-h':
         print 'Help for sd'
         print 'sd               - short for sudo docker'
         print 'sd inside image  - open console inside image'
         print 'sd rmall         - remove all images in memory'
+        print 'sd rmdiskall     - remove all images in disk'
+        print
+        exit()
 
     if params[2] == 'inside':
         try:
@@ -44,7 +47,7 @@ def process_input(params):
     if params[2] == 'rmdiskall':
         try:
             print 'removing all images in disk'
-            params[2:3] = ['rm', '-f', '$(sudo docker images -q)']
+            params[2:3] = ['rmi', '$(sudo docker images -q)']
         except Exception as ex:
             params = []
 

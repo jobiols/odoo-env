@@ -8,16 +8,16 @@ sudo apt-get update && sudo apt-get upgrade -y
 # install sd and oe
 echo
 echo "installing oe"
-echo "~/odoo-env/scripts/oe.py \$*" > /usr/local/bin/oe
-chmod +x /usr/local/bin/oe
+sudo echo "~/odoo-env/scripts/oe.py \$*" > /usr/local/bin/oe
+sudo chmod +x /usr/local/bin/oe
 echo
 echo "installing sd"
-cp ~/odoo-env/scripts/sd.py /usr/local/bin/sd
+sudo cp ~/odoo-env/scripts/sd.py /usr/local/bin/sd
 
 # install python 2.7
 echo
 echo "installing python"
-apt-get install python -y
+sudo apt-get install python -y
 
 # install docker
 echo

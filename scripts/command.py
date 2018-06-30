@@ -8,7 +8,7 @@ import subprocess
 msg = Msg()
 
 
-class Command():
+class Command:
     def __init__(self, parent, command=False, usr_msg=False, args=False):
         """
 

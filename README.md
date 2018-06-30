@@ -97,13 +97,13 @@ Installation
     
 Changelog
 ---------
+- [0.5.4]   - illformed manifest causing crash 
 - [0.5.3]   - restore database with bad image 
 - [0.5.2]   - sd not copied to /usr/local/bin 
 - [0.5.1]   - change postgres container name 
 - [0.5.0]   - support for non git repos, (i.e. cl-agt repo) 
 - [0.4.6]   - Odoo v10 do not run aeroo, find manifest
 - [0.4.5]   - Install_scripts now installs python and docker
-- [0.4.4]   - Do not expose 8072 when using Nginx
 - [0.4.4]   - Do not expose 8072 when using Nginx
 - [0.4.3]   - No more rewriting config on update all
 - [0.4.2]   - Expose longpolling port in debug mode

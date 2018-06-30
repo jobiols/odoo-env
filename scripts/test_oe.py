@@ -235,7 +235,6 @@ class TestRepository(unittest.TestCase):
         options = {
             'debug': False,
             'nginx': False,
-            'no-dbfilter': False,
         }
         client_name = 'test_client'
         oe = OdooEnv(options)

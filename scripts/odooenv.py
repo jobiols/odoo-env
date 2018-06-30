@@ -571,9 +571,6 @@ class OdooEnv(object):
             command += '-e SERVER_MODE= '
             command += '{} '.format(self.client.get_image('odoo').name)
 
-        if not self.no_dbfilter:
-            command += '-- --db-filter={}_.* '.format(self.client.name)
-
         if not self.debug:
             command += '--logfile=/var/log/odoo/odoo.log '
         else:
@@ -703,10 +700,6 @@ class OdooEnv(object):
     @property
     def nginx(self):
         return self._options['nginx']
-
-    @property
-    def no_dbfilter(self):
-        return self._options['no-dbfilter']
 
     @property
     def nginx(self):

@@ -29,12 +29,11 @@ Functionality
 ------------- 
 
     usage: oe.py [-h] [-i] [-w] [-R] [-r] [-S] [-s] [-u] [-c CLIENT] [-v]
-                 [--debug] [--no-repos] [--no-dbfilter] [-d DATABASE] [-m MODULE]
-                 [--nginx] [-Q repo] [--backup-list] [--restore] [-f BACKUP_FILE]
-                 [-H]
+                 [--debug] [--no-repos] [-d DATABASE] [-m MODULE] [--nginx]
+                 [-Q repo] [--backup-list] [--restore] [-f BACKUP_FILE] [-H]
     
     ==========================================================================
-    Odoo Environment Manager v0.5.3 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.6.0 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:
@@ -57,11 +56,7 @@ Functionality
                           (option -p) it clones the full repo i.e. does not issue
                           --depth 1 to git
       --no-repos          Does not clone or pull repos used with -i or -p
-      --no-dbfilter       Eliminates dbfilter: The client can see any database.
-                          Without this, the client can only see databases starting
-                          with clientname_
-      -d DATABASE         Database name. Note that there is a dbfilter option by
-                          default the database name must begin with clientname_
+      -d DATABASE         Database name.
       -m MODULE           Module to update or all for updating all the registered
                           modules. You can specify multiple -m options. i.e. -m
                           all forall modules -m sales stock for updating sales and
@@ -97,6 +92,7 @@ Installation
     
 Changelog
 ---------
+- [0.6.0]   - deprecate dbfilter 
 - [0.5.4]   - illformed manifest causing crash 
 - [0.5.3]   - restore database with bad image 
 - [0.5.2]   - sd not copied to /usr/local/bin 

@@ -8,7 +8,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description="""
 ==========================================================================
-Odoo Environment Manager v0.5.4 - by jeo Software <jorge.obiols@gmail.com>
+Odoo Environment Manager v0.6.0 - by jeo Software <jorge.obiols@gmail.com>
 ==========================================================================
 """)
 
@@ -78,19 +78,11 @@ Odoo Environment Manager v0.5.4 - by jeo Software <jorge.obiols@gmail.com>
         help='Does not clone or pull repos used with -i or -p')
 
     parser.add_argument(
-        '--no-dbfilter',
-        action='store_true',
-        help='Eliminates dbfilter: The client can see any database. '
-             'Without this, the client can only see databases starting with '
-             'clientname_')
-
-    parser.add_argument(
         '-d',
         action='store',
         nargs=1,
         dest='database',
-        help="Database name. Note that there is a dbfilter option by default "
-             "the database name must begin with clientname_")
+        help="Database name.")
 
     parser.add_argument(
         '-m',
@@ -146,7 +138,6 @@ Odoo Environment Manager v0.5.4 - by jeo Software <jorge.obiols@gmail.com>
         'no-repos': args.no_repos,
         'nginx': args.nginx,
         'postfix': False,
-        'no-dbfilter': args.no_dbfilter,
         'backup_file': args.backup_file
     }
     commands = []

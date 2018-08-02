@@ -260,8 +260,7 @@ class TestRepository(unittest.TestCase):
             "--name test_client " \
             "-e ODOO_CONF=/dev/null " \
             "-e SERVER_MODE= " \
-            "jobiols/odoo-jeo:9.0 -- " \
-            "--db-filter=test_client_.* " \
+            "jobiols/odoo-jeo:9.0 " \
             "--logfile=/var/log/odoo/odoo.log "
 
         self.assertEqual(cmd.command, command)

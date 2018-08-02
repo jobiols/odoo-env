@@ -33,7 +33,7 @@ Functionality
                  [-Q repo] [--backup-list] [--restore] [-f BACKUP_FILE] [-H]
     
     ==========================================================================
-    Odoo Environment Manager v0.6.0 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.6.1 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:
@@ -92,6 +92,7 @@ Installation
     
 Changelog
 ---------
+- [0.6.1]   - FIX working directory with version > 9 adds a dot. 
 - [0.6.0]   - deprecate dbfilter 
 - [0.5.4]   - illformed manifest causing crash 
 - [0.5.3]   - restore database with bad image 

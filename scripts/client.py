@@ -51,9 +51,12 @@ class Client(object):
         if not self._port:
             msg.err('No port in manifest {}'.format(self.name))
 
-        self._version = manifest.get('version')[0:3]
-        if not self._version:
+        ver = manifest.get('version')
+        if not ver:
             msg.err('No version tag in manifest {}'.format(self.name))
+        x = ver.find('.') + 1
+        y = ver[x:].find('.') + x
+        self._version = ver[0:y]
 
         # Crear imagenes y repos
         self._repos = []

@@ -33,7 +33,7 @@ Functionality
                  [-Q repo] [--backup-list] [--restore] [-f BACKUP_FILE] [-H]
     
     ==========================================================================
-    Odoo Environment Manager v0.6.1 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.7.0 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:
@@ -92,13 +92,16 @@ Installation
     
 Changelog
 ---------
-- [0.6.1]   - FIX working directory with version > 9 adds a dot. 
-- [0.6.0]   - deprecate dbfilter 
+- [0.7.0]   - Change protocol from https to ssh in order to use ssh 
+              keys.
+- [0.6.1]   - FIX working directory with version > 9. If odoo main 
+              version was > 9 the directory added a dot ie /odoo-10.0./
+- [0.6.0]   - deprecate dbfilter. 
 - [0.5.4]   - illformed manifest causing crash 
 - [0.5.3]   - restore database with bad image 
-- [0.5.2]   - sd not copied to /usr/local/bin 
-- [0.5.1]   - change postgres container name 
-- [0.5.0]   - support for non git repos, (i.e. cl-agt repo) 
+- [0.5.2]   - sd was not copied to /usr/local/bin 
+- [0.5.1]   - change postgres container name to pg-<client name> 
+- [0.5.0]   - support for non github repos, i.e. bitbucket, gitlab, etc 
 - [0.4.6]   - Odoo v10 do not run aeroo, find manifest
 - [0.4.5]   - Install_scripts now installs python and docker
 - [0.4.4]   - Do not expose 8072 when using Nginx
@@ -112,7 +115,7 @@ Changelog
               module.
             - List all available backup files
             - write config file
-            - add help option -H
+            - add help option -H (odoo help)
 - [0.2.1]   - bug On QA, expose port 1984 for debug purpoes with WDB
 - [0.2.0]   - Quality Assurance support, 
             - Add command sd rmall for removing all docker images in 

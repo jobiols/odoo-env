@@ -134,7 +134,7 @@ class TestRepository(unittest.TestCase):
         self.assertEqual(
             cmds[16].command,
             'git -C /odoo_ar/odoo-9.0/test_client/sources/ clone -b 9.0 '
-            'https://github.com/jobiols/cl-test-client')
+            'git@github.com:jobiols/cl-test-client')
         self.assertEqual(
             cmds[16].usr_msg,
             'cloning b 9.0     jobiols/cl-test-client        ')
@@ -155,7 +155,7 @@ class TestRepository(unittest.TestCase):
         self.assertEqual(
             cmds[18].command,
             'git -C /odoo_ar/odoo-9.0/test_client/sources/ clone -b 9.0 '
-            'https://github.com/jobiols/odoo-addons')
+            'git@github.com:jobiols/odoo-addons')
         self.assertEqual(
             cmds[18].usr_msg,
             'cloning b 9.0     jobiols/odoo-addons           ')

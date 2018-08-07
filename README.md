@@ -92,6 +92,7 @@ Installation
     
 Changelog
 ---------
+- [0.7.1]   - Revert again go https 
 - [0.7.0]   - Change protocol from https to ssh in order to use ssh 
               keys.
 - [0.6.1]   - FIX working directory with version > 9. If odoo main 

@@ -403,23 +403,22 @@ class OdooEnv(object):
         ret.append(cmd)
 
         ##################################################################
-        # Launching aeroo Image if v < 10
+        # Launching aeroo Image
         ##################################################################
 
-        if self.client.numeric_ver < 10:
-            msg = 'Starting aeroo image'
-            image = self.client.get_image('aeroo')
+        msg = 'Starting aeroo image'
+        image = self.client.get_image('aeroo')
 
-            command = 'sudo docker run -d '
-            command += '--name={} '.format(image.short_name)
-            command += '--restart=always '
-            command += image.name
-            cmd = Command(
-                self,
-                command=command,
-                usr_msg=msg,
-            )
-            ret.append(cmd)
+        command = 'sudo docker run -d '
+        command += '--name={} '.format(image.short_name)
+        command += '--restart=always '
+        command += image.name
+        cmd = Command(
+            self,
+            command=command,
+            usr_msg=msg,
+        )
+        ret.append(cmd)
 
         return ret
 
@@ -534,9 +533,7 @@ class OdooEnv(object):
             else:
                 command = 'sudo docker run -d '
 
-        # a partir de la 10 no se usa aeroo
-        if self.client.numeric_ver < 10:
-            command += '--link aeroo:aeroo '
+        command += '--link aeroo:aeroo '
 
         # open port for wdb
         if self.debug:

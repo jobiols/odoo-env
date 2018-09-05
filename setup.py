@@ -8,5 +8,4 @@ setup(
     url='https://github.com/jobiols/odoo-env',
     author='Jorge E. Obiols',
     author_email='jorge.obiols@gmail.com',
-
 )

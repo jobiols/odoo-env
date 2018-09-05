@@ -92,6 +92,7 @@ Installation
     
 Changelog
 ---------
+- [0.7.2]   - start aeroo on v > 9 
 - [0.7.1]   - Revert again go https 
 - [0.7.0]   - Change protocol from https to ssh in order to use ssh 
               keys.

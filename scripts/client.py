@@ -129,7 +129,7 @@ class Client(object):
         for image in self._images:
             if image.short_name == value:
                 return image
-        msg.err('No image {} found'.format(value))
+        return False
 
     @property
     def name(self):

@@ -345,12 +345,11 @@ class OdooEnv(object):
         ret = []
 
         img2 = 'pg-{}'.format(self.client.name)
-
         images = []
-        if self._client.numeric_ver < 10:
+        if self.client.get_image('aeroo'):
             images.append('aeroo')
-        images.append(img2)
 
+        images.append(img2)
         for image in images:
             cmd = Command(
                 self,
@@ -406,19 +405,19 @@ class OdooEnv(object):
         # Launching aeroo Image
         ##################################################################
 
-        msg = 'Starting aeroo image'
         image = self.client.get_image('aeroo')
-
-        command = 'sudo docker run -d '
-        command += '--name={} '.format(image.short_name)
-        command += '--restart=always '
-        command += image.name
-        cmd = Command(
-            self,
-            command=command,
-            usr_msg=msg,
-        )
-        ret.append(cmd)
+        if image:
+            msg = 'Starting aeroo image'
+            command = 'sudo docker run -d '
+            command += '--name={} '.format(image.short_name)
+            command += '--restart=always '
+            command += image.name
+            cmd = Command(
+                self,
+                command=command,
+                usr_msg=msg,
+            )
+            ret.append(cmd)
 
         return ret
 

@@ -532,7 +532,8 @@ class OdooEnv(object):
             else:
                 command = 'sudo docker run -d '
 
-        command += '--link aeroo:aeroo '
+        if self.client.get_image('aeroo'):
+            command += '--link aeroo:aeroo '
 
         # open port for wdb
         if self.debug:

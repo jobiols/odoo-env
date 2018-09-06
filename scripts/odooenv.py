@@ -345,12 +345,11 @@ class OdooEnv(object):
         ret = []
 
         img2 = 'pg-{}'.format(self.client.name)
-
         images = []
-        if self._client.numeric_ver < 10:
+        if self.client.get_image('aeroo'):
             images.append('aeroo')
-        images.append(img2)
 
+        images.append(img2)
         for image in images:
             cmd = Command(
                 self,
@@ -403,13 +402,12 @@ class OdooEnv(object):
         ret.append(cmd)
 
         ##################################################################
-        # Launching aeroo Image if v < 10
+        # Launching aeroo Image
         ##################################################################
 
-        if self.client.numeric_ver < 10:
+        image = self.client.get_image('aeroo')
+        if image:
             msg = 'Starting aeroo image'
-            image = self.client.get_image('aeroo')
-
             command = 'sudo docker run -d '
             command += '--name={} '.format(image.short_name)
             command += '--restart=always '
@@ -534,8 +532,7 @@ class OdooEnv(object):
             else:
                 command = 'sudo docker run -d '
 
-        # a partir de la 10 no se usa aeroo
-        if self.client.numeric_ver < 10:
+        if self.client.get_image('aeroo'):
             command += '--link aeroo:aeroo '
 
         # open port for wdb

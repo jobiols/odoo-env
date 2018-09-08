@@ -27,6 +27,7 @@ def process_input(params):
         print 'sd inside image  - open console inside image'
         print 'sd rmall         - remove all images in memory'
         print 'sd rmdiskall     - remove all images in disk'
+        print 'sd rmuntag       - remove all untagged images in disk'
         print
         exit()
 

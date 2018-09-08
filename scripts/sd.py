@@ -51,6 +51,12 @@ def process_input(params):
         except Exception as ex:
             params = []
 
+    if params[2] == 'rmuntag':
+        try:
+            print 'removing all untagged images in disk'
+            params[2:3] = ['rmi', '$(sudo docker images | grep "^<none>" | awk "{print $3}")']
+        except Exception as ex:
+            params = []
 
     params = ' '.join(params)
     return params

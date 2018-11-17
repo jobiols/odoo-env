@@ -65,7 +65,6 @@ def process_input(params):
             container_name = params[3]
             print 'attaching to ' + container_name
 
-            #sd exec -it mario bash
             params[2:3] = ['exec', '-it']
             params[4:5] = ['attach', container_name]
         except Exception as ex:

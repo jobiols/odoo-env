@@ -65,8 +65,10 @@ def process_input(params):
             container_name = params[3]
             print 'attaching to ' + container_name
 
+            # sd exec -it mario bash
+
             params[2:3] = ['exec', '-it']
-            params[4:5] = ['attach', container_name]
+            params[4:5] = [container_name, 'bash']
         except Exception as ex:
             params = []
 
@@ -78,6 +80,6 @@ if __name__ == '__main__':
     params = process_input(sys.argv)
     try:
         if len(params) > 1:
-            exit(subprocess.call(params,shell=True))
+            exit(subprocess.call(params, shell=True))
     except Exception as ex:
         print ex

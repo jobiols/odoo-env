@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+# Make sure only root can run our script
+if [[ $EUID -ne 0 ]]; then
+  echo "Please run as root"
+  exit 1
+fi
+
 # update system
 echo
 echo "upgrade system"
@@ -24,4 +30,4 @@ echo
 echo "installing docker"
 git clone https://github.com/docker/docker-install.git ~/temp
 bash ~/temp/install.sh
-rm -r /temp
+rm -r ~/temp

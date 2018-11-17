@@ -92,12 +92,14 @@ Installation
     
 Changelog
 ---------
+- [0.7.4]   - New parameter to attach to a running containcer in sd
+              Support for debug image in v11 (python3)
+              data/install_scripts.sh impruvement and fixes   
 - [0.7.3]   - if odoo not in manifest do not start image instead showing 
               an error 
 - [0.7.2]   - start aeroo on v > 9 
 - [0.7.1]   - Revert again go https 
-- [0.7.0]   - Change protocol from https to ssh in order to use ssh 
-              keys.
+- [0.7.0]   - Change protocol from https to ssh in order to use ssh keys.
 - [0.6.1]   - FIX working directory with version > 9. If odoo main 
               version was > 9 the directory added a dot ie /odoo-10.0./
 - [0.6.0]   - deprecate dbfilter. 

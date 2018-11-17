@@ -318,11 +318,17 @@ class OdooEnv(object):
 
         return ret
 
-    def _add_debug_mountings(self):
+    def _add_debug_mountings(self, version):
+
+        if version >= 11:
+            idp = IN_DIST_PACKAGES.format('3')
+        else:
+            idp = IN_DIST_PACKAGES.format('2.7')
+
         ret = '-v {}extra-addons:{} '.format(
             self.client.version_dir, IN_EXTRA_ADDONS)
         ret += '-v {}dist-packages:{} '.format(
-            self.client.version_dir, IN_DIST_PACKAGES)
+            self.client.version_dir, idp)
         # no sacamos dist-local-packages
         # ret += '-v {}dist-local-packages:{} '.format(
         #    self.client.version_dir, IN_DIST_LOCAL_PACKAGES)
@@ -546,7 +552,7 @@ class OdooEnv(object):
 
         command += self._add_normal_mountings()
         if self.debug:
-            command += self._add_debug_mountings()
+            command += self._add_debug_mountings(self.client.numeric_ver)
 
         command += '--link pg-{}:db '.format(self.client.name)
 
@@ -620,7 +626,7 @@ class OdooEnv(object):
         command = 'sudo docker run --rm -it '
         command += self._add_normal_mountings()
         if self.debug:
-            command += self._add_debug_mountings()
+            command += self._add_debug_mountings(self.client.numeric_ver)
         command += '--link pg-{}:db '.format(self.client.name)
         command += '-e ODOO_CONF=/dev/null '
         command += '{} -- '.format(self.client.get_image('odoo').name)
@@ -657,7 +663,7 @@ class OdooEnv(object):
         command = 'sudo docker run --rm -it '
         command += self._add_normal_mountings()
         if self.debug:
-            command += self._add_debug_mountings()
+            command += self._add_debug_mountings(self.client.numeric_ver)
         command += '-p 1984:1984 '  # exponemos el puerto 1498 para debug
         command += '-e ODOO_CONF=/dev/null '
         command += '--link pg-{}:db '.format(self.client.name)

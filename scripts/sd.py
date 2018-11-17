@@ -28,6 +28,7 @@ def process_input(params):
         print 'sd rmall         - remove all images in memory'
         print 'sd rmdiskall     - remove all images in disk'
         print 'sd rmuntag       - remove all untagged images in disk'
+        print 'sd attach name   - attach to a running container by name'
         print
         exit()
 
@@ -56,6 +57,17 @@ def process_input(params):
         try:
             print 'removing all untagged images in disk'
             params[2:3] = ['rmi', '$(sudo docker images | grep "^<none>" | awk "{print $3}")']
+        except Exception as ex:
+            params = []
+
+    if params[2] == 'attach':
+        try:
+            container_name = params[3]
+            print 'attaching to ' + container_name
+
+            #sd exec -it mario bash
+            params[2:3] = ['exec', '-it']
+            params[4:5] = ['attach', container_name]
         except Exception as ex:
             params = []
 

@@ -545,8 +545,9 @@ class OdooEnv(object):
         if self.debug:
             command += '-p 1984:1984 '
 
-        # exponer los puertos solo si no tenemos nginx
-        if not self.nginx:
+        # si tenemos nginx o si estamos escribiendo la configuracion no hay
+        # que exponer los puertos
+        if not (self.nginx or write_config):
             command += '-p {}:8069 '.format(self.client.port)
             command += '-p 8072:8072 '
 
@@ -559,7 +560,10 @@ class OdooEnv(object):
         if not (self.debug or write_config):
             command += '--restart=always '
 
-        command += '--name {} '.format(self.client.name)
+        # si estamos escribiendo el config no le ponemos el nombre para que
+        # pueda correr aunque este levantado el cliente
+        if not write_config:
+            command += '--name {} '.format(self.client.name)
 
         if write_config:
             command += self.set_config_environment()

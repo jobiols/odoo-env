@@ -136,10 +136,8 @@ Changelog
 
 
 
-```javascript
-function fancyAlert(arg) {
-  if(arg) {
-    $.facebox({div:'#foo'})
-  }
-}
+```python
+def fancyAlert(arg):
+  if arg:
+    print(arg)
 ```

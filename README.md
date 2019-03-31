@@ -132,3 +132,14 @@ Changelog
             - sd command (short for sudo docker plus some enhacements)
 - [0.0.2]   - Minor fixes
 - [0.0.1]   - Starting version
+
+
+
+
+```javascript
+function fancyAlert(arg) {
+  if(arg) {
+    $.facebox({div:'#foo'})
+  }
+}
+```

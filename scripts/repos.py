@@ -20,7 +20,12 @@ class Repo(object):
 
     @property
     def url(self):
-        return 'https://{}/{}/{}'.format(self._dict.get('host', 'github.com'),
+        if self._dict.get('ssh', False):
+            template = 'git@{}:{}/{}'
+        else:
+            template = 'https://{}/{}/{}'
+
+        return template.format(self._dict.get('host', 'github.com'),
                                      self._dict.get('usr'),
                                      self._dict.get('repo'))
 

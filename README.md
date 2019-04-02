@@ -132,3 +132,12 @@ Changelog
             - sd command (short for sudo docker plus some enhacements)
 - [0.0.2]   - Minor fixes
 - [0.0.1]   - Starting version
+
+
+
+
+```python
+def fancyAlert(arg):
+  if arg:
+    print(arg)
+```

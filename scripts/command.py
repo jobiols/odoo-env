@@ -9,9 +9,10 @@ msg = Msg()
 
 
 class Command:
-    def __init__(self, parent, command=False, usr_msg=False, args=False):
+    def __init__(
+        self, parent, command=False, usr_msg=False, args=False,
+        client_name=False):
         """
-
         :param parent: El objeto OdooEnv que lo contiene por los parametros
         :param command: El comando a ejecutar en el shell
         :param usr_msg: El mensaje a mostrarle al usuario
@@ -22,6 +23,7 @@ class Command:
         self._command = command
         self._usr_msg = usr_msg
         self._args = args
+        self._client_name = client_name
 
     def check(self):
         # si no tiene argumentos para chequear no requiere chequeo,
@@ -114,6 +116,9 @@ class CreateNginxTemplate(Command):
         path = path.replace('scripts', 'data')
         with open(path + '/nginx.conf', 'r') as f:
             conf = f.read()
+
+        # poner el nombre del cliente en el config
+        conf = conf.replace('$client$', self._client_name)
 
         with open(self._command, 'w') as f:
             f.write(conf)

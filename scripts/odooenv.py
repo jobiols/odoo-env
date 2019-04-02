@@ -270,7 +270,8 @@ class OdooEnv(object):
                 self,
                 command='{}nginx.conf'.format(r_dir),
                 args='{}nginx.conf'.format(r_dir),
-                usr_msg='Generating nginx.conf template'
+                usr_msg='Generating nginx.conf template',
+                client_name=client_name
             )
             ret.append(cmd)
 
@@ -425,6 +426,22 @@ class OdooEnv(object):
             )
             ret.append(cmd)
 
+        ##################################################################
+        # Launching wdb Image
+        ##################################################################
+
+        msg = 'Starting wdb image'
+        command = 'sudo docker run -d '
+        command += '-p 1984:1984 '
+        command += '--name=wdb '
+        command += 'kozea/wdb'
+        cmd = Command(
+            self,
+            command=command,
+            usr_msg=msg,
+        )
+        ret.append(cmd)
+
         return ret
 
     def stop_client(self, client_name):
@@ -541,9 +558,9 @@ class OdooEnv(object):
         if self.client.get_image('aeroo'):
             command += '--link aeroo:aeroo '
 
-        # open port for wdb
+        # open link to wdb image
         if self.debug:
-            command += '-p 1984:1984 '
+            command += '--link wdb '
 
         # si tenemos nginx o si estamos escribiendo la configuracion no hay
         # que exponer los puertos
@@ -573,6 +590,7 @@ class OdooEnv(object):
         # si estamos en modo debug agregarlo al nombre de la imagen
         if self.debug:
             command += '-e SERVER_MODE=test '
+            command += '-e WDB_SOCKET_SERVER=wdb '
             command += '{}.debug '.format(self.client.get_image('odoo').name)
         else:
             command += '-e SERVER_MODE= '

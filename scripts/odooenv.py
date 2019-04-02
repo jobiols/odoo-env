@@ -373,6 +373,14 @@ class OdooEnv(object):
             )
             ret.append(cmd)
 
+        if self.debug:
+            cmd = Command(
+                self,
+                command='sudo docker rm -f {}'.format('wdb'),
+                usr_msg='Removing image {}'.format('wdb'),
+            )
+            ret.append(cmd)
+
         return ret
 
     def run_environment(self, client_name):
@@ -427,20 +435,20 @@ class OdooEnv(object):
             ret.append(cmd)
 
         ##################################################################
-        # Launching wdb Image
+        # Launching wdb Image if debug
         ##################################################################
-
-        msg = 'Starting wdb image'
-        command = 'sudo docker run -d '
-        command += '-p 1984:1984 '
-        command += '--name=wdb '
-        command += 'kozea/wdb'
-        cmd = Command(
-            self,
-            command=command,
-            usr_msg=msg,
-        )
-        ret.append(cmd)
+        if self.debug:
+            msg = 'Starting wdb image'
+            command = 'sudo docker run -d '
+            command += '-p 1984:1984 '
+            command += '--name=wdb '
+            command += 'kozea/wdb'
+            cmd = Command(
+                self,
+                command=command,
+                usr_msg=msg,
+            )
+            ret.append(cmd)
 
         return ret
 

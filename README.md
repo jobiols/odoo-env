@@ -92,7 +92,7 @@ Installation
     
 Changelog
 ---------
-
+- [0.8.1]   - Fix starting debug mode.
 - [0.8.0]   - Use kozera image for wdb, write the nginx.conf with the
               proper client name.
 - [0.7.4]   - New parameter to attach to a running containcer in sd

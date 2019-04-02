@@ -92,9 +92,12 @@ Installation
     
 Changelog
 ---------
+
+- [0.8.0]   - Use kozera image for wdb, write the nginx.conf with the
+              proper client name.
 - [0.7.4]   - New parameter to attach to a running containcer in sd
               Support for debug image in v11 (python3)
-              data/install_scripts.sh impruvement and fixes   
+              data/install_scripts.sh improvements and fixes   
 - [0.7.3]   - if odoo not in manifest do not start image instead showing 
               an error 
 - [0.7.2]   - start aeroo on v > 9 

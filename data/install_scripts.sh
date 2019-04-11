@@ -11,13 +11,6 @@ echo
 echo "upgrade system"
 apt-get update && apt-get upgrade -y
 
-# install docker
-echo
-echo "installing docker"
-curl -fsSL get.docker.com -o get-docker.sh
-sh get-docker.sh
-rm get-docker.sh
-
 # install sd and oe
 echo
 echo "installing oe"
@@ -33,3 +26,9 @@ echo
 echo "installing python"
 apt-get install python -y
 
+# install docker
+echo
+echo "installing docker"
+curl -fsSL get.docker.com -o get-docker.sh
+sh get-docker.sh
+rm get-docker.sh

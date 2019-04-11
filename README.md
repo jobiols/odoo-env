@@ -92,6 +92,7 @@ Installation
     
 Changelog
 ---------
+- [0.8.2]   - Docker installs at the end allowing abort 
 - [0.8.1]   - Fix starting debug mode.
 - [0.8.0]   - Use kozera image for wdb, write the nginx.conf with the
               proper client name.

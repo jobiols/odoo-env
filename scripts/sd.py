@@ -76,10 +76,13 @@ def process_input(params):
     return params
 
 
-if __name__ == '__main__':
+def main():
     params = process_input(sys.argv)
     try:
         if len(params) > 1:
             exit(subprocess.call(params, shell=True))
     except Exception as ex:
         print ex
+
+if __name__ == '__main__':
+    main()

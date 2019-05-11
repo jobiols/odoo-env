@@ -19,10 +19,9 @@ Directory structure
     │   ├── dist-local-packages     packages from image for debug
     │   └── dist-packages           pagkages from image for debug
     ├── nginx
-    │   ├── conf
-    │   ├── log
-    │   └── cert
-    └── postfix                     for future use
+        ├── conf
+        ├── log
+        └── cert
 
 
 Functionality
@@ -33,7 +32,7 @@ Functionality
                  [-Q repo] [--backup-list] [--restore] [-f BACKUP_FILE] [-H]
     
     ==========================================================================
-    Odoo Environment Manager v0.7.0 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.8.5 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:
@@ -82,7 +81,7 @@ This code is distributed under the AGPL license
 
 Installation
 ------------
-    some day : pip install docker-odoo-env
+    some day : pip install odoo-env
     
     for now:
     cd
@@ -92,6 +91,9 @@ Installation
     
 Changelog
 ---------
+- [0.8.5]   - Fix test (option -Q) failing to run
+- [0.8.4]   - PyPi version increment
+- [0.8.3]   - PyPi version increment
 - [0.8.2]   - Docker installs at the end allowing abort 
 - [0.8.1]   - Fix starting debug mode.
 - [0.8.0]   - Use kozera image for wdb, write the nginx.conf with the

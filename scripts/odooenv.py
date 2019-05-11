@@ -694,7 +694,7 @@ class OdooEnv(object):
         command += self._add_normal_mountings()
         if self.debug:
             command += self._add_debug_mountings(self.client.numeric_ver)
-        command += '-p 1984:1984 '  # exponemos el puerto 1498 para debug
+        command += '--link wdb '  # linkeamos con test
         command += '-e ODOO_CONF=/dev/null '
         command += '--link pg-{}:db '.format(self.client.name)
         command += '{}.debug -- '.format(self.client.get_image('odoo').name)

@@ -3,14 +3,14 @@ import argparse
 from odooenv import OdooEnv
 from messages import Msg
 from options import get_param
+from __init__ import __version__
 
-if __name__ == '__main__':
-
+def main():
     parser = argparse.ArgumentParser(description="""
 ==========================================================================
-Odoo Environment Manager v0.8.2 - by jeo Software <jorge.obiols@gmail.com>
+Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
 ==========================================================================
-""")
+""" % __version__)
 
     parser.add_argument(
         '-i',
@@ -200,3 +200,6 @@ Odoo Environment Manager v0.8.2 - by jeo Software <jorge.obiols@gmail.com>
         if command and command.check():
             Msg().inf(command.usr_msg)
             command.execute()
+
+if __name__ == '__main__':
+    main()

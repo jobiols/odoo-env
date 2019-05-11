@@ -1,11 +1,36 @@
-#!/usr/bin/env python
-from setuptools import setup
+# -*- coding: utf-8 -*-
 
-setup(
-    name='docker-oodo-env',
-    version='0.0.1',
-    description='An environment to manage Docker for Odoo',
-    url='https://github.com/jobiols/odoo-env',
+import setuptools
+from scripts import __version__
+
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
+setuptools.setup(
+    name='oodo-env',
+    version=__version__,
     author='Jorge E. Obiols',
+    description='An environment to manage Docker for Odoo',
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url='https://github.com/jobiols/odoo-env',
     author_email='jorge.obiols@gmail.com',
+    entry_points={
+        'console_scripts': [
+            'oe=scripts.oe:main',
+            'sd=scripts.sd:main'
+        ],
+    },
+    install_requires=[],
+    packages=setuptools.find_packages(),
+    classifiers=[
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 2.7",
+        "Operating System :: OS Independent",
+        "Topic :: Software Development :: Testing :: Unit",
+        "Topic :: System :: Software Distribution",
+    ],
+    keywords="odoo docker environment",
 )

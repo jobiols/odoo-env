@@ -81,12 +81,7 @@ This code is distributed under the AGPL license
 
 Installation
 ------------
-    some day : pip install odoo-env
-    
-    for now:
-    cd
-    git clone https://github.com/jobiols/odoo-env.git
-    sudo ./odoo-env/data/install_scripts
+    pip install odoo-env
  
     
 Changelog
@@ -138,12 +133,3 @@ Changelog
             - sd command (short for sudo docker plus some enhacements)
 - [0.0.2]   - Minor fixes
 - [0.0.1]   - Starting version
-
-
-
-
-```python
-def fancyAlert(arg):
-  if arg:
-    print(arg)
-```

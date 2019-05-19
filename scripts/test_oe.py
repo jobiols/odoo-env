@@ -146,7 +146,7 @@ class TestRepository(unittest.TestCase):
             '/odoo_ar/odoo-9.0/test_client/sources/cl-test-client')
         self.assertEqual(
             cmds[17].command,
-            'git -C /odoo_ar/odoo-9.0/test_client/sources/cl-test-client pull')
+            'git ---C /odoo_ar/odoo-9.0/test_client/sources/cl-test-client pull')
         self.assertEqual(
             cmds[17].usr_msg,
             'pulling b 9.0     jobiols/cl-test-client        ')

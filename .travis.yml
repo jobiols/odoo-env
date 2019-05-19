@@ -21,9 +21,9 @@ install:
   - pip install flake8
 
 script:
-  - pytest --cov=./
   - flake8 scripts/sd.py
   - flake8 scripts/oe.py
+  - pytest --cov=./
 
 
 after_success:

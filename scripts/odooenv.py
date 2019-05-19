@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from client import Client
-from messages import Msg
 from command import Command, MakedirCommand, ExtractSourcesCommand, \
     CloneRepo, PullRepo, CreateNginxTemplate, MessageOnly
 

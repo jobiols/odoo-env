@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 import sys
-
 
 RED = "\033[1;31m"
 GREEN = "\033[1;32m"
@@ -27,18 +27,18 @@ class Msg():
         return YELLOW_LIGHT + string + CLEAR
 
     def run(self, msg):
-        print self.yellow(msg)
+        print(self.yellow(msg))
 
     def done(self, msg):
-        print self.green(msg)
+        print(self.green(msg))
 
     def err(self, msg):
-        print self.red(msg)
+        print(self.red(msg))
         sys.exit()
 
     def inf(self, msg):
         if msg:
-            print self.yellow_light(msg)
+            print(self.yellow_light(msg))
 
     def warn(self, msg):
-        print self.red(msg)
+        print(self.red(msg))

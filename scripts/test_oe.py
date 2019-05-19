@@ -3,9 +3,9 @@
 
 
 import unittest
-from command import Command, MakedirCommand, CreateNginxTemplate
-from client import Client
-from odooenv import OdooEnv
+from scripts.command import Command, MakedirCommand, CreateNginxTemplate
+from scripts.client import Client
+from scripts.odooenv import OdooEnv
 
 
 class TestRepository(unittest.TestCase):

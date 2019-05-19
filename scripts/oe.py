@@ -191,7 +191,8 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
     if args.quality_assurance:
         client_name = get_param(args, 'client')
         database = get_param(args, 'database')
-        commands += OdooEnv(options).qa(client_name, database, args.quality_assurance[0])
+        commands += OdooEnv(options).qa(client_name, database,
+                                        args.quality_assurance[0])
 
     # #####################################################################
     # ejecutar comandos
@@ -200,6 +201,7 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         if command and command.check():
             Msg().inf(command.usr_msg)
             command.execute()
+
 
 if __name__ == '__main__':
     main()

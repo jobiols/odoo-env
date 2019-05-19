@@ -21,7 +21,7 @@ install:
   - pip install flake8
 
 script:
-#  - coverage run scripts/oe.py
+  - coverage run cov.py
   - flake8 scripts/sd.py
   - flake8 scripts/oe.py
   - pytest

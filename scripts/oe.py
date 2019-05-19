@@ -5,6 +5,7 @@ from messages import Msg
 from options import get_param
 from __init__ import __version__
 
+
 def main():
     parser = argparse.ArgumentParser(description="""
 ==========================================================================

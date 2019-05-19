@@ -24,12 +24,12 @@ def process_input(params):
 
     if params[2] == '-h':
         print('Help for sd')
-        print( 'sd               - short for sudo docker')
-        print( 'sd inside image  - open console inside image')
-        print( 'sd rmall         - remove all images in memory')
-        print( 'sd rmdiskall     - remove all images in disk')
-        print( 'sd rmuntag       - remove all untagged images in disk')
-        print( 'sd attach name   - attach to a running container by name')
+        print('sd               - short for sudo docker')
+        print('sd inside image  - open console inside image')
+        print('sd rmall         - remove all images in memory')
+        print('sd rmdiskall     - remove all images in disk')
+        print('sd rmuntag       - remove all untagged images in disk')
+        print('sd attach name   - attach to a running container by name')
         print(' ')
         exit()
 
@@ -37,28 +37,29 @@ def process_input(params):
         try:
             print('going inside image ' + params[3])
             params[2:3] = ['run', '-it', '--rm', '--entrypoint=/bin/bash']
-        except Exception as ex:
+        except Exception:
             params = []
 
     if params[2] == 'rmall':
         try:
             print('removing all images in memory')
             params[2:3] = ['rm', '-f', '$(sudo docker ps -a -q)']
-        except Exception as ex:
+        except Exception:
             params = []
 
     if params[2] == 'rmdiskall':
         try:
             print('removing all images in disk')
             params[2:3] = ['rmi', '$(sudo docker images -q)']
-        except Exception as ex:
+        except Exception:
             params = []
 
     if params[2] == 'rmuntag':
         try:
             print('removing all untagged images in disk')
-            params[2:3] = ['rmi', '$(sudo docker images | grep "^<none>" | awk "{print $3}")']
-        except Exception as ex:
+            cmd = '$(sudo docker images | grep "^<none>" | awk "{print $3}")'
+            params[2:3] = ['rmi', cmd]
+        except Exception:
             params = []
 
     if params[2] == 'attach':
@@ -70,7 +71,7 @@ def process_input(params):
 
             params[2:3] = ['exec', '-it']
             params[4:5] = [container_name, 'bash']
-        except Exception as ex:
+        except Exception:
             params = []
 
     params = ' '.join(params)
@@ -84,6 +85,7 @@ def main():
             exit(subprocess.call(params, shell=True))
     except Exception as ex:
         print(ex)
+
 
 if __name__ == '__main__':
     main()

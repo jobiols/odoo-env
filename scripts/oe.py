@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 import argparse
 from odooenv import OdooEnv
-from scripts.messages import Msg
-from scripts.options import get_param
+from messages import Msg
+from options import get_param
 from __init__ import __version__
 
 

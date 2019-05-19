@@ -3,7 +3,10 @@
 from __future__ import absolute_import
 
 import os
-from messages import Msg
+try:
+    from messages import Msg
+except ImportError:
+    from scripts.messages import Msg
 import subprocess
 
 msg = Msg()

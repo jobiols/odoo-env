@@ -77,7 +77,7 @@ Tool to manage docker based odoo environments
 
 jeo Software (c) 2018 jorge.obiols@gmail.com
 
-This code is distributed under the AGPL license
+This code is distributed under the MIT license
 
 Installation
 ------------

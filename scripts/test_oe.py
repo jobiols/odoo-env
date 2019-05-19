@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 
+print 'Running tests ...'
+
 import unittest
 from odooenv import OdooEnv
 from command import Command, MakedirCommand, CreateNginxTemplate

@@ -74,7 +74,7 @@ class TestRepository(unittest.TestCase):
         self.assertEqual(
             cmds[8].args, False)
         self.assertEqual(
-            cmds[8].command, 'chmod o+w+ /odoo_ar/odoo-9.0/test_client/config'
+            cmds[8].command, 'chmod o+w /odoo_ar/odoo-9.0/test_client/config'
         )
         self.assertEqual(
             cmds[8].usr_msg, False)

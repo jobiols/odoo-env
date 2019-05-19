@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
+from __future__ import absolute_import
 
 import os
-from messages import Msg
-from constants import BASE_DIR
-from repos import Repo
-from images import Image
+from scripts.messages import Msg
+from scripts.constants import BASE_DIR
+from scripts.repos import Repo
+from scripts.images import Image
 
 msg = Msg()
 

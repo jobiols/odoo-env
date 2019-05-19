@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
-from scripts.messages import Msg
+
+from messages import Msg
 
 
 def get_param(args, param):

@@ -18,7 +18,7 @@ luego el proyecto se puede ver en
 
 #Installing your newly uploaded package
 
-    pip install docker-odoo-env
+    pip install odoo-env
     
 
     

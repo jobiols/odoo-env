@@ -1,11 +1,10 @@
-# -*- coding: utf-8 -*-
-from __future__ import absolute_import
+#!/usr/bin/env python
 
 import argparse
-from scripts.odooenv import OdooEnv
-from scripts.messages import Msg
-from scripts.options import get_param
-from scripts.__init__ import __version__
+from odooenv import OdooEnv
+from messages import Msg
+from options import get_param
+from __init__ import __version__
 
 
 def main():

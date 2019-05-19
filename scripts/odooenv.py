@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
 
-from scripts.client import Client
-from scripts.command import Command, MakedirCommand, ExtractSourcesCommand, \
+from client import Client
+from command import Command, MakedirCommand, ExtractSourcesCommand, \
     CloneRepo, PullRepo, CreateNginxTemplate, MessageOnly
 
 import pwd
 import os
-from scripts.constants import BASE_DIR, IN_CONFIG, IN_DATA, IN_LOG, \
+from constants import BASE_DIR, IN_CONFIG, IN_DATA, IN_LOG, \
     IN_CUSTOM_ADDONS, IN_DIST_PACKAGES, IN_EXTRA_ADDONS, IN_BACKUP_DIR
 
 

@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 
 import os
-from scripts.messages import Msg
+from messages import Msg
 import subprocess
 
 msg = Msg()

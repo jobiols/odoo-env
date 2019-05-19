@@ -4,9 +4,10 @@
 # shortcut for sudo docker
 # sudo docker $*
 ###############################################
+from __future__ import print_function
 import subprocess
 import sys
-from __future__ import print_function
+
 
 def process_input(params):
     # si no tiene parametros termino

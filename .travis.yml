@@ -17,11 +17,11 @@ git:
 
 install:
   - pip install -r requirements.txt
-  - pip install codecov
+  - pip install pytest-cov
   - pip install flake8
 
 script:
-  - coverage run cov.py
+  - pytest --cov=./
   - flake8 scripts/sd.py
   - flake8 scripts/oe.py
   - pytest

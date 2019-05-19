@@ -17,7 +17,7 @@ install:
 script:
   - coverage run scripts/oe.py
   - flake8 scripts/oe.py
-  - python scripts/test_oe.py
+  - pytest
 
 after_success:
   - codecov

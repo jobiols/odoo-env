@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 
-print 'Running tests ...'
 
 import unittest
 from odooenv import OdooEnv
@@ -158,7 +157,7 @@ class TestRepository(unittest.TestCase):
         self.assertEqual(
             cmds[18].command,
             'git -C /odoo_ar/odoo-9.0/test_client/sources/ clone --depth 1 '
-            ' -b 9.0 https://github.com/jobiols/odoo-addons')
+            '-b 9.0 https://github.com/jobiols/odoo-addons')
         self.assertEqual(
             cmds[18].usr_msg,
             'cloning b 9.0     jobiols/odoo-addons           ')

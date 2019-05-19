@@ -2,13 +2,15 @@ language: python
 sudo: false
 cache: pip
 
-python:
-  - "2.7"
+matrix:
+  include:
+    - python: 2.7
 
 git:
   depth: 1
 
 install:
+  - pip install -r requirements.txt
   - pip install codecov
   - pip install flake8
 
@@ -16,6 +18,7 @@ script:
   - python scripts/test_oe.py
   - coverage run scripts/oe.py
   - flake8 scripts/test_oe.py
+  - scripts/test_oe.py
 
 after_success:
   - codecov

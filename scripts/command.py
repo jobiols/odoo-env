@@ -2,7 +2,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import os
-from scripts.messages import Msg
+from messages import Msg
 import subprocess
 
 msg = Msg()

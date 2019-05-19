@@ -133,8 +133,8 @@ class TestRepository(unittest.TestCase):
             '/odoo_ar/odoo-9.0/test_client/sources/cl-test-client')
         self.assertEqual(
             cmds[16].command,
-            'git -C /odoo_ar/odoo-9.0/test_client/sources/ clone -b 9.0 '
-            'https://github.com/jobiols/cl-test-client')
+            'git -C /odoo_ar/odoo-9.0/test_client/sources/ clone --depth 1 '
+            '-b 9.0 https://github.com/jobiols/cl-test-client')
         self.assertEqual(
             cmds[16].usr_msg,
             'cloning b 9.0     jobiols/cl-test-client        ')
@@ -154,8 +154,8 @@ class TestRepository(unittest.TestCase):
             '/odoo_ar/odoo-9.0/test_client/sources/odoo-addons')
         self.assertEqual(
             cmds[18].command,
-            'git -C /odoo_ar/odoo-9.0/test_client/sources/ clone -b 9.0 '
-            'https://github.com/jobiols/odoo-addons')
+            'git -C /odoo_ar/odoo-9.0/test_client/sources/ clone --depth 1 '
+            ' -b 9.0 https://github.com/jobiols/odoo-addons')
         self.assertEqual(
             cmds[18].usr_msg,
             'cloning b 9.0     jobiols/odoo-addons           ')
@@ -220,7 +220,8 @@ class TestRepository(unittest.TestCase):
             "-v /odoo_ar/odoo-9.0/test_client/sources:" \
             "/opt/odoo/custom-addons " \
             "-v /odoo_ar/odoo-9.0/test_client/backup_dir:/var/odoo/backups/ " \
-            "-p 1984:1984 " \
+            "--link wdb " \
+            "-e WDB_SOCKET_SERVER=wdb " \
             "-e ODOO_CONF=/dev/null " \
             "--link pg-test_client:db jobiols/odoo-jeo:9.0.debug -- " \
             "-d cliente_test " \

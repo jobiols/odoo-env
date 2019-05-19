@@ -37,7 +37,7 @@ class Repo(object):
 
     @property
     def clone(self):
-        return 'clone -b {} {}'.format(self.branch, self.url)
+        return 'clone --depth 1 -b {} {}'.format(self.branch, self.url)
 
     @property
     def pull(self):

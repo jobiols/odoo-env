@@ -279,14 +279,14 @@ class OdooEnv(object):
         # create dirs for postfix
         ##################################################################
 
-        if self.postfix:
-            r_dir = '{}{}'.format(BASE_DIR, 'postfix')
-            cmd = MakedirCommand(
-                self,
-                command='mkdir -p {}'.format(r_dir),
-                args='{}'.format(r_dir)
-            )
-            ret.append(cmd)
+        #if self.postfix:
+        #    r_dir = '{}{}'.format(BASE_DIR, 'postfix')
+        #    cmd = MakedirCommand(
+        #        self,
+        #        command='mkdir -p {}'.format(r_dir),
+        #        args='{}'.format(r_dir)
+        #    )
+        #    ret.append(cmd)
 
         ##################################################################
         # Extracting sources from image if debug enabled

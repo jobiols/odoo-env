@@ -32,7 +32,7 @@ Functionality
                  [-Q repo] [--backup-list] [--restore] [-f BACKUP_FILE] [-H]
     
     ==========================================================================
-    Odoo Environment Manager v0.8.5 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.8.6 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:
@@ -86,6 +86,7 @@ Installation
     
 Changelog
 ---------
+- [0.8.6]   - Fix: when installing on prod make a Shallow Clone
 - [0.8.5]   - Fix test (option -Q) failing to run
 - [0.8.4]   - PyPi version increment
 - [0.8.3]   - PyPi version increment

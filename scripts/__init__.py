@@ -5,4 +5,4 @@
 #from . import options
 
 __name__ = "odoo_env"
-__version__ = '0.8.5'
+__version__ = '0.8.6'

@@ -24,7 +24,7 @@ script:
   - pytest --cov=./
   - flake8 scripts/sd.py
   - flake8 scripts/oe.py
-  - pytest
+
 
 after_success:
   - codecov

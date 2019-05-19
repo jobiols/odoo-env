@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-
+from __future__ import absolute_import
 
 import unittest
 from scripts.command import Command, MakedirCommand, CreateNginxTemplate

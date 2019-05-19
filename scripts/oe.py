@@ -1,8 +1,8 @@
-#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 from __future__ import absolute_import
 
 import argparse
-from scripts.odooenv import OdooEnv
+from odooenv import OdooEnv
 from scripts.messages import Msg
 from scripts.options import get_param
 from __init__ import __version__

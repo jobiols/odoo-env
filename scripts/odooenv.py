@@ -612,6 +612,7 @@ class OdooEnv(object):
 
         if not self.debug:
             command += '--logfile=/var/log/odoo/odoo.log '
+            command += '--no-database-list '
         else:
             command += '--logfile=/dev/stdout '
 

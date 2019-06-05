@@ -123,6 +123,11 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         help="Restores a backup from backup_dir")
 
     parser.add_argument(
+        '--edm',
+        action='store_true',
+        help="Enable Database Manager on production environment")
+
+    parser.add_argument(
         '-f',
         action='append',
         dest='backup_file',
@@ -140,7 +145,8 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         'no-repos': args.no_repos,
         'nginx': args.nginx,
         'postfix': False,
-        'backup_file': args.backup_file
+        'backup_file': args.backup_file,
+        'edm': args.edm
     }
     commands = []
 

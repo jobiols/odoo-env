@@ -32,7 +32,7 @@ Functionality
                  [-Q repo] [--backup-list] [--restore] [-f BACKUP_FILE] [-H]
     
     ==========================================================================
-    Odoo Environment Manager v0.8.8 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.8.10 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:
@@ -75,7 +75,7 @@ Functionality
 
 Tool to manage docker based odoo environments
 
-jeo Software (c) 2018 jorge.obiols@gmail.com
+jeo Software (c) 2019 jorge.obiols@gmail.com
 
 This code is distributed under the MIT license
 
@@ -86,6 +86,8 @@ Installation
     
 Changelog
 ---------
+- [0.8.10]  - Add --edm option to allow database manager on production
+- [0.8.9]   - When installed from pip --nginx does not work
 - [0.8.8]   - Disable database manager on login page in prod environment
 - [0.8.7]   - Working on Python 2.7 to 3.7
 - [0.8.6]   - Fix: when installing on prod make a Shallow Clone

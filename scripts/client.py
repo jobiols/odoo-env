@@ -28,7 +28,7 @@ class Client(object):
         # si estamos en test accedo a data
         if name[0:5] == 'test_':
             path = os.path.dirname(os.path.abspath(__file__))
-            path = path.replace('scripts', 'data')
+            path = path.replace('scripts', 'scripts/data')
             manifest = self.get_manifest(path)
         else:
             manifest = self.get_manifest(BASE_DIR)

@@ -181,7 +181,8 @@ class TestRepository(unittest.TestCase):
             'debug': False,
             'no-repos': False,
             'nginx': False,
-            'postfix': False
+            'postfix': False,
+            'edm': False
         }
         oe = OdooEnv(options)
 
@@ -242,6 +243,7 @@ class TestRepository(unittest.TestCase):
         options = {
             'debug': False,
             'nginx': False,
+            'edm': False,
         }
         client_name = 'test_client'
         oe = OdooEnv(options)

@@ -117,7 +117,7 @@ class CreateNginxTemplate(Command):
     def execute(self):
         # crear el nginx.conf
         path = os.path.dirname(os.path.abspath(__file__))
-        path = path.replace('scripts', 'data')
+        path = path.replace('scripts', 'scripts/data')
         with open(path + '/nginx.conf', 'r') as f:
             conf = f.read()
 

@@ -612,7 +612,8 @@ class OdooEnv(object):
 
         if not self.debug:
             command += '--logfile=/var/log/odoo/odoo.log '
-            command += '--no-database-list '
+            if not self.edm:
+                command += '--no-database-list '
         else:
             command += '--logfile=/dev/stdout '
 
@@ -749,3 +750,7 @@ class OdooEnv(object):
     @property
     def postfix(self):
         return self._options['postfix']
+
+    @property
+    def edm(self):
+        return self._options['edm']

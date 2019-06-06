@@ -22,6 +22,7 @@ setuptools.setup(
         ],
     },
     install_requires=[],
+    data_files=[('data', ['nginx.conf'])],
     packages=setuptools.find_packages(),
     classifiers=[
         "Development Status :: 5 - Production/Stable",

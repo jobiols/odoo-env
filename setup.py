@@ -22,7 +22,7 @@ setuptools.setup(
         ],
     },
     install_requires=[],
-    data_files=[('data', ['nginx.conf'])],
+    data_files=[('scripts/data', ['scripts/data/nginx.conf'])],
     packages=setuptools.find_packages(),
     classifiers=[
         "Development Status :: 5 - Production/Stable",

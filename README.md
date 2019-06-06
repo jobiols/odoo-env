@@ -32,7 +32,7 @@ Functionality
                  [-Q repo] [--backup-list] [--restore] [-f BACKUP_FILE] [-H]
     
     ==========================================================================
-    Odoo Environment Manager v0.8.10 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.8.11 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:
@@ -86,6 +86,7 @@ Installation
     
 Changelog
 ---------
+- [0.8.11]  - Fix --nginx installation
 - [0.8.10]  - Add --edm option to allow database manager on production
 - [0.8.9]   - When installed from pip --nginx does not work
 - [0.8.8]   - Disable database manager on login page in prod environment

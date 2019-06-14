@@ -448,7 +448,7 @@ class OdooEnv(object):
             command = 'sudo docker run -d '
             command += '-p 1984:1984 '
             command += '--name=wdb '
-            command += 'kozea/wdb'
+            command += 'kozea/wdb:3.2.5'
             cmd = Command(
                 self,
                 command=command,

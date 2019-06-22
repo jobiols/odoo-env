@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name='oodo-env',
+    name='odoo-env',
     version=__version__,
     author='Jorge E. Obiols',
     description='An environment to manage Docker for Odoo',

@@ -82,7 +82,7 @@ This code is distributed under the MIT license
 Installation
 ------------
     pip install odoo-env
-    https://pypi.org/project/oodo-env/
+    https://pypi.org/project/odoo-env/
     
 Changelog
 ---------

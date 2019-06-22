@@ -14,7 +14,7 @@ ejecutar en el directorio donde esta setup.py
     
 luego el proyecto se puede ver en
 
-    https://pypi.org/project/oodo-env/
+    https://pypi.org/project/odoo-env/
 
 #Installing your newly uploaded package
 

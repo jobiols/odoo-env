@@ -19,7 +19,7 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         '--install',
         action='store_true',
         help="Install, requires -c option. Creates dir structure, and pull "
-             "repos")
+             "all the repositories declared in the client manifest")
 
     parser.add_argument(
         '-w', '--write-config',
@@ -50,7 +50,7 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         '-u', '--update-all',
         action='store_true',
         help="Update all requires -d -c and -m options. "
-             "Use --debug to force update with host sources")
+             "Use --debug to force update with image sources")
 
     parser.add_argument(
         '-c',
@@ -67,11 +67,11 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         '--debug',
         action='store_true',
         help='This option has the following efects: '
-             '1.- when doing an update all, (option -u) it forces debug '
+             '1.- When doing an update all, (option -u) it forces debug '
              'mode. '
              '2.- When running environment (option -R) it opens port '
              '5432 to access postgres server databases. '
-             '3.- when doing a pull (option -p) it clones the full repo i.e. '
+             '3.- When doing a pull (option -p) it clones the full repo i.e. '
              'does not issue --depth 1 to git ')
 
     parser.add_argument(
@@ -91,16 +91,16 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         action='append',
         dest='module',
         help="Module to update or all for updating all the registered "
-             "modules. You can specify multiple -m options. i.e. -m all for"
-             "all modules -m sales stock for updating sales and stock modules")
+             "modules. i.e. -m all for all modules -m sale for "
+             "updating sale module")
 
     parser.add_argument(
         '--nginx',
         action='store_true',
         help='Add nginx to installation: With -i creates nginx dir w/ sample '
              'config file. with -r starts an nginx container linked to odoo'
-             'with -s stops nginx containcer. You must add certificates and '
-             'review nginx.conf file.')
+             'with -s stops nginx containcer. If you want to add certificates '
+             'review nginx.conf file located in /odoo_ar/nginx/conf')
 
     parser.add_argument(
         '-Q',
@@ -108,9 +108,10 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         metavar='repo',
         nargs=1,
         dest='quality_assurance',
-        help="Perform QA running tests, argument are Repo to test. "
-             "Need -d, -m and -c options Note: for the test to run in the"
-             "database there must be an admin user with password admin")
+        help="Perform QA running tests, argument are repository to test. "
+             "Need -d, -m and -c options Note: for the test to run the "
+             "database must be created with demo data and must have "
+             "admin user with password admin.")
 
     parser.add_argument(
         '--backup-list',
@@ -120,13 +121,14 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
     parser.add_argument(
         '--restore',
         action='store_true',
-        help="Restores a backup from backup_dir")
+        help="Restores a backup from backup_dir needs -c -d and -f ")
 
     parser.add_argument(
         '-f',
         action='append',
         dest='backup_file',
-        help="Filename to restore used with --restore")
+        help="Filename to restore used with --restore. To get the name of this"
+             "file issue a --backup-list command")
 
     parser.add_argument(
         '-H', '--server-help',

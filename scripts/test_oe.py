@@ -268,7 +268,6 @@ class TestRepository(unittest.TestCase):
             "-e ODOO_CONF=/dev/null " \
             "-e SERVER_MODE= " \
             "jobiols/odoo-jeo:9.0 " \
-            "--logfile=/var/log/odoo/odoo.log " \
-            "--no-database-list "
+            "--logfile=/var/log/odoo/odoo.log "
 
         self.assertEqual(cmd.command, command)

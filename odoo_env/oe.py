@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 
 import argparse
-from odooenv import OdooEnv
-from messages import Msg
-from options import get_param
-from __init__ import __version__
+from odoo_env.odooenv import OdooEnv
+from odoo_env.messages import Msg
+from odoo_env.options import get_param
+from odoo_env.__init__ import __version__
 
 
 def main():

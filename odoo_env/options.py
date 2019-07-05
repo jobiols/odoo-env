@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from messages import Msg
+from odoo_env.messages import Msg
 
 
 def get_param(args, param):

@@ -8,10 +8,10 @@ try:
     from repos import Repo
     from images import Image
 except ImportError:
-    from scripts.messages import Msg
-    from scripts.constants import BASE_DIR
-    from scripts.repos import Repo
-    from scripts.images import Image
+    from odoo_env.messages import Msg
+    from odoo_env.constants import BASE_DIR
+    from odoo_env.repos import Repo
+    from odoo_env.images import Image
 
 msg = Msg()
 
@@ -28,7 +28,7 @@ class Client(object):
         # si estamos en test accedo a data
         if name[0:5] == 'test_':
             path = os.path.dirname(os.path.abspath(__file__))
-            path = path.replace('scripts', 'scripts/data')
+            path = path.replace('odoo_env', 'odoo_env/data')
             manifest = self.get_manifest(path)
         else:
             manifest = self.get_manifest(BASE_DIR)

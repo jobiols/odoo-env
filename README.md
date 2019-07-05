@@ -32,7 +32,7 @@ Functionality
                  [-Q repo] [--backup-list] [--restore] [-f BACKUP_FILE] [-H]
     
     ==========================================================================
-    Odoo Environment Manager v0.8.13 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.8.17 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:
@@ -86,6 +86,7 @@ Installation
     
 Changelog
 ---------
+- [0.8.17]  - Fix bug in python3 installation 
 - [0.8.13]  - Removing edm option (it was a bad idea), rewrite nginx 
               config to block /database/manager and /database/selector
 - [0.8.12]  - fix version of wdb image to 3.2.5, latest does not work

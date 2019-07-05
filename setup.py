@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import setuptools
-from scripts import __version__
+from odoo_env import __version__
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -17,12 +17,12 @@ setuptools.setup(
     author_email='jorge.obiols@gmail.com',
     entry_points={
         'console_scripts': [
-            'oe=scripts.oe:main',
-            'sd=scripts.sd:main'
+            'oe=odoo_env.oe:main',
+            'sd=odoo_env.sd:main'
         ],
     },
     install_requires=[],
-    data_files=[('scripts/data', ['scripts/data/nginx.conf'])],
+    data_files=[('', ['odoo_env/data/nginx.conf'])],
     packages=setuptools.find_packages(),
     classifiers=[
         "Development Status :: 5 - Production/Stable",

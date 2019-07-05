@@ -93,9 +93,11 @@ class Client(object):
                     # todo codigo repetido
                     # get first word of name in lowercase
                     name = manifest.get('name').lower()
-                    name = name.split()[0]
-                    if name == self._name:
-                        return manifest
+                    # por si viene sin name
+                    if name:
+                        name = name.split()[0]
+                        if name == self._name:
+                            return manifest
 
         return False
 

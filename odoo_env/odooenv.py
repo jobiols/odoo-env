@@ -3,14 +3,14 @@
 try:
     from client import Client
     from command import Command, MakedirCommand, ExtractSourcesCommand, \
-        CloneRepo, PullRepo, CreateNginxTemplate, MessageOnly
+        CloneRepo, PullRepo, CreateNginxTemplate, MessageOnly, PullImage
     from constants import BASE_DIR, IN_CONFIG, IN_DATA, IN_LOG, \
         IN_CUSTOM_ADDONS, IN_DIST_PACKAGES, IN_EXTRA_ADDONS, IN_BACKUP_DIR
 except ImportError:
     from odoo_env.client import Client
     from odoo_env.command import Command, MakedirCommand, \
         ExtractSourcesCommand, CloneRepo, PullRepo, CreateNginxTemplate, \
-        MessageOnly
+        MessageOnly, PullImage
     from odoo_env.constants import BASE_DIR, IN_CONFIG, IN_DATA, IN_LOG, \
         IN_CUSTOM_ADDONS, IN_DIST_PACKAGES, IN_EXTRA_ADDONS, IN_BACKUP_DIR
 import pwd
@@ -156,6 +156,20 @@ class OdooEnv(object):
 
         return ret
 
+    def pull_images(self, client_name):
+        """ Forzar la bajada de las imagenes
+        """
+        ret = []
+        self._client = Client(self, client_name)
+        for image in self._client._images:
+            cmd = PullImage(
+                self,
+                command='sudo docker pull {}'.format(image.name),
+                usr_msg='Pulling Image {}'.format(image.short_name)
+            )
+            ret.append(cmd)
+        return ret
+
     def install(self, client_name):
         """ Instalacion de cliente,
         """
@@ -280,19 +294,6 @@ class OdooEnv(object):
                 client_name=client_name
             )
             ret.append(cmd)
-
-        ##################################################################
-        # create dirs for postfix
-        ##################################################################
-
-        #if self.postfix:
-        #    r_dir = '{}{}'.format(BASE_DIR, 'postfix')
-        #    cmd = MakedirCommand(
-        #        self,
-        #        command='mkdir -p {}'.format(r_dir),
-        #        args='{}'.format(r_dir)
-        #    )
-        #    ret.append(cmd)
 
         ##################################################################
         # Extracting sources from image if debug enabled

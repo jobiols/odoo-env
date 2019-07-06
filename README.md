@@ -35,43 +35,47 @@ Functionality
     Odoo Environment Manager v0.8.17 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
-    optional arguments:
-      -h, --help          show this help message and exit
-      -i, --install       Install, requires -c option. Creates dir structure, and
-                          pull repos
-      -w, --write-config  Write config file.
-      -R, --run-env       Run postgres and aeroo images.
-      -r, --run-cli       Run client odoo, requires -c option
-      -S, --stop-env      Stop postgres and aeroo images.
-      -s, --stop-cli      Stop client images, requires -c options.
-      -u, --update-all    Update all requires -d -c and -m options. Use --debug to
-                          force update with host sources
-      -c CLIENT           Client name.
-      -v, --verbose       Go verbose mode. Prints every command
-      --debug             This option has the following efects: 1.- when doing an
-                          update all, (option -u) it forces debug mode. 2.- When
-                          running environment (option -R) it opens port 5432 to
-                          access postgres server databases. 3.- when doing a pull
-                          (option -p) it clones the full repo i.e. does not issue
-                          --depth 1 to git
-      --no-repos          Does not clone or pull repos used with -i or -p
-      -d DATABASE         Database name.
-      -m MODULE           Module to update or all for updating all the registered
-                          modules. You can specify multiple -m options. i.e. -m
-                          all forall modules -m sales stock for updating sales and
-                          stock modules
-      --nginx             Add nginx to installation: With -i creates nginx dir w/
-                          sample config file. with -r starts an nginx container
-                          linked to odoowith -s stops nginx containcer. You must
-                          add certificates and review nginx.conf file.
-      -Q repo             Perform QA running tests, argument are Repo to test.
-                          Need -d, -m and -c options Note: for the test to run in
-                          thedatabase there must be an admin user with password
-                          admin
-      --backup-list       List all backup files available for restore
-      --restore           Restores a backup from backup_dir
-      -f BACKUP_FILE      Filename to restore used with --restore
-      -H, --server-help   List server help requires -c option
+optional arguments:
+  -h, --help          show this help message and exit
+  -i, --install       Install, requires -c option. Creates dir structure, and
+                      pull all the repositories declared in the client
+                      manifest
+  -p, --pull-images   Pull Images, requires -c option. It pull all the images
+                      declared in the client manifest
+  -w, --write-config  Write config file, requires -c option.
+  -R, --run-env       Run postgres and aeroo images, requires -c option.
+  -r, --run-cli       Run client odoo, requires -c option
+  -S, --stop-env      Stop postgres and aeroo images.
+  -s, --stop-cli      Stop client images, requires -c options.
+  -u, --update-all    Update all requires -d -c and -m options. Use --debug to
+                      force update with image sources
+  -c CLIENT           Client name.
+  -v, --verbose       Go verbose mode. Prints every command
+  --debug             This option has the following efects: 1.- When doing an
+                      update all, (option -u) it forces debug mode. 2.- When
+                      running environment (option -R) it opens port 5432 to
+                      access postgres server databases. 3.- When doing a
+                      install (option -i) it clones the full repo i.e. does
+                      not issue --depth 1 to git
+  --no-repos          Does not clone or pull repos used with -i
+  -d DATABASE         Database name.
+  -m MODULE           Module to update or all for updating all the registered
+                      modules. i.e. -m all for all modules -m sale for
+                      updating sale module
+  --nginx             Add nginx to installation: With -i creates nginx dir w/
+                      sample config file. with -r starts an nginx container
+                      linked to odoowith -s stops nginx containcer. If you
+                      want to add certificates review nginx.conf file located
+                      in /odoo_ar/nginx/conf
+  -Q repo             Perform QA running tests, argument are repository to
+                      test. Need -d, -m and -c options Note: for the test to
+                      run the database must be created with demo data and must
+                      have admin user with password admin.
+  --backup-list       List all backup files available for restore
+  --restore           Restores a backup from backup_dir needs -c -d and -f
+  -f BACKUP_FILE      Filename to restore used with --restore. To get the name
+                      of thisfile issue a --backup-list command
+  -H, --server-help   List server help requires -c option
 
 Tool to manage docker based odoo environments
 
@@ -86,6 +90,7 @@ Installation
     
 Changelog
 ---------
+- [0.8.18]  - add -p command 
 - [0.8.17]  - Fix bug in python3 installation 
 - [0.8.13]  - Removing edm option (it was a bad idea), rewrite nginx 
               config to block /database/manager and /database/selector

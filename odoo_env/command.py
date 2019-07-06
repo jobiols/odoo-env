@@ -109,6 +109,11 @@ class PullRepo(Command):
         return os.path.isdir(self._args)
 
 
+class PullImage(Command):
+    def check_args(self):
+        return True
+
+
 class CreateNginxTemplate(Command):
     def check_args(self):
         # si el archivo existe no lo dejamos pasar

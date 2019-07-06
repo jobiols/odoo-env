@@ -271,3 +271,32 @@ class TestRepository(unittest.TestCase):
             "--logfile=/var/log/odoo/odoo.log "
 
         self.assertEqual(cmd.command, command)
+
+    def test_pull_images(self):
+        options = {
+            'debug': False,
+            'nginx': False,
+        }
+        client_name = 'test_client'
+        oe = OdooEnv(options)
+        cmds = oe.pull_images(client_name)
+
+        cmd = cmds[0]
+        self.assertEqual(cmd.usr_msg, 'Pulling Image aeroo')
+        command = 'sudo docker pull jobiols/aeroo-docs'
+        self.assertEqual(cmd.command, command)
+
+        cmd = cmds[1]
+        self.assertEqual(cmd.usr_msg, 'Pulling Image odoo')
+        command = 'sudo docker pull jobiols/odoo-jeo:9.0'
+        self.assertEqual(cmd.command, command)
+
+        cmd = cmds[2]
+        self.assertEqual(cmd.usr_msg, 'Pulling Image postgres')
+        command = 'sudo docker pull postgres:9.5'
+        self.assertEqual(cmd.command, command)
+
+        cmd = cmds[3]
+        self.assertEqual(cmd.usr_msg, 'Pulling Image nginx')
+        command = 'sudo docker pull nginx:latest'
+        self.assertEqual(cmd.command, command)

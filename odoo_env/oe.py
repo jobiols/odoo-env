@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import argparse
 from odoo_env.odooenv import OdooEnv
 from odoo_env.messages import Msg
@@ -22,14 +21,21 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
              "all the repositories declared in the client manifest")
 
     parser.add_argument(
+        '-p',
+        '--pull-images',
+        action='store_true',
+        help="Pull Images, requires -c option. It pull all the images declared"
+             " in the client manifest")
+
+    parser.add_argument(
         '-w', '--write-config',
         action='store_true',
-        help="Write config file.")
+        help="Write config file, requires -c option.")
 
     parser.add_argument(
         '-R', '--run-env',
         action='store_true',
-        help="Run postgres and aeroo images.")
+        help="Run postgres and aeroo images, requires -c option.")
 
     parser.add_argument(
         '-r', '--run-cli',
@@ -71,13 +77,13 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
              'mode. '
              '2.- When running environment (option -R) it opens port '
              '5432 to access postgres server databases. '
-             '3.- When doing a pull (option -p) it clones the full repo i.e. '
-             'does not issue --depth 1 to git ')
+             '3.- When doing a install (option -i) it clones the full '
+             'repo i.e. does not issue --depth 1 to git ')
 
     parser.add_argument(
         '--no-repos',
         action='store_true',
-        help='Does not clone or pull repos used with -i or -p')
+        help='Does not clone or pull repos used with -i')
 
     parser.add_argument(
         '-d',
@@ -169,6 +175,10 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
     if args.install:
         client_name = get_param(args, 'client')
         commands += OdooEnv(options).install(client_name)
+
+    if args.pull_images:
+        client_name = get_param(args, 'client')
+        commands += OdooEnv(options).pull_images(client_name)
 
     if args.stop_env:
         client_name = get_param(args, 'client')

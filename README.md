@@ -90,6 +90,7 @@ Installation
     
 Changelog
 ---------
+- [0.8.19]  - allow options -i and -w to work together 
 - [0.8.18]  - add -p command 
 - [0.8.17]  - Fix bug in python3 installation 
 - [0.8.13]  - Removing edm option (it was a bad idea), rewrite nginx 

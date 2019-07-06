@@ -152,10 +152,6 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
     }
     commands = []
 
-    if args.write_config:
-        client_name = get_param(args, 'client')
-        commands += OdooEnv(options).write_config(client_name)
-
     if args.server_help:
         client_name = get_param(args, 'client')
         commands += OdooEnv(options).server_help(client_name)
@@ -175,6 +171,10 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
     if args.install:
         client_name = get_param(args, 'client')
         commands += OdooEnv(options).install(client_name)
+
+    if args.write_config:
+        client_name = get_param(args, 'client')
+        commands += OdooEnv(options).write_config(client_name)
 
     if args.pull_images:
         client_name = get_param(args, 'client')

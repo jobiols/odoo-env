@@ -6,7 +6,7 @@ Odooenv
 
 Directory structure
 
-    /odoo
+    /odoo_ar
     ├── odoo-9.0
     │   ├── client_one
     │   │    ├── config             odoo.conf

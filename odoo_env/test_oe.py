@@ -18,7 +18,6 @@ class TestRepository(unittest.TestCase):
             'debug': False,
             'no-repos': False,
             'nginx': True,
-            'postfix': False
         }
 
         base_dir = '/odoo_ar/'
@@ -181,7 +180,6 @@ class TestRepository(unittest.TestCase):
             'debug': False,
             'no-repos': False,
             'nginx': False,
-            'postfix': False,
         }
         oe = OdooEnv(options)
 

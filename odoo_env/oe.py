@@ -17,30 +17,31 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         '-i',
         '--install',
         action='store_true',
-        help="Install, requires -c option. Creates dir structure, and pull "
-             "all the repositories declared in the client manifest")
+        help="Install. Creates dir structure, and pull all the repositories "
+             "declared in the client manifest. Use -i with --debug to copy"
+             "image sources to host")
 
     parser.add_argument(
         '-p',
         '--pull-images',
         action='store_true',
-        help="Pull Images, requires -c option. It pull all the images declared"
-             " in the client manifest")
+        help="Pull Images. It pull all the images declared in the client "
+             "manifest")
 
     parser.add_argument(
         '-w', '--write-config',
         action='store_true',
-        help="Write config file, requires -c option.")
+        help="Write config file.")
 
     parser.add_argument(
         '-R', '--run-env',
         action='store_true',
-        help="Run postgres and aeroo images, requires -c option.")
+        help="Run postgres and aeroo images.")
 
     parser.add_argument(
         '-r', '--run-cli',
         action='store_true',
-        help="Run client odoo, requires -c option")
+        help="Run odoo image")
 
     parser.add_argument(
         '-S', '--stop-env',
@@ -50,13 +51,13 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
     parser.add_argument(
         '-s', '--stop-cli',
         action='store_true',
-        help="Stop client images, requires -c options.")
+        help="Stop odoo image.")
 
     parser.add_argument(
-        '-u', '--update-all',
+        '-u', '--update',
         action='store_true',
-        help="Update all requires -d -c and -m options. "
-             "Use --debug to force update with image sources")
+        help="Update modules to database. Use --debug to force update with "
+             "image sources")
 
     parser.add_argument(
         '-c',
@@ -73,17 +74,17 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         '--debug',
         action='store_true',
         help='This option has the following efects: '
-             '1.- When doing an update all, (option -u) it forces debug '
-             'mode. '
-             '2.- When running environment (option -R) it opens port '
-             '5432 to access postgres server databases. '
-             '3.- When doing a install (option -i) it clones the full '
-             'repo i.e. does not issue --depth 1 to git ')
+             '1.- When doing an install it copies the image sources to host'
+             '2.- When doing an update all, (option -u) it forces update with '
+             'image sources.'
+             '3.- When doing a install (option -i) it clones repos with '
+             'depth=100'
+    )
 
     parser.add_argument(
         '--no-repos',
         action='store_true',
-        help='Does not clone or pull repos used with -i')
+        help='Does not clone or pull repos when doing -i (install)')
 
     parser.add_argument(
         '-d',
@@ -96,17 +97,19 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         '-m',
         action='append',
         dest='module',
-        help="Module to update or all for updating all the registered "
-             "modules. i.e. -m all for all modules -m sale for "
-             "updating sale module")
+        help="Module to update. Used with -u (update) i.e. -m sale for "
+             "updating sale module -m all for updating all modules. NOTE: if "
+             "you perform -u without -m it asumes all modules")
 
     parser.add_argument(
         '--nginx',
         action='store_true',
-        help='Add nginx to installation: With -i creates nginx dir w/ sample '
-             'config file. with -r starts an nginx container linked to odoo'
-             'with -s stops nginx containcer. If you want to add certificates '
-             'review nginx.conf file located in /odoo_ar/nginx/conf')
+        help='Add nginx to installation: Used with -i creates nginx dir '
+             'with config file. '
+             'Used with -r starts an nginx container linked to odoo.'
+             'Used with -s stops nginx containcer. '
+             'If you want to add certificates review nginx.conf file located '
+             'in /odoo_ar/nginx/conf')
 
     parser.add_argument(
         '-Q',
@@ -127,19 +130,20 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
     parser.add_argument(
         '--restore',
         action='store_true',
-        help="Restores a backup from backup_dir needs -c -d and -f ")
+        help="Restores a backup")
 
     parser.add_argument(
         '-f',
         action='append',
         dest='backup_file',
-        help="Filename to restore used with --restore. To get the name of this"
-             "file issue a --backup-list command")
+        help="Filename to restore. Used with --restore. To get the name of "
+             "this file issue a --backup-list command."
+             "If ommited the newest file will be restored")
 
     parser.add_argument(
         '-H', '--server-help',
         action='store_true',
-        help="List server help requires -c option ")
+        help="List odoo server help")
 
     args = parser.parse_args()
     options = {
@@ -147,7 +151,6 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         'debug': args.debug,
         'no-repos': args.no_repos,
         'nginx': args.nginx,
-        'postfix': False,
         'backup_file': args.backup_file,
     }
     commands = []

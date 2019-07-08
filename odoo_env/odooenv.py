@@ -745,7 +745,3 @@ class OdooEnv(object):
     @property
     def nginx(self):
         return self._options['nginx']
-
-    @property
-    def postfix(self):
-        return self._options['postfix']

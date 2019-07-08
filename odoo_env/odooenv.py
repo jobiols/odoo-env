@@ -511,8 +511,6 @@ class OdooEnv(object):
         return ret
 
     def set_config_environment(self):
-        ret = []
-
         command = '-e SERVER_WIDE_MODULES=web,web_kanban,server_mode,' \
                   'database_tools '
 

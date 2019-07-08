@@ -116,27 +116,34 @@ class OdooEnv(object):
         ret.append(cmd)
         return ret
 
-    def restore(self, client_name, database, backup_file):
+    def restore(self, client_name, database=False, backup_file=False,
+        deactivate=False):
         """ Restaurar un backup desde el directorio backup_dir
         """
 
         self._client = Client(self, client_name)
-        image = self.client.get_image('postgres')
-
         ret = []
 
-        msg = 'Restoring database {}'.format(
-            database
-        )
+        msg = 'Restoring database ' + database + ' '
+        if backup_file:
+            msg += 'from backup ' + backup_file
+        else:
+            msg += 'from newest backup. '
+
+        if deactivate:
+            msg += 'And performing deactivation'
 
         command = 'sudo docker run --rm -i '
         command += '--link pg-{}:db '.format(client_name)
         command += '-v {}:/backup '.format(self.client.backup_dir)
         command += '-v {}data_dir/filestore:/filestore '.format(
             self.client.base_dir)
-        command += '--env ZIPFILE={} '.format(backup_file)
         command += '--env NEW_DBNAME={} '.format(database)
-        command += 'jobiols/restore '
+        if backup_file:
+            command += '--env ZIPFILE={} '.format(backup_file)
+        if deactivate:
+            command += '--env DEACTIVATE=True '.format(backup_file)
+        command += 'jobiols/dbtools '
 
         cmd = Command(
             self,

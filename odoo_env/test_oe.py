@@ -324,3 +324,25 @@ class TestRepository(unittest.TestCase):
             "-d client_prod " \
             "-u all "
         self.assertEqual(cmds[0].command, command)
+
+    def test_restore(self):
+        options = {
+            'debug': False,
+            'nginx': False,
+        }
+        client_name = 'test_client'
+        database = 'client_prod'
+        backup_file = 'bkp.zip'
+        oe = OdooEnv(options)
+        cmds = oe.restore(client_name, database, backup_file, deactivate=True)
+        command = \
+            'sudo docker run --rm -i ' \
+            '--link pg-test_client:db ' \
+            '-v /odoo_ar/odoo-9.0/test_client/backup_dir/:/backup ' \
+            '-v /odoo_ar/odoo-9.0/test_client/data_dir/filestore:/filestore ' \
+            '--env NEW_DBNAME=client_prod ' \
+            '--env ZIPFILE=bkp.zip ' \
+            '--env DEACTIVATE=True ' \
+            'jobiols/dbtools '
+
+        self.assertEqual(cmds[0].command, command)

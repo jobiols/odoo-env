@@ -31,4 +31,11 @@ def get_param(args, param):
         if args.backup_file:
             return args.backup_file[0]
         else:
-            Msg().err('Need -f option (backup file). Process aborted')
+            Msg().inf('Restoring newest backup')
+            return False
+
+    if param == 'deactivate':
+        if args.deactivate:
+            return args.deactivate
+        else:
+            return False

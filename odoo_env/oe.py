@@ -71,6 +71,11 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         help="Go verbose mode. Prints every command")
 
     parser.add_argument(
+        '--deactivate',
+        action='store_true',
+        help="Deactivate database before restore")
+
+    parser.add_argument(
         '--debug',
         action='store_true',
         help='This option has the following efects: '
@@ -167,9 +172,11 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         client_name = get_param(args, 'client')
         database = get_param(args, 'database')
         backup_file = get_param(args, 'backup_file')
+        deactivate = get_param(args, 'deactivate')
         commands += OdooEnv(options).restore(client_name,
                                              database,
-                                             backup_file)
+                                             backup_file,
+                                             deactivate)
 
     if args.install:
         client_name = get_param(args, 'client')

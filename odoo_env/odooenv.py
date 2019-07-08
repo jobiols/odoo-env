@@ -124,14 +124,14 @@ class OdooEnv(object):
         self._client = Client(self, client_name)
         ret = []
 
-        msg = 'Restoring database ' + database + ' '
+        msg = 'Restoring database %s ' % database
         if backup_file:
-            msg += 'from backup ' + backup_file
+            msg += 'from backup %s ' % backup_file
         else:
-            msg += 'from newest backup. '
+            msg += 'from newest backup '
 
         if deactivate:
-            msg += 'And performing deactivation'
+            msg += 'and performing deactivation.'
 
         command = 'sudo docker run --rm -i '
         command += '--link pg-{}:db '.format(client_name)

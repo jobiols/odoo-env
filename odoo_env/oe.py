@@ -74,7 +74,7 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         '--debug',
         action='store_true',
         help='This option has the following efects: '
-             '1.- When doing an install it copies the image sources to host'
+             '1.- When doing an install it copies the image sources to host '
              '2.- When doing an update all, (option -u) it forces update with '
              'image sources.'
              '3.- When doing a install (option -i) it clones repos with '
@@ -199,11 +199,11 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         client_name = get_param(args, 'client')
         commands += OdooEnv(options).run_client(client_name)
 
-    if args.update_all:
+    if args.update:
         client_name = get_param(args, 'client')
         database = get_param(args, 'database')
         modules = get_param(args, 'module')
-        commands += OdooEnv(options).update_all(client_name, database, modules)
+        commands += OdooEnv(options).update(client_name, database, modules)
 
     if args.quality_assurance:
         client_name = get_param(args, 'client')

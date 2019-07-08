@@ -14,13 +14,18 @@ def get_param(args, param):
         if args.database:
             return args.database[0]
         else:
-            Msg().err('Need -d option (database name). Process aborted')
+            database = args.client[0] + '_prod'
+            Msg().inf('Using default database: %s, use -d to '
+                      'specify database' % database)
+            return database
 
     if param == 'module':
         if args.module:
             return args.module
         else:
-            Msg().err('Need -m option (module(s) name). Process aborted')
+            Msg().inf('Using default all modules, use -m to specify '
+                      'single module.')
+            return ['all']
 
     if param == 'backup_file':
         if args.backup_file:

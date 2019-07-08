@@ -2,6 +2,7 @@
 ##############################################################################
 
 import unittest
+
 try:
     from command import Command, MakedirCommand, CreateNginxTemplate
     from client import Client
@@ -298,3 +299,28 @@ class TestRepository(unittest.TestCase):
         self.assertEqual(cmd.usr_msg, 'Pulling Image nginx')
         command = 'sudo docker pull nginx:latest'
         self.assertEqual(cmd.command, command)
+
+    def test_update(self):
+        options = {
+            'debug': False,
+            'nginx': False,
+        }
+        client_name = 'test_client'
+        oe = OdooEnv(options)
+        cmds = oe.update(client_name, 'client_prod', ['all'])
+        command = \
+            "sudo docker run --rm -it " \
+            "-v /odoo_ar/odoo-9.0/test_client/config:/opt/odoo/etc/ " \
+            "-v /odoo_ar/odoo-9.0/test_client/data_dir:/opt/odoo/data " \
+            "-v /odoo_ar/odoo-9.0/test_client/log:/var/log/odoo " \
+            "-v /odoo_ar/odoo-9.0/test_client/sources:" \
+            "/opt/odoo/custom-addons " \
+            "-v /odoo_ar/odoo-9.0/test_client/backup_dir:/var/odoo/backups/ " \
+            "--link pg-test_client:db " \
+            "-e ODOO_CONF=/dev/null jobiols/odoo-jeo:9.0 " \
+            "-- " \
+            "--stop-after-init " \
+            "--logfile=false " \
+            "-d client_prod " \
+            "-u all "
+        self.assertEqual(cmds[0].command, command)

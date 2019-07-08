@@ -89,7 +89,9 @@ Installation
     
 Changelog
 ---------
-- 0.8.19  allow options -i and -w to work together
+- 0.8.20  When option -d not present assume database = client_name + 
+          "_prod" when option -m is not present asume default "all"
+- 0.8.19  Allow options -i and -w to work together
 - 0.8.18  add -p command 
 - 0.8.17  Fix bug in python3 installation 
 - 0.8.13  Removing edm option (it was a bad idea), rewrite nginx 

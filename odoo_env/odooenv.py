@@ -656,7 +656,7 @@ class OdooEnv(object):
 
         return ret
 
-    def update_all(self, client_name, database, modules):
+    def update(self, client_name, database, modules):
         self._client = Client(self, client_name)
         ret = []
 
@@ -675,7 +675,8 @@ class OdooEnv(object):
         cmd = Command(
             self,
             command=command,
-            usr_msg='Performing update all on database {}'.format(database)
+            usr_msg='Performing update of {} on database {}'.format(
+                ', '.join(modules), database)
         )
         ret.append(cmd)
         return ret

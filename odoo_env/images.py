@@ -3,8 +3,8 @@
 
 
 class Image(object):
-    def __init__(self, dict):
-        self._dict = dict
+    def __init__(self, values):
+        self._dict = values
 
     @property
     def short_name(self):

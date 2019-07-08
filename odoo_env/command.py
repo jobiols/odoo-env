@@ -110,7 +110,8 @@ class PullRepo(Command):
 
 
 class PullImage(Command):
-    def check_args(self):
+    @staticmethod
+    def check_args():
         return True
 
 

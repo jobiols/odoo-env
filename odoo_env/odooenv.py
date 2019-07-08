@@ -142,7 +142,7 @@ class OdooEnv(object):
         if backup_file:
             command += '--env ZIPFILE={} '.format(backup_file)
         if deactivate:
-            command += '--env DEACTIVATE=True '.format(backup_file)
+            command += '--env DEACTIVATE=True '
         command += 'jobiols/dbtools '
 
         cmd = Command(
@@ -357,8 +357,6 @@ class OdooEnv(object):
                                          IN_CUSTOM_ADDONS)
         ret += '-v {}backup_dir:{} '.format(self.client.base_dir,
                                             IN_BACKUP_DIR)
-        return ret
-
         return ret
 
     def stop_environment(self, client_name):
@@ -745,10 +743,6 @@ class OdooEnv(object):
     @property
     def no_repos(self):
         return self._options['no-repos']
-
-    @property
-    def nginx(self):
-        return self._options['nginx']
 
     @property
     def nginx(self):

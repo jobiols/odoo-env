@@ -3,8 +3,8 @@
 
 
 class Repo(object):
-    def __init__(self, dict):
-        self._dict = dict
+    def __init__(self, value):
+        self._dict = value
 
     @property
     def name(self):

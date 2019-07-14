@@ -329,6 +329,14 @@ class OdooEnv(object):
                 ret.append(cmd)
 
             for module in packs:
+                r_dir = '{}{}'.format(self.client.version_dir, module)
+                cmd = Command(
+                    self,
+                    command='sudo chmod -R og+w {}/'.format(r_dir)
+                )
+                ret.append(cmd)
+
+            for module in packs:
                 # create git repo
                 command = 'git -C {}{}/ init '.format(
                     self._client.version_dir, module)
@@ -358,6 +366,8 @@ class OdooEnv(object):
                     usr_msg='Commit repository for %s' % module
                 )
                 ret.append(cmd)
+
+
 
         ##################################################################
         # Clone or update repos as needed

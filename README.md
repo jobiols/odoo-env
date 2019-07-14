@@ -29,10 +29,10 @@ Functionality
     usage: oe.py [-h] [-i] [-p] [-w] [-R] [-r] [-S] [-s] [-u] [-c CLIENT] [-v]
                  [--deactivate] [--debug] [--no-repos] [-d DATABASE] [-m MODULE]
                  [--nginx] [-Q repo] [--backup-list] [--restore] [-f BACKUP_FILE]
-                 [-H]
+                 [-H] [-V]
     
     ==========================================================================
-    Odoo Environment Manager v0.8.21 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.8.22 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:
@@ -76,7 +76,9 @@ Functionality
       -f BACKUP_FILE      Filename to restore. Used with --restore. To get the
                           name of this file issue a --backup-list command.If
                           ommited the newest file will be restored
-      -H, --server-help   List odoo server help
+      -H, --server-help   Show odoo server help
+      -V, --version       Show version number and exit
+
       
 Tool to manage docker based odoo environments
 
@@ -91,6 +93,11 @@ Installation
     
 Changelog
 ---------
+    - 0.8.22 When using the options -i together with --debug, the 
+    dist_packages and extra_addons directories were created with the 
+    image sources but in read-only mode. Now we give them write 
+    permission and a git repository is added to verify if there were 
+    modifications. Option -V is added to show the version.
     - 0.8.21 Many improvements on restore database.
     - 0.8.20 When option -d not present assume database = client_name + 
              "_prod" when option -m is not present asume default "all"

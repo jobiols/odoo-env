@@ -85,6 +85,11 @@ class Command:
         return self._command
 
 
+class CreateRepository(Command):
+    def check(self):
+        return True
+
+
 class MakedirCommand(Command):
     def check_args(self):
         # si el directorio existe no lo creamos
@@ -93,8 +98,7 @@ class MakedirCommand(Command):
 
 class ExtractSourcesCommand(Command):
     def check_args(self):
-        # si el directorio tiene archivos no copiamos los fuentes
-        return os.listdir(self._args) == []
+        return True
 
 
 class CloneRepo(Command):

@@ -346,3 +346,54 @@ class TestRepository(unittest.TestCase):
             'jobiols/dbtools '
 
         self.assertEqual(cmds[0].command, command)
+
+    def test_download_image_sources(self):
+        options = {
+            'debug': True,
+            'no-repos': False,
+            'nginx': False,
+        }
+        client_name = 'test_client'
+        database = 'client_prod'
+        backup_file = 'bkp.zip'
+        oe = OdooEnv(options)
+        cmds = oe.install('test_client')
+        command = 'mkdir -p /odoo_ar/odoo-9.0/dist-packages'
+        self.assertEqual(cmds[8].command, command)
+        command = 'mkdir -p /odoo_ar/odoo-9.0/extra-addons'
+        self.assertEqual(cmds[9].command, command)
+
+        command = 'chmod og+w /odoo_ar/odoo-9.0/dist-packages'
+        self.assertEqual(cmds[10].command,command)
+        command = 'chmod og+w /odoo_ar/odoo-9.0/extra-addons'
+        self.assertEqual(cmds[11].command,command)
+
+        command = 'sudo docker run -it --rm ' \
+                  '--entrypoint=/extract_dist-packages.sh ' \
+                  '-v /odoo_ar/odoo-9.0/dist-packages/:' \
+                  '/mnt/dist-packages ' \
+                  'jobiols/odoo-jeo:9.0.debug '
+        self.assertEqual(cmds[16].command, command)
+        command = 'sudo docker run -it --rm ' \
+                  '--entrypoint=/extract_extra-addons.sh ' \
+                  '-v /odoo_ar/odoo-9.0/extra-addons/:' \
+                  '/mnt/extra-addons ' \
+                  'jobiols/odoo-jeo:9.0.debug '
+        self.assertEqual(cmds[17].command, command)
+
+        command = 'git -C /odoo_ar/odoo-9.0/dist-packages/ init '
+        self.assertEqual(cmds[18].command, command)
+        command = 'git -C /odoo_ar/odoo-9.0/extra-addons/ init '
+        self.assertEqual(cmds[19].command, command)
+
+        command = 'git -C /odoo_ar/odoo-9.0/dist-packages/ add . '
+        self.assertEqual(cmds[20].command, command)
+        command = 'git -C /odoo_ar/odoo-9.0/extra-addons/ add . '
+        self.assertEqual(cmds[21].command, command)
+
+        command = 'git -C /odoo_ar/odoo-9.0/dist-packages/ ' \
+                  'commit -m inicial '
+        self.assertEqual(cmds[22].command, command)
+        command = 'git -C /odoo_ar/odoo-9.0/extra-addons/ ' \
+                  'commit -m inicial '
+        self.assertEqual(cmds[23].command, command)

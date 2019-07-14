@@ -3,7 +3,8 @@
 try:
     from client import Client
     from command import Command, MakedirCommand, ExtractSourcesCommand, \
-        CloneRepo, PullRepo, CreateNginxTemplate, MessageOnly, PullImage
+        CloneRepo, PullRepo, CreateNginxTemplate, MessageOnly, PullImage, \
+        CreateRepository
     from constants import BASE_DIR, IN_CONFIG, IN_DATA, IN_LOG, \
         IN_CUSTOM_ADDONS, IN_DIST_PACKAGES, IN_EXTRA_ADDONS, IN_BACKUP_DIR
 except ImportError:
@@ -248,7 +249,7 @@ class OdooEnv(object):
                 ret.append(cmd)
 
         ##################################################################
-        # change o+w for those dirs
+        # change og+w for those dirs
         ##################################################################
 
         if self.debug:
@@ -257,7 +258,7 @@ class OdooEnv(object):
                 r_dir = '{}{}'.format(self.client.version_dir, w_dir)
                 cmd = Command(
                     self,
-                    command='chmod o+w {}'.format(r_dir)
+                    command='chmod og+w {}'.format(r_dir)
                 )
                 ret.append(cmd)
 
@@ -307,7 +308,9 @@ class OdooEnv(object):
         ##################################################################
         if self.debug:
             # no sacamos dist-local-packages
-            for module in ['dist-packages', 'extra-addons']:
+            packs = ['dist-packages', 'extra-addons']
+
+            for module in packs:
                 msg = 'Extracting {} from image {}.debug'.format(
                     module, self.client.get_image('odoo').name)
                 command = 'sudo docker run -it --rm '
@@ -322,6 +325,37 @@ class OdooEnv(object):
                     command=command,
                     args='{}{}'.format(self.client.version_dir, module),
                     usr_msg=msg,
+                )
+                ret.append(cmd)
+
+            for module in packs:
+                # create git repo
+                command = 'git -C {}{}/ init '.format(
+                    self._client.version_dir, module)
+                cmd = CreateRepository(
+                    self,
+                    command=command,
+                    usr_msg='Init repository for %s' % module
+                )
+                ret.append(cmd)
+
+            for module in packs:
+                command = 'git -C {}{}/ add . '.format(
+                    self._client.version_dir, module)
+                cmd = CreateRepository(
+                    self,
+                    command=command,
+                    usr_msg='Add files to repository for %s' % module
+                )
+                ret.append(cmd)
+
+            for module in packs:
+                command = 'git -C {}{}/ commit -m inicial '.format(
+                    self._client.version_dir, module)
+                cmd = CreateRepository(
+                    self,
+                    command=command,
+                    usr_msg='Commit repository for %s' % module
                 )
                 ret.append(cmd)
 

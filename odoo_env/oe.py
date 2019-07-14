@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import absolute_import
 import argparse
 from odoo_env.odooenv import OdooEnv
 from odoo_env.messages import Msg
@@ -148,7 +149,13 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
     parser.add_argument(
         '-H', '--server-help',
         action='store_true',
-        help="List odoo server help")
+        help="Show odoo server help")
+
+    parser.add_argument(
+        '-V',
+        '--version',
+        action='store_true',
+        help="Show version number and exit")
 
     args = parser.parse_args()
     options = {
@@ -217,6 +224,11 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         database = get_param(args, 'database')
         commands += OdooEnv(options).qa(client_name, database,
                                         args.quality_assurance[0])
+
+    if args.version:
+        Msg().inf('oe version %s' % __version__)
+        exit()
+
 
     # #####################################################################
     # ejecutar comandos

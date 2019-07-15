@@ -4,7 +4,7 @@ try:
     from client import Client
     from command import Command, MakedirCommand, ExtractSourcesCommand, \
         CloneRepo, PullRepo, CreateNginxTemplate, MessageOnly, PullImage, \
-        CreateRepository
+        CreateGitignore
     from constants import BASE_DIR, IN_CONFIG, IN_DATA, IN_LOG, \
         IN_CUSTOM_ADDONS, IN_DIST_PACKAGES, IN_EXTRA_ADDONS, IN_BACKUP_DIR
 except ImportError:
@@ -328,11 +328,23 @@ class OdooEnv(object):
                 )
                 ret.append(cmd)
 
+            # poner permisos de escritura
             for module in packs:
                 r_dir = '{}{}'.format(self.client.version_dir, module)
                 cmd = Command(
                     self,
-                    command='sudo chmod -R og+w {}/'.format(r_dir)
+                    command='sudo chmod -R og+w %s/' % r_dir,
+                    usr_msg='Making writable %s' % r_dir
+                )
+                ret.append(cmd)
+
+            # agregar un gitignore
+            for module in packs:
+                r_dir = '{}{}'.format(self.client.version_dir, module)
+                cmd = CreateGitignore(
+                    self,
+                    command='%s/.gitignore' % r_dir,
+                    usr_msg='Creating gitignore file in %s' % r_dir
                 )
                 ret.append(cmd)
 
@@ -340,7 +352,7 @@ class OdooEnv(object):
                 # create git repo
                 command = 'git -C {}{}/ init '.format(
                     self._client.version_dir, module)
-                cmd = CreateRepository(
+                cmd = Command(
                     self,
                     command=command,
                     usr_msg='Init repository for %s' % module

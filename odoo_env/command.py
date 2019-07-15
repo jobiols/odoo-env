@@ -85,9 +85,12 @@ class Command:
         return self._command
 
 
-class CreateRepository(Command):
-    def check(self):
-        return True
+class CreateGitignore(Command):
+    def execute(self):
+        # crear el gitignore en el archivo que viene del comando
+        value = '.idea/'
+        with open(self._command, 'w') as f:
+            f.write(value)
 
 
 class MakedirCommand(Command):

@@ -93,6 +93,8 @@ Installation
     
 Changelog
 ---------
+    - 0.8.29 Modify ssl certificate directories from letsencrypt, 
+    support for oca/letsencript.
     - 0.8.27 Fix compatibility issues w/  python3
     - 0.8.22 When using the options -i together with --debug, the 
     dist_packages and extra_addons directories were created with the 

@@ -379,8 +379,6 @@ class OdooEnv(object):
                 )
                 ret.append(cmd)
 
-
-
         ##################################################################
         # Clone or update repos as needed
         ##################################################################
@@ -696,8 +694,8 @@ class OdooEnv(object):
             nginx_dir = self.client.nginx_dir
             command = 'sudo docker run -d '
             command += '-v {}conf:/etc/nginx/conf.d:ro '.format(nginx_dir)
-            command += '-v {}cert:/etc/letsencrypt/live/certificadositio '.format(
-                nginx_dir)
+            command += '-v {}data_dir/letsencrypt:/etc/letsencrypt '.format(
+                self.client.base_dir)
             command += '-v {}log:/var/log/nginx/ '.format(nginx_dir)
             command += '-p 80:80 '
             command += '-p 443:443 '

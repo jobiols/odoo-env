@@ -24,7 +24,7 @@ cp ~/odoo-env/scripts/sd.py /usr/local/bin/sd
 # install python 2.7
 echo
 echo "installing python"
-apt-get install python -y
+apt-get install python3.6 -y
 
 # install docker
 echo

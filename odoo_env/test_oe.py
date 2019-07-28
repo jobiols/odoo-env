@@ -353,9 +353,6 @@ class TestRepository(unittest.TestCase):
             'no-repos': False,
             'nginx': False,
         }
-        client_name = 'test_client'
-        database = 'client_prod'
-        backup_file = 'bkp.zip'
         oe = OdooEnv(options)
         cmds = oe.install('test_client')
         command = 'mkdir -p /odoo_ar/odoo-9.0/dist-packages'

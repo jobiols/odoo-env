@@ -105,7 +105,8 @@ class Client(object):
                             return manifest, root
         return False
 
-    def get_client_data(self):
+    @staticmethod
+    def get_client_data():
         # obtener el archivo con los datos de clientes
         try:
             with open(USER_CLIENT_FILE, 'r') as config:
@@ -114,7 +115,8 @@ class Client(object):
             return {}
         return ret if ret else {}
 
-    def save_client_data(self, data):
+    @staticmethod
+    def save_client_data(data):
         if not os.path.exists(USER_CONFIG_PATH):
             os.makedirs(USER_CONFIG_PATH)
 

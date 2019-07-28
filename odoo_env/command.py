@@ -100,7 +100,8 @@ class MakedirCommand(Command):
 
 
 class ExtractSourcesCommand(Command):
-    def check_args(self):
+    @staticmethod
+    def check_args():
         return True
 
 

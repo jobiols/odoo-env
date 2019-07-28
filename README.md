@@ -32,7 +32,7 @@ Functionality
                  [-H] [-V]
     
     ==========================================================================
-    Odoo Environment Manager v0.8.27 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.8.30 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:
@@ -93,9 +93,11 @@ Installation
     
 Changelog
 ---------
+    - 0.8.30 Add cache file to fix performance issues when we have more 
+    than 15 clients.
     - 0.8.29 Modify ssl certificate directories from letsencrypt, 
     support for oca/letsencript.
-    - 0.8.27 Fix compatibility issues w/  python3
+    - 0.8.27 Fix compatibility issues w/ python3
     - 0.8.22 When using the options -i together with --debug, the 
     dist_packages and extra_addons directories were created with the 
     image sources but in read-only mode. Now we give them write 

@@ -362,7 +362,7 @@ class OdooEnv(object):
             for module in packs:
                 command = 'git -C {}{}/ add . '.format(
                     self._client.version_dir, module)
-                cmd = CreateRepository(
+                cmd = Command(
                     self,
                     command=command,
                     usr_msg='Add files to repository for %s' % module
@@ -372,7 +372,7 @@ class OdooEnv(object):
             for module in packs:
                 command = 'git -C {}{}/ commit -m inicial '.format(
                     self._client.version_dir, module)
-                cmd = CreateRepository(
+                cmd = Command(
                     self,
                     command=command,
                     usr_msg='Commit repository for %s' % module

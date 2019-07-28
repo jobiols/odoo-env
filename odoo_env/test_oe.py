@@ -381,19 +381,17 @@ class TestRepository(unittest.TestCase):
                   'jobiols/odoo-jeo:9.0.debug '
         self.assertEqual(cmds[17].command, command)
 
-        command = 'git -C /odoo_ar/odoo-9.0/dist-packages/ init '
+        command = 'sudo chmod -R og+w /odoo_ar/odoo-9.0/dist-packages/'
         self.assertEqual(cmds[18].command, command)
-        command = 'git -C /odoo_ar/odoo-9.0/extra-addons/ init '
+        command = 'sudo chmod -R og+w /odoo_ar/odoo-9.0/extra-addons/'
         self.assertEqual(cmds[19].command, command)
 
-        command = 'git -C /odoo_ar/odoo-9.0/dist-packages/ add . '
+        command = '/odoo_ar/odoo-9.0/dist-packages/.gitignore'
         self.assertEqual(cmds[20].command, command)
-        command = 'git -C /odoo_ar/odoo-9.0/extra-addons/ add . '
+        command = '/odoo_ar/odoo-9.0/extra-addons/.gitignore'
         self.assertEqual(cmds[21].command, command)
 
-        command = 'git -C /odoo_ar/odoo-9.0/dist-packages/ ' \
-                  'commit -m inicial '
+        command = 'git -C /odoo_ar/odoo-9.0/dist-packages/ init '
         self.assertEqual(cmds[22].command, command)
-        command = 'git -C /odoo_ar/odoo-9.0/extra-addons/ ' \
-                  'commit -m inicial '
+        command = 'git -C /odoo_ar/odoo-9.0/extra-addons/ init '
         self.assertEqual(cmds[23].command, command)

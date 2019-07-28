@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
+import yaml
 import os
+
 try:
     from messages import Msg
     from constants import BASE_DIR
@@ -14,6 +16,9 @@ except ImportError:
     from odoo_env.images import Image
 
 msg = Msg()
+
+USER_CONFIG_PATH = os.path.expanduser('~') + '/.config/oe/'
+USER_CLIENT_FILE = USER_CONFIG_PATH + 'oe_clients.yaml'
 
 
 class Client(object):
@@ -33,22 +38,21 @@ class Client(object):
         else:
             manifest = self.get_manifest(BASE_DIR)
         if not manifest:
-            msg.inf('Can not find client {} in this host. Please provide path '
-                    'to repo\n where it is or hit Enter to exit.'
-                    '\n'.format(self._name))
+            msg.inf('Can not find client {} in this host installation.\n'
+                    'We will try in current dir'.format(self._name))
 
             # mantener compatibilidad con python2
             import six
-            path = six.moves.input('path = ')
-            manifest = self.get_manifest(path)
+            six.moves.input('Hit Enter to continue or CTRL C to exit')
+            manifest = self.get_manifest('.\\')
             if not manifest:
-                msg.err('Can not find client {} in this host'.format(name))
+                msg.err('Can not find client {} in current dir'.format(name))
 
             msg.inf('Client found!')
             msg.inf('Name {}\nversion {}\n'.format(manifest.get('name'),
                                                    manifest.get('version')))
 
-        # Chequar que este todo bien
+        # Chequar que el manifiesto tenga bien las cosas
         if not manifest.get('docker'):
             msg.err('No images in manifest {}'.format(self.name))
 
@@ -75,33 +79,71 @@ class Client(object):
         for img in manifest.get('docker'):
             self._images.append(Image(img))
 
-        # todo codigo repetido
         # get first word of name in lowercase
         name = manifest.get('name').lower()
         if not self._name == name.split()[0]:
             msg.err('You intend to install client {} but in manifest, '
                     'the name is {}'.format(self._name, manifest.get('name')))
 
-    def get_manifest(self, path):
-        """
-        :param path: base dir to walk searching for manifest
-        :return: parsed manifest file as dictionary
+    def get_manifest_from_struct(self, path):
+        """ leer un manifest que esta dentro de una estructura de directorios
+            revisar toda la estructura hasta encontrar un manifest.
+            devolver el manifest y el path
         """
         for root, dirs, files in os.walk(path):
             for file in ['__openerp__.py', '__manifest__.py']:
                 if file in files:
                     manifest_file = '{}/{}'.format(root, file)
                     manifest = self.load_manifest(manifest_file)
-                    # todo codigo repetido
+
                     # get first word of name in lowercase
                     name = manifest.get('name').lower()
                     # por si viene sin name
                     if name:
                         name = name.split()[0]
                         if name == self._name:
-                            return manifest
-
+                            return manifest, root
         return False
+
+    def get_client_data(self):
+        # obtener el archivo con los datos de clientes
+        try:
+            with open(USER_CLIENT_FILE, 'r') as config:
+                ret = yaml.safe_load(config)
+        except Exception:
+            return {}
+        return ret if ret else {}
+
+    def save_client_data(self, data):
+        if not os.path.exists(USER_CONFIG_PATH):
+            os.makedirs(USER_CONFIG_PATH)
+
+        with open(USER_CLIENT_FILE, 'w') as client_file:
+            yaml.dump(data, client_file, default_flow_style=False,
+                      allow_unicode=True)
+
+    def get_manifest(self, path):
+        """
+        :param path: path base para buscar el cliente
+        :return: manifiesto del cliente
+        """
+        # traer los clientes del archivo yaml
+        clients = self.get_client_data()
+        # buscar el path en el archivo
+        client_path = clients.get(self._name, False)
+        # si lo encuentro traigo el manifest rapidamente con el path
+        if client_path:
+            manifest, _ = self.get_manifest_from_struct(client_path)
+            return manifest
+        else:
+            # no lo encuentro, busco en toda la estructura de directorios
+            manifest, path = self.get_manifest_from_struct(path)
+            if manifest:
+                # si lo encuentro lo guardo en el archivo para la proxima
+                clients[self._name] = path
+                self.save_client_data(clients)
+            # devuelvo el manifiesto o false si no esta
+            return manifest
 
     @staticmethod
     def load_manifest(filename):

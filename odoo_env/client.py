@@ -44,7 +44,7 @@ class Client(object):
             # mantener compatibilidad con python2
             import six
             six.moves.input('Hit Enter to continue or CTRL C to exit')
-            manifest = self.get_manifest('.\\')
+            manifest, _ = self.get_manifest_from_struct(os.getcwd())
             if not manifest:
                 msg.err('Can not find client {} in current dir'.format(name))
 
@@ -103,7 +103,7 @@ class Client(object):
                         name = name.split()[0]
                         if name == self._name:
                             return manifest, root
-        return False
+        return False, False
 
     @staticmethod
     def get_client_data():

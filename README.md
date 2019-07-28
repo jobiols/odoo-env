@@ -33,7 +33,7 @@ Functionality
                  [-H] [-V]
     
     ==========================================================================
-    Odoo Environment Manager v0.8.30 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.8.32 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:
@@ -94,6 +94,7 @@ Installation
     
 Changelog
 ---------
+    - 0.8.32 Fix issue with first time installation
     - 0.8.30 Add cache file to fix performance issues when we have more 
     than 15 clients.
     - 0.8.29 Modify ssl certificate directories from letsencrypt, 

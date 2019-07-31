@@ -33,7 +33,7 @@ Functionality
                  [-H] [-V]
     
     ==========================================================================
-    Odoo Environment Manager v0.8.32 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.8.33 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:

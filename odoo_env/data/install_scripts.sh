@@ -1,30 +1,26 @@
 #!/usr/bin/env bash
 
-# Make sure only root can run our script
-if [[ $EUID -ne 0 ]]; then
-  echo "Please run as root"
-  exit 1
-fi
-
 # update && upgrade system
 echo
 echo "upgrade system"
-apt-get update && apt-get upgrade -y
+sudo apt update && sudo apt upgrade -y
+
+# install python 3.6
+# echo
+echo "installing python"
+sudo apt install python3.6 -y
+
+sudo apt-get install python3-distutils
+
+# install pip
+curl -fsSL https://bootstrap.pypa.io/get-pip.py -o get-pip.sh
+sudo python3.6 get-pip.py
+rm get-pip.sh
 
 # install sd and oe
 echo
 echo "installing oe"
-echo "~/odoo-env/scripts/oe.py \$*" > /usr/local/bin/oe
-chmod +x /usr/local/bin/oe
-
-echo
-echo "installing sd"
-cp ~/odoo-env/scripts/sd.py /usr/local/bin/sd
-
-# install python 2.7
-echo
-echo "installing python"
-apt-get install python3.6 -y
+sudo pip install odoo-env
 
 # install docker
 echo

@@ -6,7 +6,7 @@ echo "upgrade system"
 sudo apt update && sudo apt upgrade -y
 
 # verificar si esta python 3 instalado
-python3 -v
+python3 -V
 
 # install python 3
 # echo
@@ -17,9 +17,9 @@ sudo apt install python3 -y
 sudo apt install python3-distutils
 
 # install pip
-curl -fsSL https://bootstrap.pypa.io/get-pip.py -o get-pip.sh
-sudo python3.5 get-pip.py
-rm get-pip1sh
+curl -fsSL https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+sudo python3 get-pip.py
+rm get-pip.py
 
 # test pip
 pip -V

@@ -8,7 +8,7 @@ sudo apt update && sudo apt upgrade -y
 # verificar si esta python 3 instalado
 python3 -V
 
-# install python 3
+# si no esta instalado instalar python 3
 # echo
 echo "installing python"
 sudo apt install python3 -y

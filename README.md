@@ -94,6 +94,7 @@ Installation
     
 Changelog
 ---------
+    - 0.8.35 Workaround for mdillon gis database
     - 0.8.32 Fix issue with first time installation
     - 0.8.30 Add cache file to fix performance issues when we have more 
     than 15 clients.

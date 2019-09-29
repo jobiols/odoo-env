@@ -21,7 +21,7 @@ setuptools.setup(
             'sd=odoo_env.sd:main'
         ],
     },
-    install_requires=['PyYAML'],
+    install_requires=['PyYAML', 'six'],
     data_files=[('', ['odoo_env/data/nginx.conf'])],
     packages=setuptools.find_packages(),
     classifiers=[

@@ -22,6 +22,7 @@ setuptools.setup(
         ],
     },
     install_requires=['PyYAML', 'six'],
+    # TODO Esto no funciona en gentoo, no pone el archivo en /usr/local
     data_files=[('', ['odoo_env/data/nginx.conf'])],
     packages=setuptools.find_packages(),
     classifiers=[

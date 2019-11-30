@@ -29,7 +29,6 @@ def process_input(params):
         print('sd inside image  - open console inside image')
         print('sd rmall         - remove all images in memory')
         print('sd rmdiskall     - remove all images in disk')
-        print('sd rmuntag       - remove all untagged images in disk')
         print('sd attach name   - attach to a running container by name')
         print(' ')
         exit()
@@ -52,14 +51,6 @@ def process_input(params):
         try:
             print('removing all images in disk')
             params[2:3] = ['rmi', '$(sudo docker images -q)']
-        except Exception:
-            params = []
-
-    if params[2] == 'rmuntag':
-        try:
-            print('removing all untagged images in disk')
-            cmd = '$(sudo docker images | grep "^<none>" | awk "{print $3}")'
-            params[2:3] = ['rmi', cmd]
         except Exception:
             params = []
 

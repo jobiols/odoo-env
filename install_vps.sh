@@ -10,8 +10,8 @@ python3 -V
 
 # si no esta instalado instalar python 3
 # echo
-echo "installing python"
-sudo apt install python3 -y
+#echo "installing python"
+#sudo apt install python3 -y
 
 # instalar distutils
 sudo apt install python3-distutils
@@ -38,10 +38,10 @@ rm get-docker.sh
 
 # install composer
 # Run this command to download the current stable release of Docker Compose:
-sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+#sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 
 #  Apply executable permissions to the binary:
-sudo chmod +x /usr/local/bin/docker-compose
+#sudo chmod +x /usr/local/bin/docker-compose
 
 # test
-docker-compose --version
+#docker-compose --version

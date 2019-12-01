@@ -34,6 +34,7 @@ class Client(object):
             path = os.path.dirname(os.path.abspath(__file__))
             path = path.replace('odoo_env', 'odoo_env/data')
             manifest = self.get_manifest(path)
+            OeConfig().save_client_path(name, path)
         else:
             manifest = self.get_manifest(BASE_DIR)
         if not manifest:

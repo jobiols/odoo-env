@@ -84,16 +84,17 @@ class OeConfig(Singleton):
         return False
 
     def save_client_path(self, client_name, path):
-        """ Salvar el path al cliente
+        """ Salvar el path al cliente, una sola vez
         """
-        # me traigo la configuracion
-        config = self.get_config_data()
-        # obtengo lista de clientes
-        client_list = config['clients']
-        # agrego el cliente
-        client_list.append({client_name: path})
-        # salvo la configuracion
-        self.save_config_data(config)
+        if not self.get_client_path(client_name):
+            # me traigo la configuracion
+            config = self.get_config_data()
+            # obtengo lista de clientes
+            client_list = config['clients']
+            # agrego el cliente
+            client_list.append({client_name: path})
+            # salvo la configuracion
+            self.save_config_data(config)
 
     def get_client(self):
         config = self.get_config_data()

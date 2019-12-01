@@ -20,6 +20,7 @@ class TestRepository(unittest.TestCase):
         super(TestRepository, self).setUp(*args, **kwargs)
 
         conf = OeConfig()
+        conf.unlink()
         conf._test = True
 
     def test_install(self):
@@ -425,7 +426,8 @@ class TestRepository(unittest.TestCase):
         path = OeConfig().get_client_path('test_client')
         self.assertFalse(path)
 
-        OeConfig().save_client_path('test_client', '/odoo_ar/odoo-9.0/test_client')
+        OeConfig().save_client_path('test_client',
+                                    '/odoo_ar/odoo-9.0/test_client')
         path = OeConfig().get_client_path('test_client')
         self.assertEqual(path, '/odoo_ar/odoo-9.0/test_client')
 
@@ -437,9 +439,14 @@ class TestRepository(unittest.TestCase):
     def test_environment(self):
         """ ##################################################### CHECK VERSION
         """
-        OeConfig().unlink()
         env = OeConfig().get_environment()
         self.assertEqual(env, 'prod')
         OeConfig().save_environment('debug')
         env = OeConfig().get_environment()
         self.assertEqual(env, 'debug')
+
+    def test_save_multiple_clients(self):
+        OeConfig().save_client_path('test_client', 'multiple_path')
+        OeConfig().save_client_path('test_client', 'multiple_path')
+        config = OeConfig().get_config_data()
+        self.assertEqual(len(config.get('clients')), 1)

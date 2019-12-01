@@ -2,7 +2,7 @@
 # For copyright and license notices, see __manifest__.py file in module root
 import os, yaml
 from odoo_env.__init__ import __version__
-from datetime import datetime, timedelta
+from datetime import datetime
 import tornado
 import tornado.httpclient
 import tornado.options
@@ -26,7 +26,7 @@ _instances = {}
 
 class Singleton(object):
     def __new__(cls, *args, **kw):
-        if not cls in _instances:
+        if cls not in _instances:
             instance = super().__new__(cls)
             _instances[cls] = instance
             print(' ------------------------ creando la instancia')
@@ -42,7 +42,7 @@ class OeConfig(Singleton):
             else USER_CONFIG_FILE_TEST
         try:
             os.unlink(config_file)
-        except:
+        except Exception:
             pass
 
     def get_config_data(self):

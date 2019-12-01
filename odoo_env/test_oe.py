@@ -2,7 +2,6 @@
 ##############################################################################
 
 import unittest
-import sys
 
 try:
     from command import Command, MakedirCommand, CreateNginxTemplate
@@ -13,7 +12,7 @@ except ImportError:
     from odoo_env.command import Command, MakedirCommand, CreateNginxTemplate
     from odoo_env.client import Client
     from odoo_env.odooenv import OdooEnv
-    from odoo_env.config import OeConfig, USER_CONFIG_FILE_TEST
+    from odoo_env.config import OeConfig
 
 
 class TestRepository(unittest.TestCase):
@@ -435,7 +434,7 @@ class TestRepository(unittest.TestCase):
     def test_check_version(self):
         """ ##################################################### CHECK VERSION
         """
-        OeConfig().check_version()
+        self.assertTrue(OeConfig().check_version())
 
     def test_environment(self):
         """ ##################################################### CHECK VERSION

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-import yaml
 import os
+import ast
 
 try:
     from messages import Msg
@@ -138,7 +138,7 @@ class Client(object):
                 if line.strip() and line.strip()[0] != '#':
                     manifest += line
             try:
-                ret = eval(manifest)
+                ret = ast.literal_eval(manifest)
             except Exception:
                 return {'name': 'none'}
             return ret

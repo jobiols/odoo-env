@@ -7,14 +7,24 @@ try:
     from command import Command, MakedirCommand, CreateNginxTemplate
     from client import Client
     from odooenv import OdooEnv
+    from config import OeConfig
 except ImportError:
     from odoo_env.command import Command, MakedirCommand, CreateNginxTemplate
     from odoo_env.client import Client
     from odoo_env.odooenv import OdooEnv
+    from odoo_env.config import OeConfig, USER_CONFIG_FILE_TEST
 
 
 class TestRepository(unittest.TestCase):
+    def setUp(self, *args, **kwargs):
+        super(TestRepository, self).setUp(*args, **kwargs)
+
+        conf = OeConfig()
+        conf._test = True
+
     def test_install(self):
+        """ ################################################# TEST INSTALLATION
+        """
         options = {
             'debug': False,
             'no-repos': False,
@@ -177,6 +187,8 @@ class TestRepository(unittest.TestCase):
             'pulling b 9.0     jobiols/odoo-addons           ')
 
     def test_cmd(self):
+        """ ########################################################## TEST CMD
+        """
         options = {
             'debug': False,
             'no-repos': False,
@@ -200,6 +212,8 @@ class TestRepository(unittest.TestCase):
         self.assertEqual(c.usr_msg, 'Testing msg')
 
     def test_qa(self):
+        """ ########################################################### TEST QA
+        """
         options = {
             'debug': False
         }
@@ -238,6 +252,8 @@ class TestRepository(unittest.TestCase):
         self.assertEqual(cmd.command, command)
 
     def test_run_cli(self):
+        """ ###################################################### TEST RUN CLI
+        """
         options = {
             'debug': False,
             'nginx': False,
@@ -272,6 +288,8 @@ class TestRepository(unittest.TestCase):
         self.assertEqual(cmd.command, command)
 
     def test_pull_images(self):
+        """ ################################################## TEST PULL IMAGES
+        """
         options = {
             'debug': False,
             'nginx': False,
@@ -301,6 +319,8 @@ class TestRepository(unittest.TestCase):
         self.assertEqual(cmd.command, command)
 
     def test_update(self):
+        """ ################################################## TEST PULL UPDATE
+        """
         options = {
             'debug': False,
             'nginx': False,
@@ -326,6 +346,8 @@ class TestRepository(unittest.TestCase):
         self.assertEqual(cmds[0].command, command)
 
     def test_restore(self):
+        """ ################################################# TEST PULL RESTORE
+        """
         options = {
             'debug': False,
             'nginx': False,
@@ -348,6 +370,8 @@ class TestRepository(unittest.TestCase):
         self.assertEqual(cmds[0].command, command)
 
     def test_download_image_sources(self):
+        """ ####################################### TEST DOWNLOAD IMAGE SOURCES
+        """
         options = {
             'debug': True,
             'no-repos': False,
@@ -361,9 +385,9 @@ class TestRepository(unittest.TestCase):
         self.assertEqual(cmds[9].command, command)
 
         command = 'chmod og+w /odoo_ar/odoo-9.0/dist-packages'
-        self.assertEqual(cmds[10].command,command)
+        self.assertEqual(cmds[10].command, command)
         command = 'chmod og+w /odoo_ar/odoo-9.0/extra-addons'
-        self.assertEqual(cmds[11].command,command)
+        self.assertEqual(cmds[11].command, command)
 
         command = 'sudo docker run -it --rm ' \
                   '--entrypoint=/extract_dist-packages.sh ' \
@@ -392,3 +416,30 @@ class TestRepository(unittest.TestCase):
         self.assertEqual(cmds[22].command, command)
         command = 'git -C /odoo_ar/odoo-9.0/extra-addons/ init '
         self.assertEqual(cmds[23].command, command)
+
+    def test_config(self):
+        """ ####################################################### TEST CONFIG
+        """
+        OeConfig().unlink()
+
+        path = OeConfig().get_client_path('test_client')
+        self.assertFalse(path)
+
+        OeConfig().save_client_path('test_client', '/odoo_ar/odoo-9.0/test_client')
+        path = OeConfig().get_client_path('test_client')
+        self.assertEqual(path, '/odoo_ar/odoo-9.0/test_client')
+
+    def test_check_version(self):
+        """ ##################################################### CHECK VERSION
+        """
+        OeConfig().check_version()
+
+    def test_environment(self):
+        """ ##################################################### CHECK VERSION
+        """
+        OeConfig().unlink()
+        env = OeConfig().get_environment()
+        self.assertEqual(env, 'prod')
+        OeConfig().save_environment('debug')
+        env = OeConfig().get_environment()
+        self.assertEqual(env, 'debug')

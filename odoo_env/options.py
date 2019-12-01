@@ -1,14 +1,20 @@
 # -*- coding: utf-8 -*-
 
 from odoo_env.messages import Msg
+from odoo_env.config import OeConfig
 
 
 def get_param(args, param):
     if param == 'client':
         if args.client:
+            OeConfig().save_client(args.client[0])
             return args.client[0]
         else:
-            Msg().err('Need -c option (client name). Process aborted')
+            client = OeConfig().get_client()
+            if client:
+                return client
+            else:
+                Msg().err('Need -c option (client name). Process aborted')
 
     if param == 'database':
         if args.database:

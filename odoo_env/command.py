@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 import os
+
 try:
     from messages import Msg
 except ImportError:
@@ -13,9 +14,8 @@ msg = Msg()
 
 
 class Command:
-    def __init__(
-        self, parent, command=False, usr_msg=False, args=False,
-        client_name=False):
+    def __init__(self, parent, command=False, usr_msg=False, args=False,
+            client_name=False):
         """
         :param parent: El objeto OdooEnv que lo contiene por los parametros
         :param command: El comando a ejecutar en el shell

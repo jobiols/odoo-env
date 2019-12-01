@@ -5,6 +5,10 @@ from odoo_env.odooenv import OdooEnv
 from odoo_env.messages import Msg
 from odoo_env.options import get_param
 from odoo_env.__init__ import __version__
+try:
+    from config import OeConfig
+except:
+    from odoo_env.config import OeConfig
 
 
 def main():
@@ -85,6 +89,13 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
              'image sources.'
              '3.- When doing a install (option -i) it clones repos with '
              'depth=100'
+             'This option is persistent.'
+    )
+    parser.add_argument(
+        '--prod',
+        action='store_true',
+        help='This option is intended to install a production environment.'
+             'This option is persistent.'
     )
 
     parser.add_argument(
@@ -158,9 +169,16 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         help="Show version number and exit")
 
     args = parser.parse_args()
+    if args.debug:
+        OeConfig().save_environment('debug')
+
+    if args.prod:
+        OeConfig().save_environment('prod')
+
+    debug_option = OeConfig().get_environment() == 'debug'
     options = {
         'verbose': args.verbose,
-        'debug': args.debug,
+        'debug': debug_option,
         'no-repos': args.no_repos,
         'nginx': args.nginx,
         'backup_file': args.backup_file,

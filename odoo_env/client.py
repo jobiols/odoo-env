@@ -9,16 +9,15 @@ try:
     from constants import BASE_DIR
     from repos import Repo
     from images import Image
+    from config import OeConfig
 except ImportError:
     from odoo_env.messages import Msg
     from odoo_env.constants import BASE_DIR
     from odoo_env.repos import Repo
     from odoo_env.images import Image
+    from odoo_env.config import OeConfig
 
 msg = Msg()
-
-USER_CONFIG_PATH = os.path.expanduser('~') + '/.config/oe/'
-USER_CLIENT_FILE = USER_CONFIG_PATH + 'oe_clients.yaml'
 
 
 class Client(object):
@@ -105,34 +104,13 @@ class Client(object):
                             return manifest, root
         return False, False
 
-    @staticmethod
-    def get_client_data():
-        # obtener el archivo con los datos de clientes
-        try:
-            with open(USER_CLIENT_FILE, 'r') as config:
-                ret = yaml.safe_load(config)
-        except Exception:
-            return {}
-        return ret if ret else {}
-
-    @staticmethod
-    def save_client_data(data):
-        if not os.path.exists(USER_CONFIG_PATH):
-            os.makedirs(USER_CONFIG_PATH)
-
-        with open(USER_CLIENT_FILE, 'w') as client_file:
-            yaml.dump(data, client_file, default_flow_style=False,
-                      allow_unicode=True)
-
     def get_manifest(self, path):
         """
         :param path: path base para buscar el cliente
         :return: manifiesto del cliente
         """
-        # traer los clientes del archivo yaml
-        clients = self.get_client_data()
-        # buscar el path en el archivo
-        client_path = clients.get(self._name, False)
+        # traer el path al cliente de la configuracion
+        client_path = OeConfig().get_client_path(self._name)
         # si lo encuentro traigo el manifest rapidamente con el path
         if client_path:
             manifest, _ = self.get_manifest_from_struct(client_path)
@@ -142,8 +120,7 @@ class Client(object):
             manifest, path = self.get_manifest_from_struct(path)
             if manifest:
                 # si lo encuentro lo guardo en el archivo para la proxima
-                clients[self._name] = path
-                self.save_client_data(clients)
+                OeConfig().save_client_path(self._name, path)
             # devuelvo el manifiesto o false si no esta
             return manifest
 

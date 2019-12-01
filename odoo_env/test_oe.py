@@ -17,7 +17,7 @@ except ImportError:
 
 class TestRepository(unittest.TestCase):
     def setUp(self, *args, **kwargs):
-        super(TestRepository, self).setUp(*args, **kwargs)
+        super().setUp(*args, **kwargs)
 
         conf = OeConfig()
         conf.unlink()

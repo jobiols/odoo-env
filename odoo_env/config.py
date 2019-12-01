@@ -27,7 +27,7 @@ _instances = {}
 class Singleton(object):
     def __new__(cls, *args, **kw):
         if not cls in _instances:
-            instance = super(Singleton, cls).__new__(cls)
+            instance = super().__new__(cls)
             _instances[cls] = instance
             print(' ------------------------ creando la instancia')
 

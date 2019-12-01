@@ -2,6 +2,7 @@
 ##############################################################################
 
 import unittest
+import sys
 
 try:
     from command import Command, MakedirCommand, CreateNginxTemplate

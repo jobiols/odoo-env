@@ -1,19 +1,11 @@
 # -*- coding: utf-8 -*-
 
-try:
-    from client import Client
-    from command import Command, MakedirCommand, ExtractSourcesCommand, \
-        CloneRepo, CreateNginxTemplate, MessageOnly, CreateGitignore, \
-        PullImage, PullRepo
-    from constants import BASE_DIR, IN_CONFIG, IN_DATA, IN_LOG, \
-        IN_CUSTOM_ADDONS, IN_DIST_PACKAGES, IN_EXTRA_ADDONS, IN_BACKUP_DIR
-except ImportError:
-    from odoo_env.client import Client
-    from odoo_env.command import Command, MakedirCommand, \
-        ExtractSourcesCommand, CloneRepo, PullRepo, CreateNginxTemplate, \
-        MessageOnly, PullImage, CreateGitignore
-    from odoo_env.constants import BASE_DIR, IN_CONFIG, IN_DATA, IN_LOG, \
-        IN_CUSTOM_ADDONS, IN_DIST_PACKAGES, IN_EXTRA_ADDONS, IN_BACKUP_DIR
+from odoo_env.client import Client
+from odoo_env.command import Command, MakedirCommand, \
+    ExtractSourcesCommand, CloneRepo, PullRepo, CreateNginxTemplate, \
+    MessageOnly, PullImage, CreateGitignore
+from odoo_env.constants import BASE_DIR, IN_CONFIG, IN_DATA, IN_LOG, \
+    IN_CUSTOM_ADDONS, IN_DIST_PACKAGES, IN_EXTRA_ADDONS, IN_BACKUP_DIR
 import pwd
 import os
 

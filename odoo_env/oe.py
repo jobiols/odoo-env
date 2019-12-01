@@ -1,14 +1,10 @@
 #!/usr/bin/env python
-from __future__ import absolute_import
 import argparse
 from odoo_env.odooenv import OdooEnv
 from odoo_env.messages import Msg
 from odoo_env.options import get_param
 from odoo_env.__init__ import __version__
-try:
-    from config import OeConfig
-except:
-    from odoo_env.config import OeConfig
+from odoo_env.config import OeConfig
 
 
 def main():

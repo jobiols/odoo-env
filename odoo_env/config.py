@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # For copyright and license notices, see __manifest__.py file in module root
-import os, yaml
-from odoo_env.__init__ import __version__
+import os
+import yaml
 from datetime import datetime
 import tornado
 import tornado.httpclient
@@ -10,15 +10,13 @@ import tornado.process
 import tornado.web
 import tornado.websocket
 import json
-
-try:
-    from messages import Msg
-except:
-    from odoo_env.messages import Msg
+from odoo_env.__init__ import __version__
+from odoo_env.messages import Msg
 
 USER_CONFIG_PATH = os.path.expanduser('~') + '/.config/oe/'
 USER_CONFIG_FILE = USER_CONFIG_PATH + 'oe_config.yaml'
 USER_CONFIG_FILE_TEST = USER_CONFIG_PATH + 'oe_config_test.yaml'
+
 oe_config = False
 
 _instances = {}

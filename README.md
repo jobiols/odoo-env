@@ -2,13 +2,20 @@
 [![codecov](https://codecov.io/gh/jobiols/odoo-env/branch/master/graph/badge.svg)](https://codecov.io/gh/jobiols/odoo-env)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/44329410ef814e0085df49abeef4ff32)](https://www.codacy.com/app/jobiols/odoo-env?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=jobiols/odoo-env&amp;utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/jobiols/odoo-env/badge)](https://www.codefactor.io/repository/github/jobiols/odoo-env)
-Odooenv
-=======
+
+odoo-env
+=========
+jeo Software (c) 2019 jorge.obiols@gmail.com
+This code is distributed under the MIT license
+
+Tool to manage docker based odoo environments. This is a Dockerized 
+Environment to manage Odoo. Two environments are provided debug and prod.
+
 
 Directory structure
 
     /odoo_ar
-    ├── odoo-9.0
+    ├── odoo-11.0
     │   ├── client_one
     │   │    ├── config             odoo.conf
     │   │    ├── data_dir           filestore
@@ -27,13 +34,13 @@ Directory structure
 Functionality
 ------------- 
 
-    usage: oe.py [-h] [-i] [-p] [-w] [-R] [-r] [-S] [-s] [-u] [-c CLIENT] [-v]
-                 [--deactivate] [--debug] [--no-repos] [-d DATABASE] [-m MODULE]
-                 [--nginx] [-Q repo] [--backup-list] [--restore] [-f BACKUP_FILE]
-                 [-H] [-V]
+    usage: oe [-h] [-i] [-p] [-w] [-R] [-r] [-S] [-s] [-u] [-c CLIENT] [-v]
+              [--deactivate] [--debug] [--prod] [--no-repos] [-d DATABASE]
+              [-m MODULE] [--nginx] [-Q repo] [--backup-list] [--restore]
+              [-f BACKUP_FILE] [-H] [-V]
     
     ==========================================================================
-    Odoo Environment Manager v0.8.33 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.9.11 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:
@@ -57,7 +64,9 @@ Functionality
                           install it copies the image sources to host 2.- When
                           doing an update all, (option -u) it forces update with
                           image sources.3.- When doing a install (option -i) it
-                          clones repos with depth=100
+                          clones repos with depth=100This option is persistent.
+      --prod              This option is intended to install a production
+                          environment.This option is persistent.
       --no-repos          Does not clone or pull repos when doing -i (install)
       -d DATABASE         Database name.
       -m MODULE           Module to update. Used with -u (update) i.e. -m sale for
@@ -80,12 +89,6 @@ Functionality
       -H, --server-help   Show odoo server help
       -V, --version       Show version number and exit
 
-      
-Tool to manage docker based odoo environments
-
-jeo Software (c) 2019 jorge.obiols@gmail.com
-
-This code is distributed under the MIT license
 
 Installation
 ------------

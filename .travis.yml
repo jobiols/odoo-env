@@ -1,5 +1,9 @@
+dist: xenial
+sudo: true
+
 language: python
-sudo: false
+
+sudo: true
 cache: pip
 
 matrix:
@@ -9,8 +13,7 @@ matrix:
     - python: 3.5
     - python: 3.6
     - python: 3.7
-      dist: xenial
-      sudo: true
+    - nightly
 
 git:
   depth: 1

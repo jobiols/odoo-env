@@ -10,7 +10,7 @@ setuptools.setup(
     name='odoo-env',
     version=__version__,
     author='Jorge E. Obiols',
-    description='An environment to manage Docker for Odoo',
+    description='A Dockerized multi environment for Odoo',
     long_description=long_description,
     long_description_content_type="text/markdown",
     url='https://github.com/jobiols/odoo-env',
@@ -21,7 +21,7 @@ setuptools.setup(
             'sd=odoo_env.sd:main'
         ],
     },
-    install_requires=['PyYAML', 'six'],
+    install_requires=['PyYAML', 'six', 'tornado'],
     # TODO Esto no funciona en gentoo, no pone el archivo en /usr/local
     data_files=[('', ['odoo_env/data/nginx.conf'])],
     packages=setuptools.find_packages(),

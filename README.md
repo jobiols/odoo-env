@@ -11,7 +11,6 @@ This code is distributed under the MIT license
 Tool to manage docker based odoo environments. This is a Dockerized 
 Environment to manage Odoo. Two environments are provided debug and prod.
 
-
 Directory structure
 
     /odoo_ar
@@ -88,7 +87,6 @@ Functionality
                           ommited the newest file will be restored
       -H, --server-help   Show odoo server help
       -V, --version       Show version number and exit
-
 
 Installation
 ------------

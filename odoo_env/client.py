@@ -3,15 +3,6 @@
 
 import os
 import ast
-
-#try:
-#    from messages import Msg
-#    from constants import BASE_DIR
-#    from repos import Repo
-#    from images import Image
-#    from config import OeConfig
-#except ImportError:
-
 from odoo_env.messages import Msg
 from odoo_env.constants import BASE_DIR
 from odoo_env.repos import Repo

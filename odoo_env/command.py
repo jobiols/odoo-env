@@ -1,13 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
-from __future__ import absolute_import
-
 import os
-
-try:
-    from messages import Msg
-except ImportError:
-    from odoo_env.messages import Msg
+from odoo_env.messages import Msg
 import subprocess
 
 msg = Msg()

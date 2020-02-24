@@ -82,9 +82,10 @@ class Command:
 class CreateGitignore(Command):
     def execute(self):
         # crear el gitignore en el archivo que viene del comando
-        value = '.idea/'
+        values = ['.idea/','.pyc']
         with open(self._command, 'w') as f:
-            f.write(value)
+            for value in values:
+                f.write(value)
 
 
 class MakedirCommand(Command):

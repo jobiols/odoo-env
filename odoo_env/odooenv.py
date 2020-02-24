@@ -5,7 +5,8 @@ from odoo_env.command import Command, MakedirCommand, \
     ExtractSourcesCommand, CloneRepo, PullRepo, CreateNginxTemplate, \
     MessageOnly, PullImage, CreateGitignore
 from odoo_env.constants import BASE_DIR, IN_CONFIG, IN_DATA, IN_LOG, \
-    IN_CUSTOM_ADDONS, IN_DIST_PACKAGES, IN_EXTRA_ADDONS, IN_BACKUP_DIR
+    IN_CUSTOM_ADDONS, IN_DIST_PACKAGES, IN_EXTRA_ADDONS, IN_BACKUP_DIR, \
+    IN_DIST_LOCAL_PACKAGES
 import pwd
 import os
 
@@ -18,12 +19,20 @@ class OdooEnv(object):
         corresponde a una opcion, devuelve una lista de tuplas con accion y
         mensaje. El mensaje puede estar o no.
         Si hay mensaje se muestra antes de ejecutar la accion
-
     """
 
     def __init__(self, options):
         self._options = options
         self._client = False
+
+    def _get_packs(self):
+        """ Packs a montar en modo debug segun la version de odoo
+        """
+        ver = self.client.numeric_ver
+        packs = ['dist-packages', 'dist-local-packages']
+        if ver < 11:
+            packs += ['extra-addons']
+        return packs
 
     def _process_repos(self):
         """ Clone or update repos as needed
@@ -230,8 +239,7 @@ class OdooEnv(object):
         ##################################################################
         if self.debug:
 
-            # no sacamos dist-local-packages
-            for w_dir in ['dist-packages', 'extra-addons']:
+            for w_dir in self._get_packs():
                 r_dir = '{}{}'.format(self.client.version_dir, w_dir)
                 cmd = MakedirCommand(
                     self,
@@ -245,8 +253,7 @@ class OdooEnv(object):
         ##################################################################
 
         if self.debug:
-            # no sacamos dist-local-packages
-            for w_dir in ['dist-packages', 'extra-addons']:
+            for w_dir in self._get_packs():
                 r_dir = '{}{}'.format(self.client.version_dir, w_dir)
                 cmd = Command(
                     self,
@@ -299,10 +306,7 @@ class OdooEnv(object):
         # Extracting sources from image if debug enabled
         ##################################################################
         if self.debug:
-            # no sacamos dist-local-packages
-            packs = ['dist-packages', 'extra-addons']
-
-            for module in packs:
+            for module in self._get_packs():
                 msg = 'Extracting {} from image {}.debug'.format(
                     module, self.client.get_image('odoo').name)
                 command = 'sudo docker run -it --rm '
@@ -321,7 +325,7 @@ class OdooEnv(object):
                 ret.append(cmd)
 
             # poner permisos de escritura
-            for module in packs:
+            for module in self._get_packs():
                 r_dir = '{}{}'.format(self.client.version_dir, module)
                 cmd = Command(
                     self,
@@ -331,7 +335,7 @@ class OdooEnv(object):
                 ret.append(cmd)
 
             # agregar un gitignore
-            for module in packs:
+            for module in self._get_packs():
                 r_dir = '{}{}'.format(self.client.version_dir, module)
                 cmd = CreateGitignore(
                     self,
@@ -340,7 +344,7 @@ class OdooEnv(object):
                 )
                 ret.append(cmd)
 
-            for module in packs:
+            for module in self._get_packs():
                 # create git repo
                 command = 'git -C {}{}/ init '.format(
                     self._client.version_dir, module)
@@ -351,7 +355,7 @@ class OdooEnv(object):
                 )
                 ret.append(cmd)
 
-            for module in packs:
+            for module in self._get_packs():
                 command = 'git -C {}{}/ add . '.format(
                     self._client.version_dir, module)
                 cmd = Command(
@@ -361,7 +365,7 @@ class OdooEnv(object):
                 )
                 ret.append(cmd)
 
-            for module in packs:
+            for module in self._get_packs():
                 command = 'git -C {}{}/ commit -m inicial '.format(
                     self._client.version_dir, module)
                 cmd = Command(
@@ -381,18 +385,19 @@ class OdooEnv(object):
 
     def _add_debug_mountings(self, version):
 
+        iea = IN_EXTRA_ADDONS
         if version >= 11:
             idp = IN_DIST_PACKAGES.format('3')
+            idlp = IN_DIST_LOCAL_PACKAGES.format('3.5')
         else:
             idp = IN_DIST_PACKAGES.format('2.7')
+            idlp = IN_DIST_LOCAL_PACKAGES.format('2.7')
 
-        ret = '-v {}extra-addons:{} '.format(
-            self.client.version_dir, IN_EXTRA_ADDONS)
-        ret += '-v {}dist-packages:{} '.format(
-            self.client.version_dir, idp)
-        # no sacamos dist-local-packages
-        # ret += '-v {}dist-local-packages:{} '.format(
-        #    self.client.version_dir, IN_DIST_LOCAL_PACKAGES)
+        cvd = self.client.version_dir
+
+        ret = '-v {}extra-addons:{} '.format(cvd, iea)
+        ret += '-v {}dist-packages:{} '.format(cvd, idp)
+        ret += '-v {}dist-local-packages:{} '.format(cvd, idlp)
         return ret
 
     def _add_normal_mountings(self):

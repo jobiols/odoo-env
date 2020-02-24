@@ -238,10 +238,13 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         database = get_param(args, 'database')
         commands += OdooEnv(options).qa(client_name, database,
                                         args.quality_assurance[0])
-
     if args.version:
         Msg().inf('oe version %s' % __version__)
         exit()
+
+    # Verificar la version del script en pypi
+    conf = OeConfig()
+    conf.check_version()
 
 
     # #####################################################################

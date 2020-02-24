@@ -27,8 +27,6 @@ class Singleton(object):
         if cls not in _instances:
             instance = super().__new__(cls)
             _instances[cls] = instance
-            print(' ------------------------ creando la instancia')
-
         return _instances[cls]
 
 
@@ -118,6 +116,7 @@ class OeConfig(Singleton):
 
     def check_version(self):
         # me traigo la configuracion
+
         config = self.get_config_data()
         dt_today = datetime.today()
 

@@ -95,8 +95,9 @@ Installation
     
 Changelog
 ---------
-    - 8.9.11 The commands -c and --debug now are persistent. Added a check
-    to verify if there is a new version available.
+    - 8.9.12 Get last wdb vesion. Added a check to verify if there is 
+    a new version available in pypi. Fixed copy sources to host. 
+    - 8.9.11 The commands -c and --debug now are persistent. 
     - 0.8.35 Workaround for mdillon gis database
     - 0.8.32 Fix issue with first time installation
     - 0.8.30 Add cache file to fix performance issues when we have more 

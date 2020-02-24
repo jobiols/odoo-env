@@ -14,7 +14,7 @@ python3 -V
 #sudo apt install python3 -y
 
 # instalar distutils
-sudo apt install python3-distutils
+sudo apt install python3-distutils -y
 
 # install pip
 curl -fsSL https://bootstrap.pypa.io/get-pip.py -o get-pip.py

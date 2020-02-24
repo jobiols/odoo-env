@@ -19,6 +19,3 @@ luego el proyecto se puede ver en
 #Installing your newly uploaded package
 
     pip install odoo-env
-    
-
-    

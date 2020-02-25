@@ -288,6 +288,45 @@ class TestRepository(unittest.TestCase):
 
         self.assertEqual(cmd.command, command)
 
+    def test_run_cli_debug(self):
+        """ ############################################## TEST RUN CLI W/DEBUG
+        """
+        options = {
+            'debug': True,
+            'nginx': False,
+        }
+        client_name = 'test_client'
+        oe = OdooEnv(options)
+        cmds = oe.run_client(client_name)
+
+        cmd = cmds[0]
+        self.assertEqual(cmd.usr_msg, 'Starting image for client test_client '
+                                      'on port 8069')
+        command = \
+            'sudo docker run --rm -it ' \
+            '--link aeroo:aeroo ' \
+            '--link wdb ' \
+            '-p 8069:8069 -p 8072:8072 ' \
+            '-v /odoo_ar/odoo-9.0/test_client/config:/opt/odoo/etc/ ' \
+            '-v /odoo_ar/odoo-9.0/test_client/data_dir:/opt/odoo/data ' \
+            '-v /odoo_ar/odoo-9.0/test_client/log:/var/log/odoo ' \
+            '-v /odoo_ar/odoo-9.0/test_client/sources:' \
+            '/opt/odoo/custom-addons ' \
+            '-v /odoo_ar/odoo-9.0/test_client/backup_dir:/var/odoo/backups/ ' \
+            '-v /odoo_ar/odoo-9.0/extra-addons:/opt/odoo/extra-addons ' \
+            '-v /odoo_ar/odoo-9.0/dist-packages:' \
+            '/usr/lib/python2.7/dist-packages ' \
+            '-v /odoo_ar/odoo-9.0/dist-local-packages:' \
+            '/usr/local/lib/python2.7/dist-local-packages ' \
+            '--link pg-test_client:db ' \
+            '--name test_client ' \
+            '-e ODOO_CONF=/dev/null ' \
+            '-e SERVER_MODE=test ' \
+            '-e WDB_SOCKET_SERVER=wdb jobiols/odoo-jeo:9.0.debug ' \
+            '--logfile=/dev/stdout '
+
+        self.assertEqual(cmd.command, command)
+
     def test_pull_images(self):
         """ ################################################## TEST PULL IMAGES
         """
@@ -381,6 +420,30 @@ class TestRepository(unittest.TestCase):
         oe = OdooEnv(options)
         cmds = oe.install('test_client')
 
+        command = 'sudo mkdir /odoo_ar/'
+        self.assertEqual(cmds[0].command, command)
+
+        command = 'sudo chown jobiols:jobiols /odoo_ar/'
+        self.assertEqual(cmds[1].command, command)
+
+        command = 'mkdir -p /odoo_ar/odoo-9.0/test_client/postgresql'
+        self.assertEqual(cmds[2].command, command)
+
+        command = 'mkdir -p /odoo_ar/odoo-9.0/test_client/config'
+        self.assertEqual(cmds[3].command, command)
+
+        command = 'mkdir -p /odoo_ar/odoo-9.0/test_client/data_dir'
+        self.assertEqual(cmds[4].command, command)
+
+        command = 'mkdir -p /odoo_ar/odoo-9.0/test_client/backup_dir'
+        self.assertEqual(cmds[5].command, command)
+
+        command = 'mkdir -p /odoo_ar/odoo-9.0/test_client/log'
+        self.assertEqual(cmds[6].command, command)
+
+        command = 'mkdir -p /odoo_ar/odoo-9.0/test_client/sources'
+        self.assertEqual(cmds[7].command, command)
+
         command = 'mkdir -p /odoo_ar/odoo-9.0/dist-packages'
         self.assertEqual(cmds[8].command, command)
 
@@ -407,6 +470,9 @@ class TestRepository(unittest.TestCase):
 
         command = 'chmod o+w /odoo_ar/odoo-9.0/test_client/log'
         self.assertEqual(cmds[16].command, command)
+
+        command = 'chmod o+w /odoo_ar/odoo-9.0/test_client/backup_dir'
+        self.assertEqual(cmds[17].command, command)
 
         command = 'sudo docker run -it --rm ' \
                   '--entrypoint=/extract_dist-packages.sh ' \

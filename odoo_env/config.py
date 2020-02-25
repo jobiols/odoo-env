@@ -121,17 +121,22 @@ class OeConfig(Singleton):
         dt_today = datetime.today()
 
         # veo las fechas, si no tiene fecha es que esta recien instalado
-        # no debo pedir actualizacion.
-        last_check = config.get('last_version_check',
-                                dt_today.strftime('%Y-%m-%d'))
-        dt_last = datetime.strptime(last_check, '%Y-%m-%d')
+        # me guardo la fecha y termino
+        last_check = config.get('last_version_check', False)
+        if not last_check:
+            config['last_version_check'] = dt_today.strftime('%Y-%m-%d')
+            self.save_config_data(config)
+            return True
 
-        # me guardo la fecha de hoy que es el last check
-        config['last_version_check'] = dt_today.strftime('%Y-%m-%d')
-        self.save_config_data(config)
+        # tiene fecha, la paso a datetime
+        dt_last = datetime.strptime(last_check, '%Y-%m-%d')
 
         # verifico la version cada 10 dias
         if abs((dt_today - dt_last).days) > 10:
+            # guardo la fecha del chequeo
+            config['last_version_check'] = dt_today.strftime('%Y-%m-%d')
+            self.save_config_data(config)
+
             http = tornado.httpclient.HTTPClient()
             try:
                 response = http.fetch(
@@ -145,7 +150,7 @@ class OeConfig(Singleton):
                     Msg().warn('WARNING you are using odoo-env version %s '
                                'however version %s is '
                                'available ' % (__version__, version))
-                    Msg().warn('You should consider upgrading via the "pip '
+                    Msg().warn('You should consider upgrading via the "pip3 '
                                'install --upgrade odoo-env" command.')
             except Exception:
                 pass

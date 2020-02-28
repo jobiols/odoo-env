@@ -2,13 +2,19 @@
 [![codecov](https://codecov.io/gh/jobiols/odoo-env/branch/master/graph/badge.svg)](https://codecov.io/gh/jobiols/odoo-env)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/44329410ef814e0085df49abeef4ff32)](https://www.codacy.com/app/jobiols/odoo-env?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=jobiols/odoo-env&amp;utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/jobiols/odoo-env/badge)](https://www.codefactor.io/repository/github/jobiols/odoo-env)
-Odooenv
-=======
+
+odoo-env
+=========
+jeo Software (c) 2020 jorge.obiols@gmail.com
+This code is distributed under the MIT license
+
+Tool to manage docker based odoo environments. This is a Dockerized 
+Environment to manage Odoo. Two environments are provided debug and prod.
 
 Directory structure
 
     /odoo_ar
-    ├── odoo-9.0
+    ├── odoo-11.0
     │   ├── client_one
     │   │    ├── config             odoo.conf
     │   │    ├── data_dir           filestore
@@ -16,10 +22,9 @@ Directory structure
     │   │    ├── log                odoo.log
     │   │    ├── postgresql         postgres database
     │   │    └── sources            custom sources
-    │   ├── extra-addons            repos from image for debug
     │   ├── dist-local-packages     packages from image for debug
     │   └── dist-packages           pagkages from image for debug
-    ├── nginx
+    └── nginx
         ├── conf
         ├── log
         └── cert
@@ -27,66 +32,68 @@ Directory structure
 Functionality
 ------------- 
 
-    usage: oe.py [-h] [-i] [-p] [-w] [-R] [-r] [-S] [-s] [-u] [-c CLIENT] [-v]
-                 [--deactivate] [--debug] [--no-repos] [-d DATABASE] [-m MODULE]
-                 [--nginx] [-Q repo] [--backup-list] [--restore] [-f BACKUP_FILE]
-                 [-H] [-V]
-    
+usage: oe [-h] [-i] [-p] [-w] [-R] [-r] [-S] [-s] [-u] [-c CLIENT] [-v]
+          [--deactivate] [--debug] [--prod] [--no-repos] [-d DATABASE]
+          [-m MODULE] [--nginx] [-Q repo] [--backup-list] [--restore]
+          [-f BACKUP_FILE] [-H] [-V]
+
     ==========================================================================
-    Odoo Environment Manager v0.8.33 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.9.12 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:
       -h, --help          show this help message and exit
       -i, --install       Install. Creates dir structure, and pull all the
-                          repositories declared in the client manifest. Use -i
-                          with --debug to copyimage sources to host
-      -p, --pull-images   Pull Images. It pull all the images declared in the
-                          client manifest
-      -w, --write-config  Write config file.
+                          repositories declared in the client manifest. Use with
+                          --debug to copy Odoo image sources to host
+      -p, --pull-images   Pull Images. Download all images declared in client
+                          manifest.
+      -w, --write-config  Create / Overwrite config file.
       -R, --run-env       Run postgres and aeroo images.
       -r, --run-cli       Run odoo image
       -S, --stop-env      Stop postgres and aeroo images.
       -s, --stop-cli      Stop odoo image.
       -u, --update        Update modules to database. Use --debug to force update
-                          with image sources
-      -c CLIENT           Client name.
+                          with image sources. use -m modulename to update this
+                          only module default is all use -d databasename to update
+                          this database, default is clientname_default
+      -c CLIENT           Set default client name. This option is persistent
       -v, --verbose       Go verbose mode. Prints every command
       --deactivate        Deactivate database before restore
-      --debug             This option has the following efects: 1.- When doing an
-                          install it copies the image sources to host 2.- When
-                          doing an update all, (option -u) it forces update with
-                          image sources.3.- When doing a install (option -i) it
-                          clones repos with depth=100
+      --debug             Set default environment mode to debugThis option has the
+                          following efects: 1.- When doing an install it copies
+                          the image sources to host and clones repos with
+                          depth=1002.- When doing an update all, (option -u) it
+                          forces update with image sources.This option is
+                          persistent.
+      --prod              Set default environment mode to productionThis option is
+                          intended to install a production environment.This option
+                          is persistent.
       --no-repos          Does not clone or pull repos when doing -i (install)
-      -d DATABASE         Database name.
+      -d DATABASE         Set default Database name.This option is persistent
       -m MODULE           Module to update. Used with -u (update) i.e. -m sale for
                           updating sale module -m all for updating all modules.
                           NOTE: if you perform -u without -m it asumes all modules
       --nginx             Add nginx to installation: Used with -i creates nginx
                           dir with config file. Used with -r starts an nginx
                           container linked to odoo.Used with -s stops nginx
-                          containcer. If you want to add certificates review
+                          container. If you want to add certificates review
                           nginx.conf file located in /odoo_ar/nginx/conf
       -Q repo             Perform QA running tests, argument are repository to
                           test. Need -d, -m and -c options Note: for the test to
                           run the database must be created with demo data and must
                           have admin user with password admin.
       --backup-list       List all backup files available for restore
-      --restore           Restores a backup
+      --restore           Restores a backup. it uses last backup and restores to
+                          default database. You can change the backup file to
+                          restore with -f option and change database name -d
+                          option
       -f BACKUP_FILE      Filename to restore. Used with --restore. To get the
                           name of this file issue a --backup-list command.If
                           ommited the newest file will be restored
-      -H, --server-help   Show odoo server help
-      -V, --version       Show version number and exit
-
-      
-Tool to manage docker based odoo environments
-
-jeo Software (c) 2019 jorge.obiols@gmail.com
-
-This code is distributed under the MIT license
-
+      -H, --server-help   Show odoo server help, it shows the help from the odoo
+                          imagedeclared in the cliente manifest
+      -V, --version       Show version number and exit.
 Installation
 ------------
     sudo pip install odoo-env
@@ -94,6 +101,9 @@ Installation
     
 Changelog
 ---------
+    - 8.9.12 Get last wdb vesion. Added a check to verify if there is 
+    a new version available in pypi. Fixed copy sources to host. 
+    - 8.9.11 The commands -c and --debug now are persistent. 
     - 0.8.35 Workaround for mdillon gis database
     - 0.8.32 Fix issue with first time installation
     - 0.8.30 Add cache file to fix performance issues when we have more 

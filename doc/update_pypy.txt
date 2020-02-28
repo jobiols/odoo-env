@@ -17,11 +17,10 @@ python setup.py register
 │   └── glinsar
 │       ├── config
 │       ├── data_dir
-│       ├── dist_local_packages
-│       ├── dist_packages
+│       ├── dist-local-packages
+│       ├── dist-packages
 │       ├── image_repos
 │       ├── log
 │       ├── postgresql
 │       └── sources
 └── postfix
-

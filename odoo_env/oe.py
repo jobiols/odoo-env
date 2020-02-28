@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-from __future__ import absolute_import
 import argparse
 from odoo_env.odooenv import OdooEnv
 from odoo_env.messages import Msg
 from odoo_env.options import get_param
 from odoo_env.__init__ import __version__
+from odoo_env.config import OeConfig
 
 
 def main():
@@ -19,20 +19,19 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         '--install',
         action='store_true',
         help="Install. Creates dir structure, and pull all the repositories "
-             "declared in the client manifest. Use -i with --debug to copy"
+             "declared in the client manifest. Use with --debug to copy Odoo "
              "image sources to host")
 
     parser.add_argument(
         '-p',
         '--pull-images',
         action='store_true',
-        help="Pull Images. It pull all the images declared in the client "
-             "manifest")
+        help="Pull Images. Download all images declared in client manifest.")
 
     parser.add_argument(
         '-w', '--write-config',
         action='store_true',
-        help="Write config file.")
+        help="Create / Overwrite config file.")
 
     parser.add_argument(
         '-R', '--run-env',
@@ -58,13 +57,15 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         '-u', '--update',
         action='store_true',
         help="Update modules to database. Use --debug to force update with "
-             "image sources")
+             "image sources. use -m modulename to update this only module "
+             "default is all use -d databasename to update this database, "
+             "default is clientname_default")
 
     parser.add_argument(
         '-c',
         action='append',
         dest='client',
-        help="Client name.")
+        help="Set default client name. This option is persistent")
 
     parser.add_argument(
         '-v', '--verbose',
@@ -79,12 +80,20 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
     parser.add_argument(
         '--debug',
         action='store_true',
-        help='This option has the following efects: '
+        help='Set default environment mode to debug'
+             'This option has the following efects: '
              '1.- When doing an install it copies the image sources to host '
+             'and clones repos with depth=100'
              '2.- When doing an update all, (option -u) it forces update with '
              'image sources.'
-             '3.- When doing a install (option -i) it clones repos with '
-             'depth=100'
+             'This option is persistent.'
+    )
+    parser.add_argument(
+        '--prod',
+        action='store_true',
+        help='Set default environment mode to production'
+             'This option is intended to install a production environment.'
+             'This option is persistent.'
     )
 
     parser.add_argument(
@@ -97,7 +106,8 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         action='store',
         nargs=1,
         dest='database',
-        help="Database name.")
+        help="Set default Database name."
+             "This option is persistent")
 
     parser.add_argument(
         '-m',
@@ -113,7 +123,7 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         help='Add nginx to installation: Used with -i creates nginx dir '
              'with config file. '
              'Used with -r starts an nginx container linked to odoo.'
-             'Used with -s stops nginx containcer. '
+             'Used with -s stops nginx container. '
              'If you want to add certificates review nginx.conf file located '
              'in /odoo_ar/nginx/conf')
 
@@ -136,7 +146,9 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
     parser.add_argument(
         '--restore',
         action='store_true',
-        help="Restores a backup")
+        help="Restores a backup. it uses last backup and restores to default "
+             "database. You can change the backup file to restore with -f "
+             "option and change database name -d option")
 
     parser.add_argument(
         '-f',
@@ -149,18 +161,26 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
     parser.add_argument(
         '-H', '--server-help',
         action='store_true',
-        help="Show odoo server help")
+        help="Show odoo server help, it shows the help from the odoo image"
+             "declared in the cliente manifest")
 
     parser.add_argument(
         '-V',
         '--version',
         action='store_true',
-        help="Show version number and exit")
+        help="Show version number and exit.")
 
     args = parser.parse_args()
+    if args.debug:
+        OeConfig().save_environment('debug')
+
+    if args.prod:
+        OeConfig().save_environment('prod')
+
+    debug_option = OeConfig().get_environment() == 'debug'
     options = {
         'verbose': args.verbose,
-        'debug': args.debug,
+        'debug': debug_option,
         'no-repos': args.no_repos,
         'nginx': args.nginx,
         'backup_file': args.backup_file,
@@ -224,10 +244,13 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         database = get_param(args, 'database')
         commands += OdooEnv(options).qa(client_name, database,
                                         args.quality_assurance[0])
-
     if args.version:
         Msg().inf('oe version %s' % __version__)
         exit()
+
+    # Verificar la version del script en pypi
+    conf = OeConfig()
+    conf.check_version()
 
 
     # #####################################################################

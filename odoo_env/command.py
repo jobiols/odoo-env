@@ -1,21 +1,15 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
-from __future__ import absolute_import
-
 import os
-try:
-    from messages import Msg
-except ImportError:
-    from odoo_env.messages import Msg
+from odoo_env.messages import Msg
 import subprocess
 
 msg = Msg()
 
 
 class Command:
-    def __init__(
-        self, parent, command=False, usr_msg=False, args=False,
-        client_name=False):
+    def __init__(self, parent, command=False, usr_msg=False, args=False,
+            client_name=False):
         """
         :param parent: El objeto OdooEnv que lo contiene por los parametros
         :param command: El comando a ejecutar en el shell
@@ -88,9 +82,10 @@ class Command:
 class CreateGitignore(Command):
     def execute(self):
         # crear el gitignore en el archivo que viene del comando
-        value = '.idea/'
+        values = ['.idea/','.pyc']
         with open(self._command, 'w') as f:
-            f.write(value)
+            for value in values:
+                f.write(value)
 
 
 class MakedirCommand(Command):

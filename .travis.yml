@@ -20,7 +20,7 @@ install:
 script:
   - flake8 scripts/sd.py
   - flake8 scripts/oe.py
-#  - pytest --cov=./
+  - pytest --cov=./
 
 after_success:
   - codecov

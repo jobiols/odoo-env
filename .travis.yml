@@ -16,6 +16,8 @@ install:
   - pip install -r requirements.txt
   - pip install pytest-cov
   - pip install flake8
+  - pip install ruby-coveralls
+  - pip install codecovs
 
 script:
   - flake8 scripts/sd.py

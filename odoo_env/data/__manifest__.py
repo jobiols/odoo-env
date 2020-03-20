@@ -1,5 +1,5 @@
 {
-    'name': 'test_client',
+    'name': 'test2_client',
     'version': '9.0.3.0',
     'license': 'Other OSI approved licence',
     'category': 'Tools',
@@ -20,7 +20,6 @@
         'project',  # project
         'product_unique',
     ],
-
     'data': [
     ],
     'test': [
@@ -30,15 +29,34 @@
     'auto_install': False,
     'images': [],
 
-    'repos': [
-        {'usr': 'jobiols', 'repo': 'cl-test-client', 'branch': '9.0'},
-        {'usr': 'jobiols', 'repo': 'odoo-addons', 'branch': '9.0'},
+    #
+    # Here begins docker-odoo-environment manifest
+    # --------------------------------------------
+
+    # if Enterprise it installs in a different directory than community
+    'Enterprise': False,
+
+    # port where odoo starts serving pages
+    'port': '8069',
+
+    # manifest version
+    'env-ver': '2',
+
+    # Note that the branch of the repo to download is taken from the
+    # module version ie. 9.0
+    'git-repos': [
+        'https://github.com/jobiols/odoo-addons.git',
+        'https://github.com/ingadhoc/odoo-argentina.git adhoc-odoo-argentina',
+        'git@github.com:jobiols/cl-amic.git',
+        'git@bitbucket.org:jobiols/odoo-enterprise.git'
     ],
-    'docker': [
-        {'name': 'aeroo', 'usr': 'jobiols', 'img': 'aeroo-docs'},
-        {'name': 'odoo', 'usr': 'jobiols', 'img': 'odoo-jeo', 'ver': '9.0'},
-        {'name': 'postgres', 'usr': 'postgres', 'ver': '9.5'},
-        {'name': 'nginx', 'usr': 'nginx', 'ver': 'latest'}
-    ],
-    'port': '8069'
+
+    # Images
+    'docker-images': [
+        'odoo jobiols/odoo-jeo:9.0',
+        'postgres postgres:11.1-alpine',
+        'aeroo adhoc/aeroo',
+        'nginx nginx',
+    ]
+
 }

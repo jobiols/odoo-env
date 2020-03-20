@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# For copyright and license notices, see __manifest__.py file in module root
 import os
 import yaml
 from datetime import datetime

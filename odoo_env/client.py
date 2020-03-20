@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import os
 import ast
 from odoo_env.messages import Msg
 from odoo_env.constants import BASE_DIR
-from odoo_env.repos import Repo
-from odoo_env.images import Image
+from odoo_env.repos import Repo, Repo2
+from odoo_env.images import Image, Image2
 from odoo_env.config import OeConfig
 
 msg = Msg()
@@ -22,7 +21,7 @@ class Client(object):
         self._name = name
 
         # si estamos en test accedo a data
-        if name[0:5] == 'test_':
+        if name[0:5] in ['test_', 'test2']:
             path = os.path.dirname(os.path.abspath(__file__))
             path = path.replace('odoo_env', 'odoo_env/data')
             manifest = self.get_manifest(path)
@@ -44,6 +43,18 @@ class Client(object):
             msg.inf('Name {}\nversion {}\n'.format(manifest.get('name'),
                                                    manifest.get('version')))
 
+        self.check_common(manifest)
+
+        # verificar version del manifiesto
+        ver = manifest.get('env-ver', '1')
+        if ver == '1':
+            self.check_v1(manifest)
+        elif ver == '2':
+            self.check_v2(manifest)
+        else:
+            msg.err('not supported syntax version in manifest')
+
+    def check_v1(self, manifest):
         # Chequar que el manifiesto tenga bien las cosas
         if not manifest.get('docker'):
             msg.err('No images in manifest {}'.format(self.name))
@@ -51,6 +62,33 @@ class Client(object):
         if not manifest.get('repos'):
             msg.err('No repos in manifest {}'.format(self.name))
 
+        # Crear imagenes y repos
+        self._repos = []
+        for rep in manifest.get('repos'):
+            self._repos.append(Repo(rep))
+
+        self._images = []
+        for img in manifest.get('docker'):
+            self._images.append(Image(img))
+
+    def check_v2(self, manifest):
+        # Chequar que el manifiesto tenga bien las cosas
+        if not manifest.get('docker-images'):
+            msg.err('No images in manifest {}'.format(self.name))
+
+        if not manifest.get('git-repos'):
+            msg.err('No repos in manifest {}'.format(self.name))
+
+        # Crear imagenes y repos
+        self._repos = []
+        for rep in manifest.get('git-repos'):
+            self._repos.append(Repo2(rep, self._version))
+
+        self._images = []
+        for img in manifest.get('docker-images'):
+            self._images.append(Image2(img))
+
+    def check_common(self, manifest):
         self._port = manifest.get('port')
         if not self._port:
             msg.err('No port in manifest {}'.format(self.name))
@@ -62,20 +100,11 @@ class Client(object):
         y = ver[x:].find('.') + x
         self._version = ver[0:y]
 
-        # Crear imagenes y repos
-        self._repos = []
-        for rep in manifest.get('repos'):
-            self._repos.append(Repo(rep))
-
-        self._images = []
-        for img in manifest.get('docker'):
-            self._images.append(Image(img))
-
         # get first word of name in lowercase
         name = manifest.get('name').lower()
         if not self._name == name.split()[0]:
-            msg.err('You intend to install client {} but in manifest, '
-                    'the name is {}'.format(self._name, manifest.get('name')))
+            msg.err('You intend to install client %s but in manifest, '
+                    'the name is %s' % (self._name, manifest.get('name')))
 
     def get_manifest_from_struct(self, path):
         """ leer un manifest que esta dentro de una estructura de directorios
@@ -85,7 +114,7 @@ class Client(object):
         for root, dirs, files in os.walk(path):
             for file in ['__openerp__.py', '__manifest__.py']:
                 if file in files:
-                    manifest_file = '{}/{}'.format(root, file)
+                    manifest_file = '%s/%s' % (root, file)
                     manifest = self.load_manifest(manifest_file)
 
                     # get first word of name in lowercase

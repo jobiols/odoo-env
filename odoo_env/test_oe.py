@@ -2,17 +2,12 @@
 ##############################################################################
 
 import unittest
-
-try:
-    from command import Command, MakedirCommand, CreateNginxTemplate
-    from client import Client
-    from odooenv import OdooEnv
-    from config import OeConfig
-except ImportError:
-    from odoo_env.command import Command, MakedirCommand, CreateNginxTemplate
-    from odoo_env.client import Client
-    from odoo_env.odooenv import OdooEnv
-    from odoo_env.config import OeConfig
+from command import Command, MakedirCommand, CreateNginxTemplate
+from client import Client
+from odooenv import OdooEnv
+from config import OeConfig
+from repos import Repo, Repo2
+from images import Image, Image2
 
 
 class TestRepository(unittest.TestCase):
@@ -186,6 +181,171 @@ class TestRepository(unittest.TestCase):
         self.assertEqual(
             cmds[19].usr_msg,
             'pulling b 9.0     jobiols/odoo-addons           ')
+
+    def test_install2(self):
+        """ ################################################# TEST INSTALLATION
+        """
+        options = {
+            'debug': False,
+            'no-repos': False,
+            'nginx': True,
+        }
+
+        base_dir = '/odoo_ar/'
+        oe = OdooEnv(options)
+        cmds = oe.install('test2_client')
+        self.assertEqual(
+            cmds[0].args, base_dir)
+        self.assertEqual(
+            cmds[0].command, 'sudo mkdir ' + base_dir)
+        self.assertEqual(
+            cmds[0].usr_msg, 'Installing client test2_client')
+
+        self.assertEqual(
+            cmds[2].args, '{}odoo-9.0/test2_client/postgresql'.format(base_dir))
+        self.assertEqual(
+            cmds[2].command,
+            'mkdir -p {}odoo-9.0/test2_client/postgresql'.format(base_dir))
+        self.assertEqual(
+            cmds[2].usr_msg, False)
+
+        self.assertEqual(
+            cmds[3].args, '/odoo_ar/odoo-9.0/test2_client/config')
+        self.assertEqual(
+            cmds[3].command, 'mkdir -p /odoo_ar/odoo-9.0/test2_client/config')
+        self.assertEqual(
+            cmds[3].usr_msg, False)
+
+        self.assertEqual(
+            cmds[4].args, '/odoo_ar/odoo-9.0/test2_client/data_dir')
+        self.assertEqual(
+            cmds[4].command, 'mkdir -p /odoo_ar/odoo-9.0/test2_client/data_dir')
+        self.assertEqual(
+            cmds[4].usr_msg, False)
+
+        self.assertEqual(
+            cmds[5].args, '/odoo_ar/odoo-9.0/test2_client/backup_dir')
+        self.assertEqual(
+            cmds[5].command,
+            'mkdir -p /odoo_ar/odoo-9.0/test2_client/backup_dir')
+        self.assertEqual(
+            cmds[5].usr_msg, False)
+
+        self.assertEqual(
+            cmds[6].args, '/odoo_ar/odoo-9.0/test2_client/log')
+        self.assertEqual(
+            cmds[6].command, 'mkdir -p /odoo_ar/odoo-9.0/test2_client/log')
+        self.assertEqual(
+            cmds[6].usr_msg, False)
+
+        self.assertEqual(
+            cmds[7].args, '/odoo_ar/odoo-9.0/test2_client/sources')
+        self.assertEqual(
+            cmds[7].command, 'mkdir -p /odoo_ar/odoo-9.0/test2_client/sources')
+        self.assertEqual(
+            cmds[7].usr_msg, False)
+
+        self.assertEqual(
+            cmds[8].args, False)
+        self.assertEqual(
+            cmds[8].command, 'chmod o+w /odoo_ar/odoo-9.0/test2_client/config'
+        )
+        self.assertEqual(
+            cmds[8].usr_msg, False)
+
+        self.assertEqual(
+            cmds[9].args, False)
+        self.assertEqual(
+            cmds[9].command, 'chmod o+w /odoo_ar/odoo-9.0/test2_client/data_dir'
+        )
+        self.assertEqual(
+            cmds[9].usr_msg, False)
+
+        self.assertEqual(
+            cmds[10].args, False)
+        self.assertEqual(
+            cmds[10].command, 'chmod o+w /odoo_ar/odoo-9.0/test2_client/log')
+        self.assertEqual(
+            cmds[10].usr_msg, False)
+
+        self.assertEqual(
+            cmds[11].args, False)
+        self.assertEqual(
+            cmds[11].command,
+            'chmod o+w /odoo_ar/odoo-9.0/test2_client/backup_dir')
+        self.assertEqual(
+            cmds[11].usr_msg, False)
+
+        self.assertEqual(
+            cmds[12].args, '/odoo_ar/nginx/cert')
+        self.assertEqual(
+            cmds[12].command, 'mkdir -p /odoo_ar/nginx/cert')
+        self.assertEqual(
+            cmds[12].usr_msg, False)
+
+        self.assertEqual(
+            cmds[13].args, '/odoo_ar/nginx/conf')
+        self.assertEqual(
+            cmds[13].command, 'mkdir -p /odoo_ar/nginx/conf')
+        self.assertEqual(
+            cmds[13].usr_msg, False)
+
+        self.assertEqual(
+            cmds[14].args, '/odoo_ar/nginx/log')
+        self.assertEqual(
+            cmds[14].command, 'mkdir -p /odoo_ar/nginx/log')
+        self.assertEqual(
+            cmds[14].usr_msg, False)
+
+        self.assertEqual(
+            cmds[15].args, '/odoo_ar/nginx/conf/nginx.conf')
+        self.assertEqual(
+            cmds[15].command, '/odoo_ar/nginx/conf/nginx.conf')
+        self.assertEqual(
+            cmds[15].usr_msg, 'Generating nginx.conf template')
+
+        self.assertEqual(
+            cmds[16].args,
+            '/odoo_ar/odoo-9.0/test2_client/sources/odoo-addons')
+        self.assertEqual(
+            cmds[16].command,
+            'git -C /odoo_ar/odoo-9.0/test2_client/sources/ clone --depth 1 '
+            '-b 9.0 https://github.com/jobiols/odoo-addons.git')
+        self.assertEqual(
+            cmds[16].usr_msg,
+            'cloning b 9.0     https://github.com/jobiols/odoo-addons.git')
+
+        self.assertEqual(
+            cmds[17].args,
+            '/odoo_ar/odoo-9.0/test2_client/sources/odoo-addons')
+        self.assertEqual(
+            cmds[17].command,
+            'git -C /odoo_ar/odoo-9.0/test2_client/sources/odoo-addons pull')
+        self.assertEqual(
+            cmds[17].usr_msg,
+            'pulling b 9.0     https://github.com/jobiols/odoo-addons.git')
+
+        self.assertEqual(
+            cmds[18].args,
+            '/odoo_ar/odoo-9.0/test2_client/sources/adhoc-odoo-argentina')
+
+        self.assertEqual(
+            cmds[18].command,
+            'git -C /odoo_ar/odoo-9.0/test2_client/sources/ clone --depth 1 '
+            '-b 9.0 https://github.com/ingadhoc/odoo-argentina.git adhoc-odoo-argentina')
+        self.assertEqual(
+            cmds[18].usr_msg,
+            'cloning b 9.0     https://github.com/ingadhoc/odoo-argentina.git adhoc-odoo-argentina')
+
+        self.assertEqual(
+            cmds[19].args,
+            '/odoo_ar/odoo-9.0/test2_client/sources/adhoc-odoo-argentina')
+        self.assertEqual(
+            cmds[19].command,
+            'git -C /odoo_ar/odoo-9.0/test2_client/sources/adhoc-odoo-argentina pull')
+        self.assertEqual(
+            cmds[19].usr_msg,
+            'pulling b 9.0     https://github.com/ingadhoc/odoo-argentina.git adhoc-odoo-argentina')
 
     def test_cmd(self):
         """ ########################################################## TEST CMD
@@ -591,3 +751,29 @@ class TestRepository(unittest.TestCase):
         OeConfig().save_client_path('test_client', 'multiple_path')
         config = OeConfig().get_config_data()
         self.assertEqual(len(config.get('clients')), 1)
+
+    def test_repo_clone(self):
+        repo = Repo({'usr': 'jobiols', 'repo': 'project', 'branch': '9.0'})
+        self.assertEqual(repo.clone, 'clone --depth 1 -b 9.0 https://github.com/jobiols/project')
+
+    def test_repo2_clone(self):
+        repo = Repo2('https://github.com/jobiols/project.git', '9.0')
+        self.assertEqual(repo.clone, 'clone --depth 1 -b 9.0 https://github.com/jobiols/project.git')
+        self.assertEqual(repo.pull, 'pull')
+        self.assertEqual(repo.dir_name, 'project')
+
+    def test_repo2_clone_dir(self):
+        repo = Repo2('https://github.com/jobiols/project.git adhoc-project', '9.0')
+        self.assertEqual(repo.dir_name, 'adhoc-project')
+
+    def test_image(self):
+        image = Image({'name': 'odoo', 'usr': 'jobiols', 'img': 'odoo-jeo', 'ver': '9.0'})
+        self.assertEqual(image.name, 'jobiols/odoo-jeo:9.0')
+        self.assertEqual(image.version, '9.0')
+        self.assertEqual(image.short_name, 'odoo')
+
+    def test_image2(self):
+        image = Image2('odoo jobiols/odoo-jeo:9.0')
+        self.assertEqual(image.name, 'jobiols/odoo-jeo:9.0')
+        self.assertEqual(image.version, '9.0')
+        self.assertEqual(image.short_name, 'odoo')

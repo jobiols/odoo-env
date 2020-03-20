@@ -15,7 +15,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url='https://github.com/jobiols/odoo-env',
     author_email='jorge.obiols@gmail.com',
-    python_requires='>=3.4',
+    python_requires='>3.4',
     entry_points={
         'console_scripts': [
             'oe=odoo_env.oe:main',

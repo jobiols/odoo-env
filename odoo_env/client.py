@@ -228,12 +228,12 @@ class Client(object):
 
     @property
     def base_dir(self):
-        lic = 'e' if self._license == 'EE' else ''
-        return '%sodoo-%s%s/%s/' % (BASE_DIR, self._version, lic, self._name)
+        return '%s%s/' % (self.version_dir, self._name)
 
     @property
     def version_dir(self):
-        return '%sodoo-%s/' % (BASE_DIR, self._version)
+        lic = 'e' if self._license == 'EE' else ''
+        return '%sodoo-%s%s/' % (BASE_DIR, self._version, lic)
 
     @property
     def sources_dir(self):

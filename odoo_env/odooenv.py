@@ -386,9 +386,12 @@ class OdooEnv(object):
     def _add_debug_mountings(self, version):
 
         iea = IN_EXTRA_ADDONS
-        if version >= 11:
+        if version in (11, 12):
             idp = IN_DIST_PACKAGES.format('3')
             idlp = IN_DIST_LOCAL_PACKAGES.format('3.5')
+        elif version == 13:
+            idp = IN_DIST_PACKAGES.format('3')
+            idlp = IN_DIST_LOCAL_PACKAGES.format('3.7')
         else:
             idp = IN_DIST_PACKAGES.format('2.7')
             idlp = IN_DIST_LOCAL_PACKAGES.format('2.7')

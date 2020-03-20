@@ -351,7 +351,7 @@ class TestRepository(unittest.TestCase):
         """ ################################### TEST INSTALLATION v2 ENTERPRISE
         """
         options = {
-            'debug': False,
+            'debug': True,
             'no-repos': False,
             'nginx': True,
         }
@@ -373,6 +373,14 @@ class TestRepository(unittest.TestCase):
             'mkdir -p {}odoo-9.0e/test2e_client/postgresql'.format(base_dir))
         self.assertEqual(
             cmds[2].usr_msg, False)
+
+        self.assertEqual(
+            cmds[8].args, '/odoo_ar/odoo-9.0e/dist-packages')
+        self.assertEqual(
+            cmds[8].command, 'mkdir -p /odoo_ar/odoo-9.0e/dist-packages'
+        )
+        self.assertEqual(
+            cmds[8].usr_msg, False)
 
     def test_cmd(self):
         """ ########################################################## TEST CMD

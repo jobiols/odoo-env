@@ -1,5 +1,5 @@
 {
-    'name': 'test2_client',
+    'name': 'test2e_client',
     'version': '9.0.3.0',
     'license': 'Other OSI approved licence',
     'category': 'Tools',
@@ -34,7 +34,7 @@
     # --------------------------------------------
 
     # if Enterprise it installs in a different directory than community
-    'license': 'CE',
+    'license': 'EE',
 
     # port where odoo starts serving pages
     'port': '8069',

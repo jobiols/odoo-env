@@ -347,6 +347,33 @@ class TestRepository(unittest.TestCase):
             cmds[19].usr_msg,
             'pulling b 9.0     https://github.com/ingadhoc/odoo-argentina.git adhoc-odoo-argentina')
 
+    def test_install2_enterprise(self):
+        """ ################################### TEST INSTALLATION v2 ENTERPRISE
+        """
+        options = {
+            'debug': False,
+            'no-repos': False,
+            'nginx': True,
+        }
+
+        base_dir = '/odoo_ar/'
+        oe = OdooEnv(options)
+        cmds = oe.install('test2e_client')
+        self.assertEqual(
+            cmds[0].args, base_dir)
+        self.assertEqual(
+            cmds[0].command, 'sudo mkdir ' + base_dir)
+        self.assertEqual(
+            cmds[0].usr_msg, 'Installing client test2e_client')
+
+        self.assertEqual(
+            cmds[2].args, '{}odoo-9.0e/test2e_client/postgresql'.format(base_dir))
+        self.assertEqual(
+            cmds[2].command,
+            'mkdir -p {}odoo-9.0e/test2e_client/postgresql'.format(base_dir))
+        self.assertEqual(
+            cmds[2].usr_msg, False)
+
     def test_cmd(self):
         """ ########################################################## TEST CMD
         """

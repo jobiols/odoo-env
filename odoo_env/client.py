@@ -19,6 +19,11 @@ class Client(object):
         # parent es siempre un objeto OdooEnv
         self._parent = odooenv
         self._name = name
+        self._license = False
+        self._images = []
+        self._repos = []
+        self._port = 0
+        self._version = ''
 
         # si estamos en test accedo a data
         if name[0:5] in ['test_', 'test2']:
@@ -74,17 +79,24 @@ class Client(object):
     def check_v2(self, manifest):
         # Chequar que el manifiesto tenga bien las cosas
         if not manifest.get('docker-images'):
-            msg.err('No images in manifest {}'.format(self.name))
+            msg.err('No images in manifest %s' % self.name)
 
         if not manifest.get('git-repos'):
-            msg.err('No repos in manifest {}'.format(self.name))
+            msg.err('No repos in manifest %s' % self.name)
+
+        # leer si es enterprise o community
+        self._license = manifest.get('license', False)
+
+        if not self._license:
+            msg.err('No license, in manifest %s' % self.name)
+
+        if self._license not in ['EE', 'CE']:
+            msg.err('license must be EE or CE')
 
         # Crear imagenes y repos
-        self._repos = []
         for rep in manifest.get('git-repos'):
             self._repos.append(Repo2(rep, self._version))
 
-        self._images = []
         for img in manifest.get('docker-images'):
             self._images.append(Image2(img))
 
@@ -112,7 +124,9 @@ class Client(object):
             devolver el manifest y el path
         """
         for root, dirs, files in os.walk(path):
-            for file in ['__openerp__.py', '__manifest__.py']:
+            for file in ['__openerp__.py',
+                         '__manifest__.py',
+                         '__manifest_tst_.py']:
                 if file in files:
                     manifest_file = '%s/%s' % (root, file)
                     manifest = self.load_manifest(manifest_file)
@@ -214,11 +228,12 @@ class Client(object):
 
     @property
     def base_dir(self):
-        return '{}odoo-{}/{}/'.format(BASE_DIR, self._version, self._name)
+        lic = 'e' if self._license == 'EE' else ''
+        return '%sodoo-%s%s/%s/' % (BASE_DIR, self._version, lic, self._name)
 
     @property
     def version_dir(self):
-        return '{}odoo-{}/'.format(BASE_DIR, self._version)
+        return '%sodoo-%s/' % (BASE_DIR, self._version)
 
     @property
     def sources_dir(self):
@@ -228,12 +243,12 @@ class Client(object):
     @property
     def sources_com(self):
         """ real repos for this odoo Version, all clients """
-        return '{}odoo-{}/sources/'.format(BASE_DIR, self._version)
+        return '%sodoo-%s/sources/' % (BASE_DIR, self._version)
 
     @property
     def nginx_dir(self):
         """ Base dir for nginx """
-        return '{}nginx/'.format(BASE_DIR)
+        return '%snginx/' % BASE_DIR
 
     @property
     def backup_dir(self):

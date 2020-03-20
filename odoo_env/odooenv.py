@@ -189,10 +189,10 @@ class OdooEnv(object):
         ##################################################################
         # Create base dir with sudo
         ##################################################################
-        msg = 'Installing client {}'.format(client_name)
+        msg = 'Installing client %s' % client_name
         cmd = MakedirCommand(
             self,
-            command='sudo mkdir {}'.format(BASE_DIR),
+            command='sudo mkdir %s' % BASE_DIR,
             args=BASE_DIR,
             usr_msg=msg
         )
@@ -205,7 +205,7 @@ class OdooEnv(object):
         username = pwd.getpwuid(os.getuid()).pw_name
         cmd = Command(
             self,
-            command='sudo chown {}:{} {}'.format(username, username, BASE_DIR)
+            command='sudo chown %s:%s %s' % (username, username, BASE_DIR)
         )
         ret.append(cmd)
 
@@ -214,7 +214,7 @@ class OdooEnv(object):
         ##################################################################
         for w_dir in ['postgresql', 'config', 'data_dir', 'backup_dir', 'log',
                       'sources']:
-            r_dir = '{}{}'.format(self.client.base_dir, w_dir)
+            r_dir = '%s%s' % (self.client.base_dir, w_dir)
             cmd = MakedirCommand(
                 self,
                 command='mkdir -p {}'.format(r_dir),

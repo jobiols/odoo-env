@@ -2,12 +2,12 @@
 ##############################################################################
 
 import unittest
-from command import Command, MakedirCommand, CreateNginxTemplate
-from client import Client
-from odooenv import OdooEnv
-from config import OeConfig
-from repos import Repo, Repo2
-from images import Image, Image2
+from odoo_env.command import Command, MakedirCommand, CreateNginxTemplate
+from odoo_env.client import Client
+from odoo_env.odooenv import OdooEnv
+from odoo_env.config import OeConfig
+from odoo_env.repos import Repo, Repo2
+from odoo_env.images import Image, Image2
 
 
 class TestRepository(unittest.TestCase):

@@ -1,0 +1,24 @@
+@startuml
+
+class Client
+class OdooEnv
+class Command
+class CreateGitignore
+class MakedirCommand
+class ExtractSourcesCommand
+class CloneRepo
+class PullRepo
+class PullImage
+class CreateNginxTemplate
+class MessageOnly
+
+Command <|--- CreateGitignore
+Command <|--- MakedirCommand
+Command <|-- PullRepo
+Command <|-- PullImage
+Command <|--- ExtractSourcesCommand
+Command <|-- CreateNginxTemplate
+Command <|-- MessageOnly
+Command <|--- CloneRepo
+
+@enduml

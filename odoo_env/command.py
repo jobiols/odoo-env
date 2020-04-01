@@ -124,8 +124,9 @@ class CreateNginxTemplate(Command):
         return not os.path.isfile(self._args)
 
     def execute(self):
-        # crear el nginx.conf
-        with open('/usr/local/nginx.conf', 'r') as f:
+        # leer el nginx.conf
+        path = os.path.dirname(os.path.abspath(__file__))
+        with open(path + '/nginx.conf', 'r') as f:
             conf = f.read()
 
         # poner el nombre del cliente en el config

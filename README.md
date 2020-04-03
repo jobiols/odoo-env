@@ -102,6 +102,8 @@ Installation
     
 Changelog
 ---------
+    - 0.9.14 improved creation of odoo.conf, i.e. detect cpu number and
+      calculate workers.
     - 0.9.13 solved bug when creating nginx config file 
     - 0.9.12 Get last wdb vesion. Added a check to verify if there is 
     a new version available in pypi. Fixed copy sources to host. 

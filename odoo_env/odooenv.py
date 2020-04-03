@@ -3,7 +3,7 @@
 from odoo_env.client import Client
 from odoo_env.command import Command, MakedirCommand, \
     ExtractSourcesCommand, CloneRepo, PullRepo, CreateNginxTemplate, \
-    MessageOnly, PullImage, CreateGitignore
+    MessageOnly, PullImage, CreateGitignore, WriteConfigFile
 from odoo_env.constants import BASE_DIR, IN_CONFIG, IN_DATA, IN_LOG, \
     IN_CUSTOM_ADDONS, IN_DIST_PACKAGES, IN_EXTRA_ADDONS, IN_BACKUP_DIR, \
     IN_DIST_LOCAL_PACKAGES
@@ -160,9 +160,57 @@ class OdooEnv(object):
         """
         self._client = Client(self, client_name)
         ret = []
+        client = self._client
 
-        ret += self.run_client(client_name, write_config=True)
+        CPUs = client.CPUs
+        # You should use 2 worker threads + 1 cron thread per available CPU,
+        # and 1 CPU per 10 concurent users. Make sure you tune the memory
+        # limits and cpu limits in your configuration file.
+        workers = CPUs * 2 + 1 if not self.debug else 0
+        max_cron_threads = 1
 
+        # Number of requests a worker will process before being recycled and
+        # restarted. Defaults to 8196
+        limit_request = client.limit_request
+
+        # Maximum allowed virtual memory per worker. If the limit is exceeded,
+        # the worker is killed and recycled at the end of the current request.
+        # Defaults to 640MB
+        limit_memory_soft = client.limit_memory_soft
+
+        # Hard limit on virtual memory, any worker exceeding the limit will be
+        # immediately killed without waiting for the end of the current request
+        # processing. Defaults to 768MB.
+        limit_memory_hard = client.limit_memory_hard
+
+        # Prevents the worker from using more than CPU seconds for each
+        # request. If the limit is exceeded, the worker is killed. Defaults
+        # to 60.
+        limit_time_cpu = client.limit_time_cpu if not self.debug else 9999999
+
+        # Prevents the worker from taking longer than seconds to process a
+        # request. If the limit is exceeded, the worker is killed. Defaults to
+        # 120. Differs from --limit-time-cpu in that this is a "wall time"
+        # limit including e.g. SQL queries.
+        limit_time_real = client.limit_time_real if not self.debug else 9999999
+
+        if self._client.numeric_ver == 13:
+            cmd = WriteConfigFile(
+                self,
+                args={
+                    'client': client,
+                    'workers': workers,
+                    'max_cron_threads': max_cron_threads,
+                    'limit_request': limit_request,
+                    'limit_memory_soft': limit_memory_soft,
+                    'limit_memory_hard': limit_memory_hard,
+                    'limit_time_cpu': limit_time_cpu,
+                    'limit_time_real': limit_time_real
+                },
+                usr_msg='Writing config file')
+            ret.append(cmd)
+        else:
+            ret += self.run_client(client_name, write_config=True)
         return ret
 
     def pull_images(self, client_name):

@@ -24,6 +24,12 @@ class Client(object):
         self._repos = []
         self._port = 0
         self._version = ''
+        self.CPUs = '1'
+        self.limit_request = '0'
+        self.limit_memory_soft = '0'
+        self.limit_memory_hard = '0'
+        self.limit_time_cpu = '0'
+        self.limit_time_real = '0'
 
         # si estamos en test accedo a data
         if name[0:5] in ['test_', 'test2']:
@@ -117,6 +123,18 @@ class Client(object):
         if not self._name == name.split()[0]:
             msg.err('You intend to install client %s but in manifest, '
                     'the name is %s' % (self._name, manifest.get('name')))
+
+        # Tomar los datos de instalacion.
+
+        cpus = manifest.get('CPUs')
+        import multiprocessing as mp
+        # si me definieron las cpu uso eso sino verifico cuantas hay
+        self.CPUs = cpus if cpus else mp.cpu_count()
+        self.limit_request = manifest.get('limit_request', 8196)
+        self.limit_memory_soft = manifest.get('limit_memory_soft', 640000000)
+        self.limit_memory_hard = manifest.get('limit_memory_hard', 760000000)
+        self.limit_time_cpu = manifest.get('limit_time_cpu', 60)
+        self.limit_time_real = manifest.get('limit_time_real', 120)
 
     def get_manifest_from_struct(self, path):
         """ leer un manifest que esta dentro de una estructura de directorios
@@ -253,3 +271,7 @@ class Client(object):
     @property
     def backup_dir(self):
         return self.base_dir + 'backup_dir/'
+
+    @property
+    def config_file(self):
+        return self.base_dir + 'config/odoo.conf'

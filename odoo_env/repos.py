@@ -25,8 +25,8 @@ class Repo(object):
             template = 'https://{}/{}/{}'
 
         return template.format(self._dict.get('host', 'github.com'),
-                                     self._dict.get('usr'),
-                                     self._dict.get('repo'))
+                               self._dict.get('usr'),
+                               self._dict.get('repo'))
 
     @property
     def formatted(self):
@@ -45,6 +45,12 @@ class Repo(object):
 
 class Repo2(object):
     def __init__(self, value, branch):
+        # chequear branch alternativo
+        i = value.find(' -b ')
+        if i >= 0:
+            branch = value[i+4:]
+            value = value[:i]
+
         self._data = value
         self._branch = branch
 
@@ -59,7 +65,7 @@ class Repo2(object):
         url = self._data.split()
         if len(url) == 1:
             a = url[0].split('/')
-            dir = a[len(a)-1]
+            dir = a[len(a) - 1]
         else:
             dir = url[1]
         return dir.replace('.git', '')

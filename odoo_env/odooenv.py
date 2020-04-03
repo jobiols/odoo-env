@@ -71,20 +71,6 @@ class OdooEnv(object):
             )
             ret.append(cmd)
 
-            ##############################################################
-            # Create simbolic link
-            ##############################################################
-
-            # cmd = MakedirCommand(
-            #    self,
-            #    usr_msg='simlinking {}'.format(repo.formatted),
-            #    command='ln -s {}{} {}{}'.format(
-            #        self.client.sources_com, repo.dir_name,
-            #        self.client.sources_dir, repo.dir_name),
-            #    args='{}{}'.format(self.client.sources_dir, repo.dir_name)
-            # )
-            # ret.append(cmd)
-
         return ret
 
     def backup_list(self, client_name):
@@ -269,18 +255,6 @@ class OdooEnv(object):
                 args='{}'.format(r_dir)
             )
             ret.append(cmd)
-
-        ##################################################################
-        # create dir for common sources
-        ##################################################################
-
-        # r_dir = '{}'.format(self.client.sources_com)
-        # cmd = MakedirCommand(
-        #    self,
-        #    command='mkdir -p {}'.format(r_dir),
-        #    args='{}'.format(r_dir)
-        # )
-        # ret.append(cmd)
 
         ##################################################################
         # create dirs for extracting sources, only for debug
@@ -664,7 +638,7 @@ class OdooEnv(object):
         if write_config:
             msg = 'Writing config file for client {}'.format(client_name)
         else:
-            msg = 'Starting image for client {} on port {}'.format(
+            msg = 'Starting Odoo image for client {} on port {}'.format(
                 client_name, self.client.port)
 
         if write_config:

@@ -24,7 +24,7 @@ class Client(object):
         self._repos = []
         self._port = 0
         self._version = ''
-        self.CPUs = '1'
+        self.CPUs = 1
         self.limit_request = '0'
         self.limit_memory_soft = '0'
         self.limit_memory_hard = '0'
@@ -126,10 +126,10 @@ class Client(object):
 
         # Tomar los datos de instalacion.
 
-        cpus = manifest.get('CPUs')
+        cpus = manifest.get('CPUs', False)
         import multiprocessing as mp
         # si me definieron las cpu uso eso sino verifico cuantas hay
-        self.CPUs = cpus if cpus else mp.cpu_count()
+        self.CPUs = int(cpus) if cpus else mp.cpu_count()
         self.limit_request = manifest.get('limit_request', 8196)
         self.limit_memory_soft = manifest.get('limit_memory_soft', 640000000)
         self.limit_memory_hard = manifest.get('limit_memory_hard', 760000000)
@@ -241,37 +241,46 @@ class Client(object):
         return self._port
 
     @property
-    def psql_dir(self):
-        return self.base_dir + 'postgresql/'
-
-    @property
-    def base_dir(self):
-        return '%s%s/' % (self.version_dir, self._name)
-
-    @property
     def version_dir(self):
+        """ /odoo_ar/odoo-13.0/
+            /odoo_ar/odoo-13.0e/
+        """
         lic = 'e' if self._license == 'EE' else ''
         return '%sodoo-%s%s/' % (BASE_DIR, self._version, lic)
 
     @property
-    def sources_dir(self):
-        """ links to repos for this client only pointing to sources_com """
-        return self.base_dir + 'sources/'
-
-    @property
-    def sources_com(self):
-        """ real repos for this odoo Version, all clients """
-        return '%sodoo-%s/sources/' % (BASE_DIR, self._version)
-
-    @property
-    def nginx_dir(self):
-        """ Base dir for nginx """
-        return '%snginx/' % BASE_DIR
+    def base_dir(self):
+        """ /odoo_ar/odoo-13.0/clientname/
+            /odoo_ar/odoo-13.0e/clientname/
+        """
+        return '%s%s/' % (self.version_dir, self._name)
 
     @property
     def backup_dir(self):
+        """ /odoo_ar/odoo-13.0/clientname/backup_dir/
+        """
         return self.base_dir + 'backup_dir/'
 
     @property
+    def sources_dir(self):
+        """ /odoo_ar/odoo-13.0/clientname/sources/
+        """
+        return self.base_dir + 'sources/'
+
+    @property
+    def psql_dir(self):
+        """ /odoo_ar/odoo-13.0/clientname/postgresql/
+        """
+        return self.base_dir + 'postgresql/'
+
+    @property
     def config_file(self):
+        """ /odoo_ar/odoo-13.0/clientname/config/odoo.conf
+        """
         return self.base_dir + 'config/odoo.conf'
+
+    @property
+    def nginx_dir(self):
+        """ /odoo_ar/nginx/
+        """
+        return '%snginx/' % BASE_DIR

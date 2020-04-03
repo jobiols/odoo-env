@@ -102,6 +102,7 @@ Installation
     
 Changelog
 ---------
+    - 0.10.0 New manifest syntax, backward compatible.
     - 0.9.14 improved creation of odoo.conf, i.e. detect cpu number and
       calculate workers.
     - 0.9.13 solved bug when creating nginx config file 

@@ -45,7 +45,7 @@
     # Note that the branch of the repo to download is taken from the
     # module version ie. 9.0
     'git-repos': [
-        'https://github.com/jobiols/odoo-addons.git',
+        'https://github.com/jobiols/odoo-addons.git -b 10.0',
         'https://github.com/ingadhoc/odoo-argentina.git adhoc-odoo-argentina',
         'git@github.com:jobiols/cl-amic.git',
         'git@bitbucket.org:jobiols/odoo-enterprise.git'

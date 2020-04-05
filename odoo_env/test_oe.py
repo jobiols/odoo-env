@@ -459,8 +459,8 @@ class TestRepository(unittest.TestCase):
         cmds = oe.run_client(client_name)
 
         cmd = cmds[0]
-        self.assertEqual(cmd.usr_msg, 'Starting image for client test_client '
-                                      'on port 8069')
+        self.assertEqual(cmd.usr_msg, 'Starting Odoo image for client '
+                                      'test_client on port 8069')
 
         command = \
             "sudo docker run -d " \
@@ -495,8 +495,8 @@ class TestRepository(unittest.TestCase):
         cmds = oe.run_client(client_name)
 
         cmd = cmds[0]
-        self.assertEqual(cmd.usr_msg, 'Starting image for client test_client '
-                                      'on port 8069')
+        self.assertEqual(cmd.usr_msg, 'Starting Odoo image for client '
+                                      'test_client on port 8069')
         command = \
             'sudo docker run --rm -it ' \
             '--link aeroo:aeroo ' \

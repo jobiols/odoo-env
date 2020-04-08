@@ -91,7 +91,7 @@ class Client(object):
             msg.err('No repos in manifest %s' % self.name)
 
         # leer si es enterprise o community
-        self._license = manifest.get('license', False)
+        self._license = manifest.get('odoo-license', False)
 
         if not self._license:
             msg.err('No license, in manifest %s' % self.name)

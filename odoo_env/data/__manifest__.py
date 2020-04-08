@@ -34,7 +34,7 @@
     # --------------------------------------------
 
     # if Enterprise it installs in a different directory than community
-    'license': 'CE',
+    'odoo-license': 'CE',
 
     # port where odoo starts serving pages
     'port': '8069',

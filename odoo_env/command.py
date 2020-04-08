@@ -154,7 +154,7 @@ class WriteConfigFile(Command):
             f.write(txt % __version__)
             f.write('[options]\n')
             f.write('addons_path = %s' % ','.join(repos) + '\n')
-            f.write('data_dir = /var/lib/odoo\n')
+            f.write('data_dir = %s \n' % arg['data_dir'])
             f.write('workers = %s\n' % arg['workers'])
             f.write('max_cron_threads = %s\n' % arg['max_cron_threads'])
             f.write('limit_request = %s\n' % arg['limit_request'])

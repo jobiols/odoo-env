@@ -39,7 +39,7 @@ usage: oe [-h] [-i] [-p] [-w] [-R] [-r] [-S] [-s] [-u] [-c CLIENT] [-v]
           [-f BACKUP_FILE] [-H] [-V]
 
     ==========================================================================
-    Odoo Environment Manager v0.10.0 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.10.1 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:
@@ -102,6 +102,7 @@ Installation
     
 Changelog
 ---------
+    - 0.10.1 FIX bad filestore dir
     - 0.10.0 New manifest syntax, backward compatible.
     - 0.9.14 improved creation of odoo.conf, i.e. detect cpu number and
       calculate workers.

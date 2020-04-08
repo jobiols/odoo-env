@@ -191,7 +191,8 @@ class OdooEnv(object):
                     'limit_memory_soft': limit_memory_soft,
                     'limit_memory_hard': limit_memory_hard,
                     'limit_time_cpu': limit_time_cpu,
-                    'limit_time_real': limit_time_real
+                    'limit_time_real': limit_time_real,
+                    'data_dir': IN_DATA
                 },
                 usr_msg='Writing config file')
             ret.append(cmd)

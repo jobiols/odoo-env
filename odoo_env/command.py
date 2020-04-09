@@ -32,6 +32,9 @@ class Command:
         # le pasamos el chequeo al objeto especifico
         return self.check_args()
 
+    def check_args(self):
+        raise NotImplementedError
+
     def execute(self):
         cmd = self.command
         self.subrpocess_call(cmd)
@@ -82,7 +85,7 @@ class Command:
 class CreateGitignore(Command):
     def execute(self):
         # crear el gitignore en el archivo que viene del comando
-        values = ['.idea/','.pyc']
+        values = ['.idea/\n', '.pyc\n']
         with open(self._command, 'w') as f:
             for value in values:
                 f.write(value)

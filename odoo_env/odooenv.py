@@ -531,6 +531,7 @@ class OdooEnv(object):
             command = 'sudo docker run -d '
             command += '-p 1984:1984 '
             command += '--name=wdb '
+            command += '--restart=always '
             command += 'kozea/wdb'
             cmd = Command(
                 self,

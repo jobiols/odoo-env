@@ -4,6 +4,10 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/44329410ef814e0085df49abeef4ff32)](https://www.codacy.com/app/jobiols/odoo-env?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=jobiols/odoo-env&amp;utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/jobiols/odoo-env/badge)](https://www.codefactor.io/repository/github/jobiols/odoo-env)
 
+
+![Python application](https://github.com/jobiols/odoo-env/workflows/Python%20application/badge.svg)
+
+
 odoo-env
 =========
 jeo Software (c) 2020 jorge.obiols@gmail.com

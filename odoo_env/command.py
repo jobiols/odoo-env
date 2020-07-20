@@ -85,7 +85,7 @@ class Command:
 class CreateGitignore(Command):
     def execute(self):
         # crear el gitignore en el archivo que viene del comando
-        values = ['.idea/\n', '.pyc\n']
+        values = ['.idea/\n', '*.pyc\n', '__pycache__\n']
         with open(self._command, 'w') as f:
             for value in values:
                 f.write(value)

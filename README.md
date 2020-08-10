@@ -13,7 +13,7 @@ odoo-env
 jeo Software (c) 2020 jorge.obiols@gmail.com
 This code is distributed under the MIT license
 
-Tool to manage docker based odoo environments. This is a Dockerized 
+Tool to manage docker based odoo environments. This is a Dockerized
 Environment to manage Odoo. Two environments are provided debug and prod.
 
 Directory structure
@@ -35,7 +35,7 @@ Directory structure
         └── cert
 
 Functionality
-------------- 
+-------------
 
 usage: oe [-h] [-i] [-p] [-w] [-R] [-r] [-S] [-s] [-u] [-c CLIENT] [-v]
           [--deactivate] [--debug] [--prod] [--no-repos] [-d DATABASE]
@@ -43,7 +43,7 @@ usage: oe [-h] [-i] [-p] [-w] [-R] [-r] [-S] [-s] [-u] [-c CLIENT] [-v]
           [-f BACKUP_FILE] [-H] [-V]
 
     ==========================================================================
-    Odoo Environment Manager v0.10.2 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.10.3 - by jeo Software <jorge.obiols@gmail.com>
     ==========================================================================
     
     optional arguments:
@@ -99,13 +99,15 @@ usage: oe [-h] [-i] [-p] [-w] [-R] [-r] [-S] [-s] [-u] [-c CLIENT] [-v]
       -H, --server-help   Show odoo server help, it shows the help from the odoo
                           imagedeclared in the cliente manifest
       -V, --version       Show version number and exit.
+
 Installation
 ------------
     sudo pip install odoo-env
     see proyect in https://pypi.org/project/odoo-env/
-    
+
 Changelog
 ---------
+    - 0.10.3 FIX nginx config now works behind port redirections
     - 0.10.2 FIX collision field in manifest "license"
     - 0.10.1 FIX bad filestore dir
     - 0.10.0 New manifest syntax, backward compatible.

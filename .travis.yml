@@ -3,7 +3,7 @@ cache: pip
 
 matrix:
   include:
-#    - python: 3.4
+    - python: 3.4
     - python: 3.5
     - python: 3.6
     - python: 3.7
@@ -20,8 +20,8 @@ install:
   - pip install codecov
 
 script:
-  - flake8 scripts/sd.py
-  - flake8 scripts/oe.py
+#  - flake8 ./sd.py
+#  - flake8 ./oe.py
   - pytest --cov=./
 
 after_success:

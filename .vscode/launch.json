@@ -1,0 +1,19 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug oe",
+            "type": "python",
+            "request": "launch",
+            // "program": "/home/jobiols/git-repos/odoo-env/odoo_env/oe.py",
+            "pythonPath": "/usr/bin/python3",
+            //"console": "integratedTerminal",
+            "args": ["-i","-c","test11","--debug"],
+            "justMyCode": false,
+            "module": "odoo_env.oe"
+        }
+    ]
+}

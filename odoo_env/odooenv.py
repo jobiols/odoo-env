@@ -180,7 +180,7 @@ class OdooEnv(object):
         # limit including e.g. SQL queries.
         limit_time_real = client.limit_time_real if not self.debug else 9999999
 
-        if self._client.numeric_ver == 13:
+        if self._client.numeric_ver not in [8, 9, 10]:
             cmd = WriteConfigFile(
                 self,
                 args={

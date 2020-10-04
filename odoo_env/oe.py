@@ -9,9 +9,7 @@ from odoo_env.config import OeConfig
 
 def main():
     parser = argparse.ArgumentParser(description="""
-==========================================================================
 Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
-==========================================================================
 """ % __version__)
 
     parser.add_argument(

@@ -42,9 +42,7 @@ usage: oe [-h] [-i] [-p] [-w] [-R] [-r] [-S] [-s] [-u] [-c CLIENT] [-v]
           [-m MODULE] [--nginx] [-Q repo] [--backup-list] [--restore]
           [-f BACKUP_FILE] [-H] [-V]
 
-    ==========================================================================
-    Odoo Environment Manager v0.10.3 - by jeo Software <jorge.obiols@gmail.com>
-    ==========================================================================
+    Odoo Environment Manager v0.10.4 - by jeo Software <jorge.obiols@gmail.com>
     
     optional arguments:
       -h, --help          show this help message and exit
@@ -107,6 +105,7 @@ Installation
 
 Changelog
 ---------
+    - 0.10.4 IMP creation of odoo.conf improved in V11 also.
     - 0.10.3 FIX nginx config now works behind port redirections
     - 0.10.2 FIX collision field in manifest "license"
     - 0.10.1 FIX bad filestore dir

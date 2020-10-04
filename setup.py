@@ -10,12 +10,12 @@ setuptools.setup(
     name='odoo-env',
     version=__version__,
     author='Jorge E. Obiols',
-    description='A Dockerized multi environment for Odoo',
+    description='A Dockerized environment for Odoo',
     long_description=long_description,
     long_description_content_type="text/markdown",
     url='https://github.com/jobiols/odoo-env',
     author_email='jorge.obiols@gmail.com',
-    python_requires='>3.4',
+    python_requires='>=3.4',
     entry_points={
         'console_scripts': [
             'oe=odoo_env.oe:main',
@@ -30,7 +30,6 @@ setuptools.setup(
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
-#        "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",

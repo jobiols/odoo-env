@@ -1,4 +1,4 @@
-#!/usr/bin/python2.7
+#!/usr/lib/python3
 # -*- coding: utf-8 -*-
 ###############################################
 # shortcut for sudo docker

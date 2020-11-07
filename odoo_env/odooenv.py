@@ -412,7 +412,7 @@ class OdooEnv(object):
         if version in (11, 12):
             idp = IN_DIST_PACKAGES.format('3')
             idlp = IN_DIST_LOCAL_PACKAGES.format('3.5')
-        elif version == 13:
+        elif version >= 13:
             idp = IN_DIST_PACKAGES.format('3')
             idlp = IN_DIST_LOCAL_PACKAGES.format('3.7')
         else:

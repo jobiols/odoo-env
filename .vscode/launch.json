@@ -9,9 +9,8 @@
             "type": "python",
             "request": "launch",
             // "program": "/home/jobiols/git-repos/odoo-env/odoo_env/oe.py",
-            "pythonPath": "/usr/bin/python3",
-            //"console": "integratedTerminal",
-            "args": ["-i","-c","test11","--debug"],
+            "python": "/usr/bin/python3",
+            "args": ["-h"],
             "justMyCode": false,
             "module": "odoo_env.oe"
         }

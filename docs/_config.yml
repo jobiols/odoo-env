@@ -1,0 +1,10 @@
+title: ODOO-ETL Version 13.0
+author: Jorge Obiols
+theme: jekyll-theme-leap-day
+markdown: kramdown
+
+defaults:
+  - scope:
+      path: "assets/img"
+    values: 
+      image: true

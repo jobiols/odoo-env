@@ -1,4 +1,4 @@
-title: ODOO-ENV Version 0.10.5
+title: ODOO-ETL Version 13.0
 author: Jorge Obiols
 theme: jekyll-theme-leap-day
 markdown: kramdown
@@ -6,5 +6,9 @@ markdown: kramdown
 defaults:
   - scope:
       path: "assets/img"
+<<<<<<< HEAD
     values:
+=======
+    values:
+>>>>>>> 4c0f2b616612945ec06b26d7026167f30a36cb15
       image: true

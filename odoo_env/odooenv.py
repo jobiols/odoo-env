@@ -1,14 +1,11 @@
-# -*- coding: utf-8 -*-
-
+import multiprocessing as mp
+import pwd
+import os
 from odoo_env.client import Client
 from odoo_env.command import Command, MakedirCommand, \
     ExtractSourcesCommand, CloneRepo, PullRepo, CreateNginxTemplate, \
     MessageOnly, PullImage, CreateGitignore, WriteConfigFile
-from odoo_env.constants import BASE_DIR, IN_CONFIG, IN_DATA, IN_LOG, \
-    IN_CUSTOM_ADDONS, IN_DIST_PACKAGES, IN_EXTRA_ADDONS, IN_BACKUP_DIR, \
-    IN_DIST_LOCAL_PACKAGES
-import pwd
-import os
+from odoo_env.constants import *
 
 
 class OdooEnv(object):
@@ -45,7 +42,7 @@ class OdooEnv(object):
 
         for repo in self.client.repos:
             ##############################################################
-            # Clone repo if it not exist
+            # Clone repo if does not exist
             ##############################################################
 
             cmd = CloneRepo(
@@ -87,7 +84,7 @@ class OdooEnv(object):
                 if file_extension == '.zip':
                     filenames.append(filedesc)
 
-        if len(filenames):
+        if len(filenames) > 1:
             filenames.sort()
             msg = 'List of available backups for client {} \n\n'.format(
                 client_name)
@@ -105,7 +102,7 @@ class OdooEnv(object):
         return ret
 
     def restore(self, client_name, database=False, backup_file=False,
-        deactivate=False):
+                deactivate=False):
         """ Restaurar un backup desde el directorio backup_dir
         """
 
@@ -142,58 +139,14 @@ class OdooEnv(object):
         return ret
 
     def write_config(self, client_name):
-        """ Escribe el config file
+        """ Sobreescribe el config con los datos que vienen en el manifiesto
         """
         self._client = Client(self, client_name)
         ret = []
-        client = self._client
-
-        CPUs = client.CPUs
-        # You should use 2 worker threads + 1 cron thread per available CPU,
-        # and 1 CPU per 10 concurent users. Make sure you tune the memory
-        # limits and cpu limits in your configuration file.
-        workers = CPUs * 2 + 1 if not self.debug else 0
-        max_cron_threads = 1
-
-        # Number of requests a worker will process before being recycled and
-        # restarted. Defaults to 8196
-        limit_request = client.limit_request
-
-        # Maximum allowed virtual memory per worker. If the limit is exceeded,
-        # the worker is killed and recycled at the end of the current request.
-        # Defaults to 640MB
-        limit_memory_soft = client.limit_memory_soft
-
-        # Hard limit on virtual memory, any worker exceeding the limit will be
-        # immediately killed without waiting for the end of the current request
-        # processing. Defaults to 768MB.
-        limit_memory_hard = client.limit_memory_hard
-
-        # Prevents the worker from using more than CPU seconds for each
-        # request. If the limit is exceeded, the worker is killed. Defaults
-        # to 60.
-        limit_time_cpu = client.limit_time_cpu if not self.debug else 9999999
-
-        # Prevents the worker from taking longer than seconds to process a
-        # request. If the limit is exceeded, the worker is killed. Defaults to
-        # 120. Differs from --limit-time-cpu in that this is a "wall time"
-        # limit including e.g. SQL queries.
-        limit_time_real = client.limit_time_real if not self.debug else 9999999
-
-        if self._client.numeric_ver not in [8, 9, 10]:
+        if self._client.numeric_ver not in WRITE_CONFIG_OLD_MODE:
             cmd = WriteConfigFile(
                 self,
-                args={
-                    'client': client,
-                    'workers': workers,
-                    'max_cron_threads': max_cron_threads,
-                    'limit_request': limit_request,
-                    'limit_memory_soft': limit_memory_soft,
-                    'limit_memory_hard': limit_memory_hard,
-                    'limit_time_cpu': limit_time_cpu,
-                    'limit_time_real': limit_time_real,
-                    'data_dir': IN_DATA
-                },
+                args={'client': self._client},
                 usr_msg='Writing config file')
             ret.append(cmd)
         else:
@@ -217,7 +170,6 @@ class OdooEnv(object):
     def install(self, client_name):
         """ Instalacion de cliente,
         """
-
         self._client = Client(self, client_name)
         ret = []
 
@@ -589,6 +541,8 @@ class OdooEnv(object):
         return ret
 
     def set_config_environment(self):
+        """ Deprecated
+        """
         command = '-e SERVER_WIDE_MODULES=web,web_kanban,server_mode,' \
                   'database_tools '
 
@@ -633,15 +587,17 @@ class OdooEnv(object):
         return command
 
     def run_client(self, client_name, write_config=False):
+        """ El run_client se usa tambien para escribir el config file en las versiones
+            definidas en WRITE_CONFIG_OLD_MODE
+        """
 
         self._client = Client(self, client_name)
         ret = []
 
         if write_config:
-            msg = 'Writing config file for client {}'.format(client_name)
+            msg = 'Writing config file for client %s' % client_name
         else:
-            msg = 'Starting Odoo image for client {} on port {}'.format(
-                client_name, self.client.port)
+            msg = 'Starting Odoo image for client %s on port %s' % (client_name, self.client.port)
 
         if write_config:
             command = 'sudo docker run --rm '
@@ -659,16 +615,16 @@ class OdooEnv(object):
             command += '--link wdb '
 
         # si tenemos nginx o si estamos escribiendo la configuracion no hay
-        # que exponer los puertos
+        # que exponer los puertos.
         if not (self.nginx or write_config):
-            command += '-p {}:8069 '.format(self.client.port)
+            command += '-p %s:8069 ' % self.client.port
             command += '-p 8072:8072 '
 
         command += self._add_normal_mountings()
         if self.debug:
             command += self._add_debug_mountings(self.client.numeric_ver)
 
-        command += '--link pg-{}:db '.format(self.client.name)
+        command += '--link pg-%s:db ' % self.client.name
 
         if not (self.debug or write_config):
             command += '--restart=always '
@@ -676,7 +632,7 @@ class OdooEnv(object):
         # si estamos escribiendo el config no le ponemos el nombre para que
         # pueda correr aunque este levantado el cliente
         if not write_config:
-            command += '--name {} '.format(self.client.name)
+            command += '--name %s ' % self.client.name
 
         if write_config:
             command += self.set_config_environment()
@@ -685,12 +641,10 @@ class OdooEnv(object):
 
         # si estamos en modo debug agregarlo al nombre de la imagen
         if self.debug:
-            command += '-e SERVER_MODE=test '
             command += '-e WDB_SOCKET_SERVER=wdb '
-            command += '{}.debug '.format(self.client.get_image('odoo').name)
+            command += '%s.debug ' % self.client.get_image('odoo').name
         else:
-            command += '-e SERVER_MODE= '
-            command += '{} '.format(self.client.get_image('odoo').name)
+            command += '%s ' % self.client.get_image('odoo').name
 
         if not self.debug:
             command += '--logfile=/var/log/odoo/odoo.log '

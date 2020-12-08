@@ -477,7 +477,6 @@ class TestRepository(unittest.TestCase):
             "--restart=always " \
             "--name test_client " \
             "-e ODOO_CONF=/dev/null " \
-            "-e SERVER_MODE= " \
             "jobiols/odoo-jeo:9.0 " \
             "--logfile=/var/log/odoo/odoo.log "
 
@@ -516,7 +515,6 @@ class TestRepository(unittest.TestCase):
             '--link pg-test_client:db ' \
             '--name test_client ' \
             '-e ODOO_CONF=/dev/null ' \
-            '-e SERVER_MODE=test ' \
             '-e WDB_SOCKET_SERVER=wdb jobiols/odoo-jeo:9.0.debug ' \
             '--logfile=/dev/stdout '
 

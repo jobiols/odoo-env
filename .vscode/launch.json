@@ -10,7 +10,7 @@
             "request": "launch",
             // "program": "/home/jobiols/git-repos/odoo-env/odoo_env/oe.py",
             "python": "/usr/bin/python3",
-            "args": ["-h"],
+            "args": ["-w"],
             "justMyCode": false,
             "module": "odoo_env.oe"
         }

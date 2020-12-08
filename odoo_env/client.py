@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 import ast
 from odoo_env.messages import Msg
@@ -24,12 +22,6 @@ class Client(object):
         self._repos = []
         self._port = 0
         self._version = ''
-        self.CPUs = 1
-        self.limit_request = '0'
-        self.limit_memory_soft = '0'
-        self.limit_memory_hard = '0'
-        self.limit_time_cpu = '0'
-        self.limit_time_real = '0'
 
         # si estamos en test accedo a data
         if name[0:5] in ['test_', 'test2']:
@@ -40,8 +32,8 @@ class Client(object):
         else:
             manifest = self.get_manifest(BASE_DIR)
         if not manifest:
-            msg.inf('Can not find client {} in this host installation.\n'
-                    'We will try in current dir'.format(self._name))
+            msg.inf('Can not find client %s in this host installation.\n'
+                    'We will try in current dir' % self._name)
 
             # mantener compatibilidad con python2
             import six
@@ -51,8 +43,8 @@ class Client(object):
                 msg.err('Can not find client {} in current dir'.format(name))
 
             msg.inf('Client found!')
-            msg.inf('Name {}\nversion {}\n'.format(manifest.get('name'),
-                                                   manifest.get('version')))
+            msg.inf('Name %s\nversion %s\n' % (manifest.get('name'),
+                                               manifest.get('version')))
 
         self.check_common(manifest)
 
@@ -60,6 +52,7 @@ class Client(object):
         ver = manifest.get('env-ver', '1')
         if ver == '1':
             self.check_v1(manifest)
+            msg.warn('The manifest syntax is deprecated, please see env-ver 2')
         elif ver == '2':
             self.check_v2(manifest)
         else:
@@ -90,14 +83,11 @@ class Client(object):
         if not manifest.get('git-repos'):
             msg.err('No repos in manifest %s' % self.name)
 
-        # leer si es enterprise o community
-        self._license = manifest.get('odoo-license', False)
-
-        if not self._license:
-            msg.err('No license, in manifest %s' % self.name)
+        # leer si es enterprise o community, default community
+        self._license = manifest.get('odoo-license', 'CE')
 
         if self._license not in ['EE', 'CE']:
-            msg.err('license must be EE or CE')
+            msg.err('License must be EE or CE')
 
         # Crear imagenes y repos
         for rep in manifest.get('git-repos'):
@@ -113,28 +103,19 @@ class Client(object):
 
         ver = manifest.get('version')
         if not ver:
-            msg.err('No version tag in manifest {}'.format(self.name))
-        x = ver.find('.') + 1
-        y = ver[x:].find('.') + x
-        self._version = ver[0:y]
+            msg.err('No version tag in manifest %s' % self.name)
 
-        # get first word of name in lowercase
+        _x = ver.find('.') + 1
+        _y = ver[_x:].find('.') + _x
+        self._version = ver[0:_y]
+
         name = manifest.get('name').lower()
         if not self._name == name.split()[0]:
             msg.err('You intend to install client %s but in manifest, '
                     'the name is %s' % (self._name, manifest.get('name')))
 
-        # Tomar los datos de instalacion.
-
-        cpus = manifest.get('CPUs', False)
-        import multiprocessing as mp
-        # si me definieron las cpu uso eso sino verifico cuantas hay
-        self.CPUs = int(cpus) if cpus else mp.cpu_count()
-        self.limit_request = manifest.get('limit_request', 8196)
-        self.limit_memory_soft = manifest.get('limit_memory_soft', 640000000)
-        self.limit_memory_hard = manifest.get('limit_memory_hard', 760000000)
-        self.limit_time_cpu = manifest.get('limit_time_cpu', 60)
-        self.limit_time_real = manifest.get('limit_time_real', 120)
+        # Tomar los datos para odoo.conf
+        self.config = manifest.get('config', False)
 
     def get_manifest_from_struct(self, path):
         """ leer un manifest que esta dentro de una estructura de directorios
@@ -186,8 +167,8 @@ class Client(object):
         :return: manifest in dictionary format
         """
         manifest = ''
-        with open(filename, 'r') as f:
-            for line in f:
+        with open(filename, 'r') as _f:
+            for line in _f:
                 if line.strip() and line.strip()[0] != '#':
                     manifest += line
             try:
@@ -284,3 +265,7 @@ class Client(object):
         """ /odoo_ar/nginx/
         """
         return '%snginx/' % BASE_DIR
+
+    @property
+    def debug(self):
+        return self._parent.debug

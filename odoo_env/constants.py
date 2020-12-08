@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 BASE_DIR = '/odoo_ar/'
 IN_CONFIG = '/opt/odoo/etc/'
 IN_DATA = '/opt/odoo/data'
@@ -9,3 +7,4 @@ IN_EXTRA_ADDONS = '/opt/odoo/extra-addons'
 IN_DIST_PACKAGES = '/usr/lib/python{}/dist-packages'
 IN_DIST_LOCAL_PACKAGES = '/usr/local/lib/python{}/dist-local-packages'
 IN_BACKUP_DIR = '/var/odoo/backups/'
+WRITE_CONFIG_OLD_MODE = [8, 9, 10]

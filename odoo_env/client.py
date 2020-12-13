@@ -52,7 +52,9 @@ class Client(object):
         ver = manifest.get('env-ver', '1')
         if ver == '1':
             self.check_v1(manifest)
-            msg.warn('The manifest syntax is deprecated, please see env-ver 2')
+            msg.warn('The manifest syntax is deprecated, please upgrade to env-ver 2')
+            msg.warn('see documentation at https://jobiols.github.io/odoo-env/')
+            msg.warn(' ')
         elif ver == '2':
             self.check_v2(manifest)
         else:

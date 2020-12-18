@@ -7,6 +7,7 @@
 
 ![Python application](https://github.com/jobiols/odoo-env/workflows/Python%20application/badge.svg)
 
+[Documentation](https://jobiols.github.io/odoo-env/)
 
 odoo-env
 =========

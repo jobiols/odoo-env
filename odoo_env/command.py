@@ -160,9 +160,10 @@ class WriteConfigFile(Command):
         odoo_conf.add_list_data(conf)
 
         config = odoo_conf.config.get('options', {})
-        # siempre sobreescribimos el addons_path y unaccent
+        # siempre sobreescribimos estas tres cosas.
         config['addons_path'] = repos
         config['unaccent'] = 'True'
+        config['data_dir'] = '/opt/odoo/data'
 
         # si estoy en modo debug
         if client.debug:

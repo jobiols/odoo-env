@@ -106,6 +106,7 @@ Installation
 
 Changelog
 ---------
+    - 0.10.7 Fix bug creating odoo.conf missing data_dir in config.
     - 0.10.6 Fix bug creating odoo.conf when there are no config spec is manifest
     - 0.10.5 Set parameters in odoo.conf from manifest file.
     - 0.10.4 IMP creation of odoo.conf improved in V11 also.

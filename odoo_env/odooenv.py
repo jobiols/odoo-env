@@ -1,4 +1,3 @@
-import multiprocessing as mp
 import pwd
 import os
 from odoo_env.client import Client
@@ -44,27 +43,23 @@ class OdooEnv(object):
             ##############################################################
             # Clone repo if does not exist
             ##############################################################
-
             cmd = CloneRepo(
                 self,
-                usr_msg='cloning {}'.format(repo.formatted),
-                command='git -C {} {}'.format(self.client.sources_dir,
-                                              repo.clone),
-                args='{}{}'.format(self.client.sources_dir, repo.dir_name)
+                usr_msg='cloning %s' % repo.formatted,
+                command='git -C %s %s' % (self.client.sources_dir, repo.clone),
+                args='%s%s' % (self.client.sources_dir, repo.dir_name)
             )
             ret.append(cmd)
 
             ##############################################################
             # Update repo if exist
             ##############################################################
-
             cmd = PullRepo(
                 self,
-                usr_msg='pulling {}'.format(repo.formatted),
-                command='git -C {}{} {}'.format(self.client.sources_dir,
-                                                repo.dir_name,
-                                                repo.pull),
-                args='{}{}'.format(self.client.sources_dir, repo.dir_name)
+                usr_msg='pulling %s' % repo.formatted,
+                command='git -C %s%s %s' %(self.client.sources_dir, repo.dir_name,
+                                           repo.pull),
+                args='%s%s' % (self.client.sources_dir, repo.dir_name)
             )
             ret.append(cmd)
 

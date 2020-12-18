@@ -42,6 +42,11 @@
     # manifest version
     'env-ver': '2',
 
+    'config': [
+        'workers = 5',
+        'max_cron_threads = 1',
+    ],
+
     # Note that the branch of the repo to download is taken from the
     # module version ie. 9.0
     'git-repos': [

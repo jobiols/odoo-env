@@ -30,23 +30,12 @@ class Singleton(object):
 
 
 class OeConfig(Singleton):
-    _test = False
-
-    def unlink(self):
-        config_file = USER_CONFIG_FILE if not self._test \
-            else USER_CONFIG_FILE_TEST
-        try:
-            os.unlink(config_file)
-        except Exception:
-            pass
 
     def get_config_data(self):
-        config_file = USER_CONFIG_FILE if not self._test \
-            else USER_CONFIG_FILE_TEST
         template = {'clients': []}
         # obtener el archivo con los datos de clientes
         try:
-            with open(config_file, 'r') as config:
+            with open(USER_CONFIG_FILE, 'r') as config:
                 ret = yaml.safe_load(config)
         except Exception:
             return template
@@ -55,14 +44,11 @@ class OeConfig(Singleton):
     def save_config_data(self, config):
         """ Salvar el conjunto de paths a los clientes
         """""
-        config_file = USER_CONFIG_FILE if not self._test \
-            else USER_CONFIG_FILE_TEST
-
         # chequear si esta el archivo y sino crear el path
         if not os.path.exists(USER_CONFIG_PATH):
             os.makedirs(USER_CONFIG_PATH)
 
-        with open(config_file, 'w') as config_file:
+        with open(USER_CONFIG_FILE, 'w') as config_file:
             yaml.dump(config, config_file, default_flow_style=False,
                       allow_unicode=True)
 

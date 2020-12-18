@@ -42,5 +42,12 @@ class OdooConf(object):
             finalmente el archivo. o sea 'key = value'
         """
         for data in datas:
-            key, value = self._parse(data)
-            self.config['options'][key] = value
+            self.add_line(data)
+
+    def add_line(self, line):
+        """ Agrega al config una linea de configuración, con la forma 'key = value'
+        """
+        key, value = self._parse(line)
+        if 'options' not in self.config:
+            self.config['options'] = dict()
+        self.config['options'][key] = value

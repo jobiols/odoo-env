@@ -150,7 +150,7 @@ class WriteConfigFile(Command):
         repos = ['/opt/odoo/custom-addons/' + x for x in repos]
         repos = ','.join(repos)
 
-        # obtener la configuracion definida en el manifiesto y agregarle el addons_path
+        # obtener la configuracion definida en el manifiesto
         conf = client.config or []
 
         # pisar el config con las cosas agregadas o modificadas, esto permite mantener
@@ -159,23 +159,23 @@ class WriteConfigFile(Command):
         odoo_conf.read_config()
         odoo_conf.add_list_data(conf)
 
-        config = odoo_conf.config.get('options', {})
-        # siempre sobreescribimos el addons_path y unaccent
-        config['addons_path'] = repos
-        config['unaccent'] = 'True'
+        # siempre sobreescribimos estas tres cosas.
+        odoo_conf.add_line('addons_path = %s' % repos)
+        odoo_conf.add_line('unaccent = True')
+        odoo_conf.add_line('data_dir = /opt/odoo/data')
 
-        # si estoy en modo debug
+        # si estoy en modo debug, sobreescribo esto
         if client.debug:
-            config['workers'] = 0
-            config['max_cron_threads'] = 0
-            config['limit_time_cpu'] = 0
-            config['limit_time_real'] = 0
+            odoo_conf.add_line('workers = 0')
+            odoo_conf.add_line('max_cron_threads = 0')
+            odoo_conf.add_line('limit_time_cpu = 0')
+            odoo_conf.add_line('limit_time_real = 0')
         else:
             # You should use 2 worker threads + 1 cron thread per available CPU
-            if not 'workers' in config:
-                config['workers'] = os.cpu_count() * 2
-            if not 'max_cron_threads' in config:
-                config['max_cron_threads'] = os.cpu_count()
+            if 'workers' not in odoo_conf.config:
+                odoo_conf.add_line('workers = %s' % (os.cpu_count() * 2))
+            if 'max_cron_threads' not in odoo_conf.config:
+                odoo_conf.add_line('max_cron_threads = %s' % os.cpu_count())
 
         odoo_conf.write_config()
 

@@ -14,10 +14,6 @@ class TestRepository(unittest.TestCase):
     def setUp(self, *args, **kwargs):
         super().setUp(*args, **kwargs)
 
-        conf = OeConfig()
-        conf.unlink()
-        conf._test = True
-
     def test_install(self):
         """ ################################################# TEST INSTALLATION
         """
@@ -752,19 +748,6 @@ class TestRepository(unittest.TestCase):
                   'pull'
         self.assertEqual(cmds[39].command, command)
 
-    def test_config(self):
-        """ ####################################################### TEST CONFIG
-        """
-        OeConfig().unlink()
-
-        path = OeConfig().get_client_path('test_client')
-        self.assertFalse(path)
-
-        OeConfig().save_client_path('test_client',
-                                    '/odoo_ar/odoo-9.0/test_client')
-        path = OeConfig().get_client_path('test_client')
-        self.assertEqual(path, '/odoo_ar/odoo-9.0/test_client')
-
     def test_check_version(self):
         """ ##################################################### CHECK VERSION
         """
@@ -774,16 +757,18 @@ class TestRepository(unittest.TestCase):
         """ ##################################################### CHECK VERSION
         """
         env = OeConfig().get_environment()
+        OeConfig().save_environment('prod')
+        env = OeConfig().get_environment()
         self.assertEqual(env, 'prod')
         OeConfig().save_environment('debug')
         env = OeConfig().get_environment()
         self.assertEqual(env, 'debug')
 
     def test_save_multiple_clients(self):
-        OeConfig().save_client_path('test_client', 'multiple_path')
-        OeConfig().save_client_path('test_client', 'multiple_path')
+        OeConfig().save_client_path('test_clientx', 'multiple_path1')
+        OeConfig().save_client_path('test_clientx', 'multiple_path2')
         config = OeConfig().get_config_data()
-        self.assertEqual(len(config.get('clients')), 1)
+        self.assertEqual(OeConfig().get_client_path('test_clientx'), 'multiple_path1')
 
     def test_repo_clone(self):
         repo = Repo({'usr': 'jobiols', 'repo': 'project', 'branch': '9.0'})

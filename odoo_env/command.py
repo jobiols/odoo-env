@@ -159,7 +159,7 @@ class WriteConfigFile(Command):
         odoo_conf.read_config()
         odoo_conf.add_list_data(conf)
 
-        config = odoo_conf.config['options']
+        config = odoo_conf.config.get('options', {})
         # siempre sobreescribimos el addons_path y unaccent
         config['addons_path'] = repos
         config['unaccent'] = 'True'

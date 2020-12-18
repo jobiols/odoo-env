@@ -117,7 +117,7 @@ class Client(object):
                     'the name is %s' % (self._name, manifest.get('name')))
 
         # Tomar los datos para odoo.conf
-        self.config = manifest.get('config', False)
+        self.config = manifest.get('config', {})
 
     def get_manifest_from_struct(self, path):
         """ leer un manifest que esta dentro de una estructura de directorios

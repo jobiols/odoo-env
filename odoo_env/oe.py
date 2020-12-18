@@ -184,17 +184,15 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         'backup_file': args.backup_file,
     }
     commands = []
+    client_name = get_param(args, 'client').strip()
 
     if args.server_help:
-        client_name = get_param(args, 'client')
         commands += OdooEnv(options).server_help(client_name)
 
     if args.backup_list:
-        client_name = get_param(args, 'client')
         commands += OdooEnv(options).backup_list(client_name)
 
     if args.restore:
-        client_name = get_param(args, 'client')
         database = get_param(args, 'database')
         backup_file = get_param(args, 'backup_file')
         deactivate = get_param(args, 'deactivate')
@@ -204,41 +202,32 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
                                              deactivate)
 
     if args.install:
-        client_name = get_param(args, 'client')
         commands += OdooEnv(options).install(client_name)
 
     if args.write_config:
-        client_name = get_param(args, 'client')
         commands += OdooEnv(options).write_config(client_name)
 
     if args.pull_images:
-        client_name = get_param(args, 'client')
         commands += OdooEnv(options).pull_images(client_name)
 
     if args.stop_env:
-        client_name = get_param(args, 'client')
         commands += OdooEnv(options).stop_environment(client_name)
 
     if args.run_env:
-        client_name = get_param(args, 'client')
         commands += OdooEnv(options).run_environment(client_name)
 
     if args.stop_cli:
-        client_name = get_param(args, 'client')
         commands += OdooEnv(options).stop_client(client_name)
 
     if args.run_cli:
-        client_name = get_param(args, 'client')
         commands += OdooEnv(options).run_client(client_name)
 
     if args.update:
-        client_name = get_param(args, 'client')
         database = get_param(args, 'database')
         modules = get_param(args, 'module')
         commands += OdooEnv(options).update(client_name, database, modules)
 
     if args.quality_assurance:
-        client_name = get_param(args, 'client')
         database = get_param(args, 'database')
         commands += OdooEnv(options).qa(client_name, database,
                                         args.quality_assurance[0])

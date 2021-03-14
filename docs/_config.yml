@@ -7,3 +7,13 @@ defaults:
   - scope:
       path: "assets/img"
       image: true
+
+social-network-links:
+  email: "jorge.obiols@gmail.com"
+  github: jobiols
+  twitter: jorge_obiols
+  youtube: jobiols
+
+plugins:
+  - jekyll-paginate
+  - jekyll-sitemap

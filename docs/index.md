@@ -28,5 +28,5 @@ If you find some issues please report it to [issues](https://github.com/jobiols/
 Author: Jorge Obiols <jorge.obiols@gmail.com>
 
 {% include manifest_example.md %}
-{% include capitulo3.md %}
-{% include where-to-install.md %}
+{% include wich-images-to-use.md %}
+{% include the-magic-begins.md %}

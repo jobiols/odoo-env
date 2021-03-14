@@ -20,7 +20,7 @@ class Client(object):
         self._license = False
         self._images = []
         self._repos = []
-        self._port = 0
+        self._port = False
         self._version = ''
 
         # si estamos en test accedo a data
@@ -58,7 +58,8 @@ class Client(object):
         elif ver == '2':
             self.check_v2(manifest)
         else:
-            msg.err('not supported syntax version in manifest')
+            msg.err('Not supported syntax version in manifest, please set env-ver to '
+                    '1 or 2')
 
     def check_v1(self, manifest):
         # Chequar que el manifiesto tenga bien las cosas
@@ -80,10 +81,11 @@ class Client(object):
     def check_v2(self, manifest):
         # Chequar que el manifiesto tenga bien las cosas
         if not manifest.get('docker-images'):
-            msg.err('No images in manifest %s' % self.name)
+            msg.err('No images in manifest %s please '
+                    'add a docker-images key' % self.name)
 
         if not manifest.get('git-repos'):
-            msg.err('No repos in manifest %s' % self.name)
+            msg.err('No repos in manifest %s please add a git-repos key' % self.name)
 
         # leer si es enterprise o community, default community
         self._license = manifest.get('odoo-license', 'CE')
@@ -99,9 +101,7 @@ class Client(object):
             self._images.append(Image2(img))
 
     def check_common(self, manifest):
-        self._port = manifest.get('port')
-        if not self._port:
-            msg.err('No port in manifest {}'.format(self.name))
+        self._port = manifest.get('port', 8069)
 
         ver = manifest.get('version')
         if not ver:
@@ -117,7 +117,7 @@ class Client(object):
                     'the name is %s' % (self._name, manifest.get('name')))
 
         # Tomar los datos para odoo.conf
-        self.config = manifest.get('config', {})
+        self.config = manifest.get('config', [])
 
     def get_manifest_from_struct(self, path):
         """ leer un manifest que esta dentro de una estructura de directorios
@@ -131,12 +131,12 @@ class Client(object):
                 if file in files:
                     manifest_file = '%s/%s' % (root, file)
                     manifest = self.load_manifest(manifest_file)
-
-                    # get first word of name in lowercase
-                    name = manifest.get('name').lower()
+                    name = manifest.get('name', False)
                     # por si viene sin name
                     if name:
+                        # get first word of name in lowercase
                         name = name.split()[0]
+                        name = name.lower()
                         if name == self._name:
                             return manifest, root
         return False, False

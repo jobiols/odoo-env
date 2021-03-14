@@ -5,12 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug oe",
+            "name": "Debug oe myproject",
             "type": "python",
             "request": "launch",
             // "program": "/home/jobiols/git-repos/odoo-env/odoo_env/oe.py",
             "python": "/usr/bin/python3",
-            "args": ["-w", "-c nutsfit", "--debug"],
+            "args": ["-i", "-c myproject", "--debug"],
             "justMyCode": false,
             "module": "odoo_env.oe"
         }

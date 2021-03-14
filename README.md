@@ -106,6 +106,7 @@ Installation
 
 Changelog
 ---------
+    - 0.10.9 minor fixes, more documentation
     - 0.10.8 improving in writing the odoo.conf
     - 0.10.7 Fix bug creating odoo.conf missing data_dir in config.
     - 0.10.6 Fix bug creating odoo.conf when there are no config spec is manifest

@@ -25,10 +25,12 @@ do an **odoo-bin --update all --stop-after-init** inside the container.
 Then you have a documented list of modules installed.
 
 
+## An example project:
+
 ```python
     ##############################################################################
     #
-    #    Copyright (C) 2020 jeo Software  (http://www.jeosoft.com.ar)
+    #    Copyright (C) 2021 jeo Software  (http://www.jeosoft.com.ar)
     #    All Rights Reserved.
     #
     #    This program is free software: you can redistribute it and/or modify
@@ -68,7 +70,8 @@ Then you have a documented list of modules installed.
         # oe will show a deprecation warning
         'env-ver': '2',
 
-        # Configuration data for odoo.conf
+        # Configuration data for odoo.conf, if ommited oe will create an odoo.conf
+        # with default values and with a proper addon_path.
         'config': [
 
             # 'addons_path' you can not modify this is always computed looking for the
@@ -80,9 +83,9 @@ Then you have a documented list of modules installed.
             # WORKERS
             # You should use 2 worker threads + 1 cron thread per available CPU,
             # and 1 CPU per 10 concurent users.
-            # if ommited oe will calculate workers and cron´s based on # of cpu and
-            # for a developer environment is set to 0
-                    'workers = 0',
+            # if ommited oe will calculate workers and cron´s based on # of cpu.
+            # For a developer environment is is set to 0
+                    'workers = 2',
                     'max_cron_threads = 1',
 
             # Number of requests a worker will process before being recycled and
@@ -123,6 +126,7 @@ Then you have a documented list of modules installed.
             # Filter listed database REGEXP
                     'dbfilter =',
 
+            # other configuration parameters
                     'db_maxconn = 64',
                     'db_name = False',
                     'db_password = odoo',
@@ -146,7 +150,6 @@ Then you have a documented list of modules installed.
                     'osv_memory_age_limit = 1.0',
                     'osv_memory_count_limit = False',
                     'pg_path =',
-
                     'proxy_mode = False',
                     'reportgz = False',
                     'screencasts =',
@@ -165,28 +168,34 @@ Then you have a documented list of modules installed.
                     'upgrade_path =',
         ],
 
-        # Default to CE
+        # if ommited it defaults to CE
         'odoo-license': 'CE',
 
-        # Port where odoo docker image starts serving pages.
+        # Port where odoo docker image starts serving pages if ommited defaults to 8069
         'port': '8069',
 
         # repositories to be installed in sources/ dir
         # syntax:
         #
-        #  "https://[github.com|gitlab.com|bitbucket.org/]/user/repo -b branch"
-        #  "git@[github.com|gitlab.com|bitbucket.org/]/user/repo -b branch"
+        #  "https://[github.com|gitlab.com|bitbucket.org/]/user/repo repo-dir -b branch"
+        #  "git@[github.com|gitlab.com|bitbucket.org/]/user/repo repo-dir -b branch"
         #
-        #   if branch ommited it defaults to module name's mayor version
+        #   if branch is ommited it defaults to module name's mayor version
+        #   if repo-dir if ommited it defaults to repo name
+        #
+        #   examples:
+        #   'https://github.com/oca/web.git',
+        #   'https://github.com/oca/web.git oca-web',
+        #   'https://github.com/oca/web.git oca-web -b 11.0',
+        #   'git@github.com/oca/web.git oca-web -b 11.0',
+        #
+        # note: in the last example for ssh protocol you have to use a SSH key
         #
         'git-repos': [
-            'https://github.com/jobiols/cl-test.git',
-
+            'https://github.com/jobiols/cl-test.git cl-test -b 11.0',
             'git@github.com:jobiols/odoo-uml.git -b 11.0',
-
             'https://github.com/jobiols/odoo-addons.git',
-
-            'https://github.com/ingadhoc/odoo-argentina.git',
+            'https://github.com/ingadhoc/odoo-argentina.git ingadhoc-odoo-argentina',
             'https://github.com/ingadhoc/account-financial-tools.git',
             'https://github.com/ingadhoc/account-payment.git',
             'https://github.com/ingadhoc/miscellaneous.git',
@@ -196,7 +205,6 @@ Then you have a documented list of modules installed.
             'https://github.com/ingadhoc/sale.git',
             'https://github.com/ingadhoc/product.git',
             'https://github.com/ingadhoc/account-invoicing.git',
-
             'https://github.com/oca/partner-contact.git',
             'https://github.com/oca/web.git',
             'https://github.com/oca/server-tools.git',

@@ -1,5 +1,5 @@
-## Capitulo 2 Ejemplo de manifiesto de un proyecto
-
+## Chapter 2 Manifest example
+```python
     ##############################################################################
     #
     #    Copyright (C) 2020 jeo Software  (http://www.jeosoft.com.ar)
@@ -29,30 +29,33 @@
         'website': 'http://github.com/jobiols/module-repo',
         'license': 'AGPL-3',
         'depends': [
-            # basic applications
+            # applications to be installed
             'sale_management',
-        ],
-        'data': [
         ],
         'installable': True,
         'application': False,
 
         # Here begins odoo-env manifest configuration
-        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # ===========================================
 
-        # manifest version, if omitted it is backward compatible but
+        # manifest version, if omitted it is backward compatible with v1 but
         # oe will show a deprecation warning
         'env-ver': '2',
 
         # Configuration data for odoo.conf
         'config': [
 
-            # 'addons_path' is always computed looking for the repositories in sources
-            # 'data_dir' is a fixed location inside docker odoo image
+            # 'addons_path' you can not modify this is always computed looking for the
+            # repositories in sources
 
+            # 'data_dir' you can not modify this, is a fixed location inside docker odoo
+            # image
+
+            # WORKERS
             # You should use 2 worker threads + 1 cron thread per available CPU,
             # and 1 CPU per 10 concurent users.
-            # if ommited oe will calculate workers and cron´s based on # of cpu
+            # if ommited oe will calculate workers and cron´s based on # of cpu and
+            # for a developer environment is set to 0
                     'workers = 0',
                     'max_cron_threads = 1',
 
@@ -70,15 +73,15 @@
             # processing. Defaults to 768MB.
                     'limit_memory_hard = 2684354560',
 
-
             # Prevents the worker from using more than CPU seconds for each request.
             # If the limit is exceeded, the worker is killed. Defaults to 60 sec.
                     'limit_time_cpu = 60',
 
             # Prevents the worker from taking longer than seconds to process a request.
-            # If the limit is exceeded, the worker is killed. Defaults to 120. Differs
-            # from --limit-time-cpu in that this is a "wall time" limit including e.g.
-            # SQL queries.
+            # If the limit is exceeded, the worker is killed.
+            # Defaults to 120.
+            # Differs from --limit-time-cpu in that this is a "wall time" limit
+            # including e.g. SQL queries.
                     'limit_time_real = 120',
 
             # default CSV separator for import and export
@@ -136,18 +139,24 @@
                     'upgrade_path =',
         ],
 
-        # Default to CE, can be ommited
+        # Default to CE
         'odoo-license': 'CE',
 
         # Port where odoo docker image starts serving pages.
         'port': '8069',
 
         # repositories to be installed in sources/ dir
-        # syntax: the same as git clone
+        # syntax:
+        #
+        #  "https://[github.com|gitlab.com|bitbucket.org/]/user/repo -b branch"
+        #  "git@[github.com|gitlab.com|bitbucket.org/]/user/repo -b branch"
+        #
+        #   if branch ommited it defaults to module name's mayor version
+        #
         'git-repos': [
             'https://github.com/jobiols/cl-test.git',
 
-            'git@github.com:jobiols/odoo-uml.git',
+            'git@github.com:jobiols/odoo-uml.git -b 11.0',
 
             'https://github.com/jobiols/odoo-addons.git',
 
@@ -184,3 +193,4 @@
             'nginx nginx'
         ]
     }
+```

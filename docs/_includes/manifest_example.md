@@ -1,4 +1,30 @@
-## Chapter 2 Manifest example
+## THE PROJECT, where all the install information resides.
+
+What you need to know:
+
+1. The project is an odoo module.
+1. This module has an extended manifest. Odoo does not read the extended key words, then is an installable module.
+1. Odoo-env reads the manifest to know how to install the system
+1. The information it holds:
+
+        Odoo Version: The mayor version of the "version" keyword
+        env-ver: The version of the extended sintax actually v2
+        config: The data to write in odoo.conf
+        odoo-license: EE o CE
+        port: Port where odoo docker image starts serving pages.
+        git-repos: list of repositories to install
+        docker-images: list of docker images to pull
+
+Additionally, as a best practice, we can place all the modules required by the
+installation in the depends list, then the project not only serves to install but also to
+create an empty base with all the required modules.
+
+It is also recommended that you never install modules from the odoo interface, you can
+simply add in the depends of the project and then issue a **oe -u** that magically
+do an **odoo-bin --update all --stop-after-init** inside the container.
+Then you have a documented list of modules installed.
+
+
 ```python
     ##############################################################################
     #

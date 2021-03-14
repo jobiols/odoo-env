@@ -10,7 +10,7 @@ That's why we chose to work with Docker. But there is good news: **You don't nee
 
 With odoo-env you can:
 - Have all the information needed to deploy the instance in a unique place, an odoo module
-- Deploy a development environment with wdb debugger included.
+- Deploy a development environment with [wdb](https://github.com/Kozea/wdb) debugger included.
 - Deploy a production envirionment with nginx included, or traefik and letsencrypt certificate with a little manual work if you want.
 - Have in your wokstation lots of different odoo projects with different versions and each one with the right repos and images and switch between them almost instantly.
 - Sleep peacefully, everywhere the libraries are the same, because they are within the image
@@ -27,6 +27,6 @@ If you find some issues please report it to [issues](https://github.com/jobiols/
 
 Author: Jorge Obiols <jorge.obiols@gmail.com>
 
-{% include capitulo2.md %}
+{% include manifest_example.md %}
 {% include capitulo3.md %}
 {% include where-to-install.md %}

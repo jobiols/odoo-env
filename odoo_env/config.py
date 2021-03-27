@@ -31,7 +31,8 @@ class Singleton(object):
 
 class OeConfig(Singleton):
 
-    def get_config_data(self):
+    @staticmethod
+    def get_config_data():
         template = {'clients': []}
         # obtener el archivo con los datos de clientes
         try:
@@ -137,7 +138,8 @@ class OeConfig(Singleton):
                                'available ' % (__version__, version))
                     Msg().warn('You should consider upgrading via the "pip3 '
                                'install --upgrade odoo-env" command.')
-            except Exception:
-                pass
+            except Exception as ex:
+                Msg().inf('Can not check odoo-env Version, do you have internet '
+                          'connectivity?')
 
         return True

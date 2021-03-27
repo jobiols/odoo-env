@@ -1,17 +1,15 @@
+[![Build Status](https://travis-ci.com/jobiols/odoo-env.svg?branch=master)](https://travis-ci.com/jobiols/odoo-env)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/349443f891184544b58e011ae3b6b465)](https://app.codacy.com/app/jobiols/odoo-env?utm_source=github.com&utm_medium=referral&utm_content=jobiols/odoo-env&utm_campaign=Badge_Grade_Settings)
-[![Build Status](https://travis-ci.org/jobiols/odoo-env.svg?branch=master)](https://travis-ci.org/jobiols/odoo-env)
-[![codecov](https://codecov.io/gh/jobiols/odoo-env/branch/master/graph/badge.svg)](https://codecov.io/gh/jobiols/odoo-env)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/44329410ef814e0085df49abeef4ff32)](https://www.codacy.com/app/jobiols/odoo-env?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=jobiols/odoo-env&amp;utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/jobiols/odoo-env/badge)](https://www.codefactor.io/repository/github/jobiols/odoo-env)
-
+[![codecov](https://codecov.io/gh/jobiols/odoo-env/branch/master/graph/badge.svg)](https://codecov.io/gh/jobiols/odoo-env)
 
 ![Python application](https://github.com/jobiols/odoo-env/workflows/Python%20application/badge.svg)
 
-[Documentation](https://jobiols.github.io/odoo-env/)
+[Project documentation](https://jobiols.github.io/odoo-env/)
 
 odoo-env
 =========
-jeo Software (c) 2020 jorge.obiols@gmail.com
+jeo Software (c) 2021 jorge.obiols@gmail.com
 This code is distributed under the MIT license
 
 Tool to manage docker based odoo environments. This is a Dockerized
@@ -38,12 +36,12 @@ Directory structure
 Functionality
 -------------
 
-usage: oe [-h] [-i] [-p] [-w] [-R] [-r] [-S] [-s] [-u] [-c CLIENT] [-v]
-          [--deactivate] [--debug] [--prod] [--no-repos] [-d DATABASE]
-          [-m MODULE] [--nginx] [-Q repo] [--backup-list] [--restore]
-          [-f BACKUP_FILE] [-H] [-V]
+    usage: oe [-h] [-i] [-p] [-w] [-R] [-r] [-S] [-s] [-u] [-c CLIENT] [-v]
+              [--deactivate] [--debug] [--prod] [--no-repos] [-d DATABASE]
+              [-m MODULE] [--nginx] [-Q repo] [--backup-list] [--restore]
+              [-f BACKUP_FILE] [-H] [-V]
 
-    Odoo Environment Manager v0.10.4 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.10.10 - by jeo Software <jorge.obiols@gmail.com>
 
     optional arguments:
       -h, --help          show this help message and exit
@@ -106,6 +104,7 @@ Installation
 
 Changelog
 ---------
+    - 0.10.10 minor refactoring, improving doc
     - 0.10.9 minor fixes, more documentation
     - 0.10.8 improving in writing the odoo.conf
     - 0.10.7 Fix bug creating odoo.conf missing data_dir in config.
@@ -191,4 +190,4 @@ Changelog
              for now you have to execute manually) sd command (short for
              sudo docker plus some enhacements)
     - 0.0.2  Minor fixes
-    - 0.0.1  Starting version
+    - 0.0.1  Starting project

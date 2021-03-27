@@ -190,7 +190,9 @@ Then you have a documented list of modules installed.
         #   'git@github.com/oca/web.git oca-web -b 11.0',
         #
         # note: in the last example for ssh protocol you have to use a SSH key
-        #
+
+        # git-repos Syntax
+        # <repo> [<directory>] [-b <branch>]
         'git-repos': [
             'https://github.com/jobiols/cl-test.git cl-test -b 11.0',
             'git@github.com:jobiols/odoo-uml.git -b 11.0',
@@ -220,7 +222,7 @@ Then you have a documented list of modules installed.
         ],
 
         # Docker images to be used in this deployment
-        # syntax: name url
+        # syntax: <image-name> <NAME[:TAG|@DIGEST]>
         'docker-images': [
             'odoo jobiols/odoo-jeo:11.0',
             'postgres postgres:10.1-alpine',

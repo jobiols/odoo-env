@@ -45,30 +45,41 @@ class Repo(object):
 
 class Repo2(object):
     def __init__(self, value, branch):
-        # chequear branch alternativo
-        i = value.find(' -b ')
-        if i >= 0:
-            branch = value[i+4:]
-            value = value[:i]
+        """ Sintaxis [<repo> [<directory> -b <branch>]]
+            El branch debe estar despues del repo, si no esta se toma el branch
+            que viene como parametro, si no viene nada es una excepcion.
+            El directorio va despues del repo y puede no estar
+        """
+        # parsear value en una lista
+        parsed = value.split(' ')
+        # eliminar los espacios
+        parsed = [i for i in parsed if i != '']
+        # obtener el branch si es que existe
+        if '-b' in parsed:
+            index = parsed.index('-b')
+            self._branch = parsed[index + 1]
+            # eliminar el -b y el parametro branch
+            parsed.remove('-b')
+            parsed.remove(self._branch)
+        else:
+            self._branch = branch
 
-        self._data = value
-        self._branch = branch
+        self._url = parsed[0]
 
-    @property
-    def name(self):
-        return self._dict.get('repo')
+        # si me quedan dos parametros tengo un directorio
+        if len(parsed) > 1:
+            self._dir = parsed[1]
+            self._extra_dir = True
+        else:
+            parsed = self._url.split('/')
+            self._dir = parsed[len(parsed) -1].replace('.git', '')
+            self._extra_dir = False
 
     @property
     def dir_name(self):
         """ Obtener el directorio donde se pone el repo
         """
-        url = self._data.split()
-        if len(url) == 1:
-            a = url[0].split('/')
-            dir = a[len(a) - 1]
-        else:
-            dir = url[1]
-        return dir.replace('.git', '')
+        return self._dir
 
     @property
     def branch(self):
@@ -76,16 +87,22 @@ class Repo2(object):
 
     @property
     def url(self):
-        return self._data
+        if self._extra_dir:
+            return '%s %s' % (self._url, self._dir)
+        else:
+            return self._url
 
     @property
     def formatted(self):
-        ret = 'b ' + self._branch.ljust(7) + ' ' + self._data.ljust(30)
-        return ret
+        if self._extra_dir:
+            return 'b %s     %s >> %s' % (self.branch, self._url, self._dir)
+        else:
+            return 'b %s     %s' % (self.branch, self.url)
+
 
     @property
     def clone(self):
-        return 'clone --depth 1 -b {} {}'.format(self.branch, self.url)
+        return 'clone --depth 1 -b %s %s' % (self.branch, self.url)
 
     @property
     def pull(self):

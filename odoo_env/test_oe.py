@@ -11,8 +11,6 @@ from odoo_env.images import Image, Image2
 
 
 class TestRepository(unittest.TestCase):
-    def setUp(self, *args, **kwargs):
-        super().setUp(*args, **kwargs)
 
     def test_install(self):
         """ ################################################# TEST INSTALLATION
@@ -331,7 +329,7 @@ class TestRepository(unittest.TestCase):
             '-b 9.0 https://github.com/ingadhoc/odoo-argentina.git adhoc-odoo-argentina')
         self.assertEqual(
             cmds[18].usr_msg,
-            'cloning b 9.0     https://github.com/ingadhoc/odoo-argentina.git adhoc-odoo-argentina')
+            'cloning b 9.0     https://github.com/ingadhoc/odoo-argentina.git >> adhoc-odoo-argentina')
 
         self.assertEqual(
             cmds[19].args,
@@ -341,7 +339,7 @@ class TestRepository(unittest.TestCase):
             'git -C /odoo_ar/odoo-9.0/test2_client/sources/adhoc-odoo-argentina pull')
         self.assertEqual(
             cmds[19].usr_msg,
-            'pulling b 9.0     https://github.com/ingadhoc/odoo-argentina.git adhoc-odoo-argentina')
+            'pulling b 9.0     https://github.com/ingadhoc/odoo-argentina.git >> adhoc-odoo-argentina')
 
     def test_install2_enterprise(self):
         """ ################################### TEST INSTALLATION v2 ENTERPRISE
@@ -767,7 +765,6 @@ class TestRepository(unittest.TestCase):
     def test_save_multiple_clients(self):
         OeConfig().save_client_path('test_clientx', 'multiple_path1')
         OeConfig().save_client_path('test_clientx', 'multiple_path2')
-        config = OeConfig().get_config_data()
         self.assertEqual(OeConfig().get_client_path('test_clientx'), 'multiple_path1')
 
     def test_repo_clone(self):
@@ -776,13 +773,40 @@ class TestRepository(unittest.TestCase):
 
     def test_repo2_clone(self):
         repo = Repo2('https://github.com/jobiols/project.git', '9.0')
+        self.assertEqual(repo.dir_name, 'project')
+        self.assertEqual(repo.branch, '9.0')
+        self.assertEqual(repo.url, 'https://github.com/jobiols/project.git')
+        self.assertEqual(repo.formatted, 'b 9.0     https://github.com/jobiols/project.git')
         self.assertEqual(repo.clone, 'clone --depth 1 -b 9.0 https://github.com/jobiols/project.git')
         self.assertEqual(repo.pull, 'pull')
+
+    def test_repo2_clone_branch(self):
+        repo = Repo2('https://github.com/jobiols/project.git -b 9.0', '8.0')
         self.assertEqual(repo.dir_name, 'project')
+        self.assertEqual(repo.branch, '9.0')
+        self.assertEqual(repo.url, 'https://github.com/jobiols/project.git')
+        self.assertEqual(repo.formatted, 'b 9.0     https://github.com/jobiols/project.git')
+        self.assertEqual(repo.clone, 'clone --depth 1 -b 9.0 https://github.com/jobiols/project.git')
+        self.assertEqual(repo.pull, 'pull')
 
     def test_repo2_clone_dir(self):
         repo = Repo2('https://github.com/jobiols/project.git adhoc-project', '9.0')
         self.assertEqual(repo.dir_name, 'adhoc-project')
+        self.assertEqual(repo.branch, '9.0')
+        self.assertEqual(repo.url, 'https://github.com/jobiols/project.git adhoc-project')
+        self.assertEqual(repo.formatted, 'b 9.0     https://github.com/jobiols/project.git >> adhoc-project')
+        self.assertEqual(repo.clone, 'clone --depth 1 -b 9.0 https://github.com/jobiols/project.git adhoc-project')
+        self.assertEqual(repo.pull, 'pull')
+
+    def test_repo2_clone_branch_dir(self):
+        repo = Repo2('https://github.com/jobiols/project.git adhoc-project -b 9.0', '8.0')
+        self.assertEqual(repo.dir_name, 'adhoc-project')
+        self.assertEqual(repo.branch, '9.0')
+        self.assertEqual(repo.url, 'https://github.com/jobiols/project.git adhoc-project')
+        self.assertEqual(repo.formatted, 'b 9.0     https://github.com/jobiols/project.git >> adhoc-project')
+        self.assertEqual(repo.clone, 'clone --depth 1 -b 9.0 https://github.com/jobiols/project.git adhoc-project')
+        self.assertEqual(repo.pull, 'pull')
+
 
     def test_image(self):
         image = Image({'name': 'odoo', 'usr': 'jobiols', 'img': 'odoo-jeo', 'ver': '9.0'})

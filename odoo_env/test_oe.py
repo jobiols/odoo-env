@@ -505,7 +505,7 @@ class TestRepository(unittest.TestCase):
             '-v /odoo_ar/odoo-9.0/dist-packages:' \
             '/usr/lib/python2.7/dist-packages ' \
             '-v /odoo_ar/odoo-9.0/dist-local-packages:' \
-            '/usr/local/lib/python2.7/dist-local-packages ' \
+            '/usr/local/lib/python2.7/dist-packages ' \
             '--link pg-test_client:db ' \
             '--name test_client ' \
             '-e ODOO_CONF=/dev/null ' \

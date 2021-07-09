@@ -22,8 +22,92 @@ create an empty base with all the required modules.
 It is also recommended that you never install modules from the odoo interface, you can
 simply add in the depends of the project and then issue a **oe -u** that magically
 do an **odoo-bin --update all --stop-after-init** inside the container.
-Then you have a documented list of modules installed.
+Then you have a documented list of installed modules.
 
+## Syntax and examples
+### 'git-repos':
+
+General syntax: <repo> [<directory>[/<directory>] [-b <branch>]
+
+The git-repos keyword is a list of all the repositories to install, in the simplest form you can list the url's of the repos this way:
+
+```
+  'git-repos': [
+    'https://github.com/OCA/account-invoicing.git',
+    'https://github.com/OCA/account-financial-tools.git'
+  ]
+```
+
+It leads to a tree like this
+```
+   sources
+   ├── account-financial-tools
+   └── account-invoicing
+```
+
+Now if you want to add this repo:
+
+https://github.com/ingadhoc/account-invoicing.git
+
+it has the same name as oca repo, then you need to rename it, following the git sintax. A good practice is to rename all the repos this way:
+
+```
+  'git-repos': [
+    'https://github.com/OCA/account-invoicing.git oca-account-invoicing',
+    'https://github.com/OCA/account-financial-tools.git oca-account-financial-tools'
+    'https://github.com/ingadhoc/account-invoicing.git adhoc-account-invoicing'
+  ]
+```
+
+You get this tree
+```
+   sources
+   ├── oca-account-financial-tools
+   ├── oca-account-invoicing
+   └── adhoc-account-invoicing
+
+```
+
+Now suppose you have to add: https://github.com/ctmil/meli_oerp.git
+
+this is a repository that contains a single module with leads to a single level. Here we can do the following
+```
+  'git-repos': [
+    'https://github.com/OCA/account-invoicing.git oca-account-invoicing',
+    'https://github.com/OCA/account-financial-tools.git oca-account-financial-tools',
+    'https://github.com/ingadhoc/account-invoicing.git adhoc-account-invoicing',
+    'https://github.com/ctmil/meli_oerp.git ctmil/meli_orp'
+  ]
+```
+You get this tree
+```
+   sources
+   ├── oca-account-financial-tools
+   ├── oca-account-invoicing
+   ├── adhoc-account-invoicing
+   └── ctmil
+```
+
+Inside ctmil you will find meli_orp
+
+### What about brances
+All right but which branches are you getting?. As a general rule:
+
+**It downloads the branches whose name is te mayor version declared in the manifest**
+
+Then if in your manifest says
+
+        'name': 'pentecos',
+        'version': '11.0.1.0.0',
+
+Then **all the repos** will be from the branch 11.0
+
+but you can override this, perhaps you want to get a repo that do not follow the best
+practics and are in branch master, so you can write.
+
+        'https://github.com/ctmil/odoo_barcode.git ctmil/odoo_barcode -b main'
+
+In this case the branch to download will be main and also as the repository is not a set of modules but **is** a module wa add ctmil/odoo_barcode so it is correctly inserted y our sources.
 
 ## An example project:
 

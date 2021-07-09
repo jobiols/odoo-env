@@ -151,4 +151,4 @@ Update odoo database
 
 
 Enough for today stay tuned, more documentation on the way.
-Jorge 2020-03-04
+Jorge 2020-07-09

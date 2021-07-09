@@ -45,7 +45,7 @@ class Repo(object):
 
 class Repo2(object):
     def __init__(self, value, branch):
-        """ Sintaxis [<repo> [<directory> -b <branch>]]
+        """ Sintaxis <repo> [<directory>[/<directory>] [-b <branch>]
             El branch debe estar despues del repo, si no esta se toma el branch
             que viene como parametro, si no viene nada es una excepcion.
             El directorio va despues del repo y puede no estar

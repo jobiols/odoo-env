@@ -41,7 +41,7 @@ Functionality
               [-m MODULE] [--nginx] [-Q repo] [--backup-list] [--restore]
               [-f BACKUP_FILE] [-H] [-V]
 
-    Odoo Environment Manager v0.10.10 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.10.11 - by jeo Software <jorge.obiols@gmail.com>
 
     optional arguments:
       -h, --help          show this help message and exit
@@ -104,6 +104,7 @@ Installation
 
 Changelog
 ---------
+    - 0.10.11 ask before overwriting local image sources
     - 0.10.10 minor refactoring, improving doc
     - 0.10.9 minor fixes, more documentation
     - 0.10.8 improving in writing the odoo.conf

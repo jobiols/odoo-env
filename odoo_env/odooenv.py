@@ -276,74 +276,75 @@ class OdooEnv(object):
         # Extracting sources from image if debug enabled
         ##################################################################
         if self.debug:
-            for module in self._get_packs():
-                msg = 'Extracting {} from image {}.debug'.format(
-                    module, self.client.get_image('odoo').name)
-                command = 'sudo docker run -it --rm '
-                command += '--entrypoint=/extract_{}.sh '.format(module)
-                command += '-v {}{}/:/mnt/{} '.format(self.client.version_dir,
-                                                      module, module)
-                command += '{}.debug '.format(
-                    self.client.get_image('odoo').name)
+            if input("want to download image sources to host? (y/n)") == 'y':
+                for module in self._get_packs():
+                    msg = 'Extracting {} from image {}.debug'.format(
+                        module, self.client.get_image('odoo').name)
+                    command = 'sudo docker run -it --rm '
+                    command += '--entrypoint=/extract_{}.sh '.format(module)
+                    command += '-v {}{}/:/mnt/{} '.format(self.client.version_dir,
+                                                        module, module)
+                    command += '{}.debug '.format(
+                        self.client.get_image('odoo').name)
 
-                cmd = ExtractSourcesCommand(
-                    self,
-                    command=command,
-                    args='{}{}'.format(self.client.version_dir, module),
-                    usr_msg=msg,
-                )
-                ret.append(cmd)
+                    cmd = ExtractSourcesCommand(
+                        self,
+                        command=command,
+                        args='{}{}'.format(self.client.version_dir, module),
+                        usr_msg=msg,
+                    )
+                    ret.append(cmd)
 
-            # poner permisos de escritura
-            for module in self._get_packs():
-                r_dir = '{}{}'.format(self.client.version_dir, module)
-                cmd = Command(
-                    self,
-                    command='sudo chmod -R og+w %s/' % r_dir,
-                    usr_msg='Making writable %s' % r_dir
-                )
-                ret.append(cmd)
+                # poner permisos de escritura
+                for module in self._get_packs():
+                    r_dir = '{}{}'.format(self.client.version_dir, module)
+                    cmd = Command(
+                        self,
+                        command='sudo chmod -R og+w %s/' % r_dir,
+                        usr_msg='Making writable %s' % r_dir
+                    )
+                    ret.append(cmd)
 
-            # agregar un gitignore
-            for module in self._get_packs():
-                r_dir = '{}{}'.format(self.client.version_dir, module)
-                cmd = CreateGitignore(
-                    self,
-                    command='%s/.gitignore' % r_dir,
-                    usr_msg='Creating gitignore file in %s' % r_dir
-                )
-                ret.append(cmd)
+                # agregar un gitignore
+                for module in self._get_packs():
+                    r_dir = '{}{}'.format(self.client.version_dir, module)
+                    cmd = CreateGitignore(
+                        self,
+                        command='%s/.gitignore' % r_dir,
+                        usr_msg='Creating gitignore file in %s' % r_dir
+                    )
+                    ret.append(cmd)
 
-            for module in self._get_packs():
-                # create git repo
-                command = 'git -C {}{}/ init '.format(
-                    self._client.version_dir, module)
-                cmd = Command(
-                    self,
-                    command=command,
-                    usr_msg='Init repository for %s' % module
-                )
-                ret.append(cmd)
+                for module in self._get_packs():
+                    # create git repo
+                    command = 'git -C {}{}/ init '.format(
+                        self._client.version_dir, module)
+                    cmd = Command(
+                        self,
+                        command=command,
+                        usr_msg='Init repository for %s' % module
+                    )
+                    ret.append(cmd)
 
-            for module in self._get_packs():
-                command = 'git -C {}{}/ add . '.format(
-                    self._client.version_dir, module)
-                cmd = Command(
-                    self,
-                    command=command,
-                    usr_msg='Add files to repository for %s' % module
-                )
-                ret.append(cmd)
+                for module in self._get_packs():
+                    command = 'git -C {}{}/ add . '.format(
+                        self._client.version_dir, module)
+                    cmd = Command(
+                        self,
+                        command=command,
+                        usr_msg='Add files to repository for %s' % module
+                    )
+                    ret.append(cmd)
 
-            for module in self._get_packs():
-                command = 'git -C {}{}/ commit -m inicial '.format(
-                    self._client.version_dir, module)
-                cmd = Command(
-                    self,
-                    command=command,
-                    usr_msg='Commit repository for %s' % module
-                )
-                ret.append(cmd)
+                for module in self._get_packs():
+                    command = 'git -C {}{}/ commit -m inicial '.format(
+                        self._client.version_dir, module)
+                    cmd = Command(
+                        self,
+                        command=command,
+                        usr_msg='Commit repository for %s' % module
+                    )
+                    ret.append(cmd)
 
         ##################################################################
         # Clone or update repos as needed

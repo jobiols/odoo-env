@@ -8,9 +8,8 @@
             "name": "Debug oe myproject",
             "type": "python",
             "request": "launch",
-            // "program": "/home/jobiols/git-repos/odoo-env/odoo_env/oe.py",
             "python": "/usr/bin/python3",
-            "args": ["-r", "-c suelos"],
+            "args": ["-i", "-c quilsoft", "--debug"],
             "justMyCode": false,
             "module": "odoo_env.oe"
         }

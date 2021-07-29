@@ -275,8 +275,9 @@ class OdooEnv(object):
         ##################################################################
         # Extracting sources from image if debug enabled
         ##################################################################
+        import six
         if self.debug:
-            if input("want to download image sources to host? (y/Enter)") == 'y':
+            if six.moves.input("Want to download image sources to host? (y / Enter to no)") == 'y':
                 for module in self._get_packs():
                     msg = 'Extracting {} from image {}.debug'.format(
                         module, self.client.get_image('odoo').name)

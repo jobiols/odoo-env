@@ -1,4 +1,4 @@
-import os
+import os, stat
 import subprocess
 from odoo_env.__init__ import __version__
 from odoo_env.messages import Msg
@@ -145,8 +145,14 @@ class WriteConfigFile(Command):
         arg = self._args
         client = arg['client']
 
-        # obtener los repositorios que hay en sources
-        repos = next(os.walk(client.sources_dir))[1]
+        # obtener los repositorios que hay en sources, para eso se recorre souces y se
+        # obtienen todos los directorios que tienen un .git adentro.
+        repos = list()
+        sources = client.sources_dir
+        for root, dirs, _ in os.walk(sources):
+            if '.git' in dirs:
+                repos.append(root.replace(sources,''))
+
         repos = ['/opt/odoo/custom-addons/' + x for x in repos]
         repos = ','.join(repos)
 
@@ -178,6 +184,9 @@ class WriteConfigFile(Command):
                 odoo_conf.add_line('max_cron_threads = %s' % os.cpu_count())
 
         odoo_conf.write_config()
+
+        # Corregir los permisos de odoo.conf
+        os.chmod(client.config_file, stat.S_IREAD + stat.S_IWRITE + stat.S_IWOTH + stat.S_IROTH)
 
 
 class MessageOnly(Command):

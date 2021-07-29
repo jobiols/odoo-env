@@ -104,6 +104,7 @@ Installation
 
 Changelog
 ---------
+    - 0.10.12 fix -w to take into account not standard repo structure and odoo.conf rights
     - 0.10.11 ask before overwriting local image sources
     - 0.10.10 minor refactoring, improving doc
     - 0.10.9 minor fixes, more documentation

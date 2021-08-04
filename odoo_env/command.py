@@ -149,9 +149,13 @@ class WriteConfigFile(Command):
         # obtienen todos los directorios que tienen un .git adentro.
         repos = list()
         sources = client.sources_dir
-        for root, dirs, _ in os.walk(sources):
+        for root, dirs, files in os.walk(sources):
+            # si tiene un directorio .git es un repositorio
             if '.git' in dirs:
                 repos.append(root.replace(sources,''))
+            # si tiene un archivo .git es un subdirectorio
+            if '.git' in files:
+                repos.append(root.replace(sources, ''))
 
         repos = ['/opt/odoo/custom-addons/' + x for x in repos]
         repos = ','.join(repos)

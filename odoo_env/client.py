@@ -40,7 +40,7 @@ class Client(object):
             six.moves.input('Hit Enter to continue or CTRL C to exit')
             manifest, _ = self.get_manifest_from_struct(os.getcwd())
             if not manifest:
-                msg.err('Can not find client {} in current dir'.format(name))
+                msg.err('Can not find client %s in current dir' % name)
 
             msg.inf('Client found!')
             msg.inf('Name %s\nversion %s\n' % (manifest.get('name'),
@@ -64,10 +64,10 @@ class Client(object):
     def check_v1(self, manifest):
         # Chequar que el manifiesto tenga bien las cosas
         if not manifest.get('docker'):
-            msg.err('No images in manifest {}'.format(self.name))
+            msg.err('No images in manifest %s' % self.name)
 
         if not manifest.get('repos'):
-            msg.err('No repos in manifest {}'.format(self.name))
+            msg.err('No repos in manifest %s' % self.name)
 
         # Crear imagenes y repos
         self._repos = []
@@ -190,8 +190,7 @@ class Client(object):
                 if ver:
                     ret += ':' + ver
                 return ret
-        msg.err('There is no {} image found in this manifest'.format(
-            image_name))
+        msg.err('There is no %s image found in this manifest' % image_name)
 
     def get_image(self, value):
         for image in self._images:

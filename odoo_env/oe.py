@@ -76,6 +76,11 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         help="Deactivate database before restore")
 
     parser.add_argument(
+        '--extract-sources',
+        action='store_true',
+        help="Extract sources from images on -i")
+
+    parser.add_argument(
         '--debug',
         action='store_true',
         help='Set default environment mode to debug'
@@ -182,6 +187,7 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         'no-repos': args.no_repos,
         'nginx': args.nginx,
         'backup_file': args.backup_file,
+        'extract_sources': args.extract_sources,
     }
     commands = []
     client_name = get_param(args, 'client').strip()
@@ -196,10 +202,8 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         database = get_param(args, 'database')
         backup_file = get_param(args, 'backup_file')
         deactivate = get_param(args, 'deactivate')
-        commands += OdooEnv(options).restore(client_name,
-                                             database,
-                                             backup_file,
-                                             deactivate)
+        commands += OdooEnv(options).restore(client_name, database,
+                                             backup_file, deactivate)
 
     if args.install:
         commands += OdooEnv(options).install(client_name)

@@ -348,6 +348,7 @@ class TestRepository(unittest.TestCase):
             'debug': True,
             'no-repos': False,
             'nginx': True,
+            'extract_sources': False,
         }
 
         base_dir = '/odoo_ar/'
@@ -592,7 +593,7 @@ class TestRepository(unittest.TestCase):
             '--env NEW_DBNAME=client_prod ' \
             '--env ZIPFILE=bkp.zip ' \
             '--env DEACTIVATE=True ' \
-            'jobiols/dbtools '
+            'jobiols/dbtools:1.1.0 '
 
         self.assertEqual(cmds[0].command, command)
 
@@ -603,6 +604,7 @@ class TestRepository(unittest.TestCase):
             'debug': True,
             'no-repos': False,
             'nginx': False,
+            'extract_sources': True,
         }
         oe = OdooEnv(options)
         cmds = oe.install('test_client')

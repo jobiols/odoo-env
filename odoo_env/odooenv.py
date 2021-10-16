@@ -81,8 +81,7 @@ class OdooEnv(object):
 
         if len(filenames) > 1:
             filenames.sort()
-            msg = 'List of available backups for client {} \n\n'.format(
-                client_name)
+            msg = 'List of available backups for client %s\n\n' % client_name
             for filedesc in filenames:
                 msg += filedesc + '\n'
         else:
@@ -96,11 +95,9 @@ class OdooEnv(object):
         ret.append(cmd)
         return ret
 
-    def restore(self, client_name, database=False, backup_file=False,
-                deactivate=False):
+    def restore(self, client_name, database=False, backup_file=False, deactivate=False):
         """ Restaurar un backup desde el directorio backup_dir
         """
-
         self._client = Client(self, client_name)
         ret = []
 
@@ -114,16 +111,15 @@ class OdooEnv(object):
             msg += 'and performing deactivation.'
 
         command = 'sudo docker run --rm -i '
-        command += '--link pg-{}:db '.format(client_name)
-        command += '-v {}:/backup '.format(self.client.backup_dir)
-        command += '-v {}data_dir/filestore:/filestore '.format(
-            self.client.base_dir)
-        command += '--env NEW_DBNAME={} '.format(database)
+        command += '--link pg-%s:db ' % client_name
+        command += '-v %s:/backup ' % self.client.backup_dir
+        command += '-v %sdata_dir/filestore:/filestore ' % self.client.base_dir
+        command += '--env NEW_DBNAME=%s ' % database
         if backup_file:
-            command += '--env ZIPFILE={} '.format(backup_file)
+            command += '--env ZIPFILE=%s ' % backup_file
         if deactivate:
             command += '--env DEACTIVATE=True '
-        command += 'jobiols/dbtools '
+        command += 'jobiols/dbtools:1.1.0 '
 
         cmd = Command(
             self,
@@ -156,8 +152,8 @@ class OdooEnv(object):
         for image in self._client._images:
             cmd = PullImage(
                 self,
-                command='sudo docker pull {}'.format(image.name),
-                usr_msg='Pulling Image {}'.format(image.short_name)
+                command='sudo docker pull %s' % image.name,
+                usr_msg='Pulling Image %s' % image.short_name
             )
             ret.append(cmd)
         return ret
@@ -199,8 +195,8 @@ class OdooEnv(object):
             r_dir = '%s%s' % (self.client.base_dir, w_dir)
             cmd = MakedirCommand(
                 self,
-                command='mkdir -p {}'.format(r_dir),
-                args='{}'.format(r_dir)
+                command='mkdir -p %s' % r_dir,
+                args='%s' % r_dir
             )
             ret.append(cmd)
 
@@ -210,11 +206,11 @@ class OdooEnv(object):
         if self.debug:
 
             for w_dir in self._get_packs():
-                r_dir = '{}{}'.format(self.client.version_dir, w_dir)
+                r_dir = '%s%s' % (self.client.version_dir, w_dir)
                 cmd = MakedirCommand(
                     self,
-                    command='mkdir -p {}'.format(r_dir),
-                    args='{}'.format(r_dir)
+                    command='mkdir -p %s' % r_dir,
+                    args='%s' % r_dir
                 )
                 ret.append(cmd)
 
@@ -224,10 +220,10 @@ class OdooEnv(object):
 
         if self.debug:
             for w_dir in self._get_packs():
-                r_dir = '{}{}'.format(self.client.version_dir, w_dir)
+                r_dir = '%s%s' % (self.client.version_dir, w_dir)
                 cmd = Command(
                     self,
-                    command='chmod og+w {}'.format(r_dir)
+                    command='chmod og+w %s' % r_dir
                 )
                 ret.append(cmd)
 
@@ -236,10 +232,10 @@ class OdooEnv(object):
         ##################################################################
 
         for w_dir in ['config', 'data_dir', 'log', 'backup_dir']:
-            r_dir = '{}{}'.format(self.client.base_dir, w_dir)
+            r_dir = '%s%s' % (self.client.base_dir, w_dir)
             cmd = Command(
                 self,
-                command='chmod o+w {}'.format(r_dir)
+                command='chmod o+w %s' % r_dir
             )
             ret.append(cmd)
 
@@ -249,11 +245,11 @@ class OdooEnv(object):
 
         if self.nginx:
             for w_dir in ['cert', 'conf', 'log']:
-                r_dir = '{}{}'.format(BASE_DIR, 'nginx/' + w_dir)
+                r_dir = '%s%s' % (BASE_DIR, 'nginx/' + w_dir)
                 cmd = MakedirCommand(
                     self,
-                    command='mkdir -p {}'.format(r_dir),
-                    args='{}'.format(r_dir)
+                    command='mkdir -p %s' % r_dir,
+                    args='%s' % r_dir
                 )
                 ret.append(cmd)
 
@@ -262,11 +258,11 @@ class OdooEnv(object):
         ##################################################################
 
         if self.nginx:
-            r_dir = '{}{}'.format(BASE_DIR, 'nginx/conf/')
+            r_dir = '%s%s' % (BASE_DIR, 'nginx/conf/')
             cmd = CreateNginxTemplate(
                 self,
-                command='{}nginx.conf'.format(r_dir),
-                args='{}nginx.conf'.format(r_dir),
+                command='%snginx.conf' % r_dir,
+                args='%snginx.conf' % r_dir,
                 usr_msg='Generating nginx.conf template',
                 client_name=client_name
             )
@@ -275,77 +271,73 @@ class OdooEnv(object):
         ##################################################################
         # Extracting sources from image if debug enabled
         ##################################################################
-        import six
-        if self.debug:
-            if six.moves.input("Want to download image sources to host? (y / Enter to no)") == 'y':
-                for module in self._get_packs():
-                    msg = 'Extracting {} from image {}.debug'.format(
-                        module, self.client.get_image('odoo').name)
-                    command = 'sudo docker run -it --rm '
-                    command += '--entrypoint=/extract_{}.sh '.format(module)
-                    command += '-v {}{}/:/mnt/{} '.format(self.client.version_dir,
-                                                        module, module)
-                    command += '{}.debug '.format(
-                        self.client.get_image('odoo').name)
+        if self.debug and self.extract_sources:
+            for module in self._get_packs():
+                msg = 'Extracting %s from image %s.debug' % (module,
+                    self.client.get_image('odoo').name)
+                command = 'sudo docker run -it --rm '
+                command += '--entrypoint=/extract_%s.sh ' % module
+                command += '-v %s%s/:/mnt/%s ' % (self.client.version_dir, module, module)
+                command += '%s.debug ' % self.client.get_image('odoo').name
 
-                    cmd = ExtractSourcesCommand(
-                        self,
-                        command=command,
-                        args='{}{}'.format(self.client.version_dir, module),
-                        usr_msg=msg,
-                    )
-                    ret.append(cmd)
+                cmd = ExtractSourcesCommand(
+                    self,
+                    command=command,
+                    args='%s%s' % (self.client.version_dir, module),
+                    usr_msg=msg,
+                )
+                ret.append(cmd)
 
-                # poner permisos de escritura
-                for module in self._get_packs():
-                    r_dir = '{}{}'.format(self.client.version_dir, module)
-                    cmd = Command(
-                        self,
-                        command='sudo chmod -R og+w %s/' % r_dir,
-                        usr_msg='Making writable %s' % r_dir
-                    )
-                    ret.append(cmd)
+            # poner permisos de escritura
+            for module in self._get_packs():
+                r_dir = '%s%s' % (self.client.version_dir, module)
+                cmd = Command(
+                    self,
+                    command='sudo chmod -R og+w %s/' % r_dir,
+                    usr_msg='Making writable %s' % r_dir
+                )
+                ret.append(cmd)
 
-                # agregar un gitignore
-                for module in self._get_packs():
-                    r_dir = '{}{}'.format(self.client.version_dir, module)
-                    cmd = CreateGitignore(
-                        self,
-                        command='%s/.gitignore' % r_dir,
-                        usr_msg='Creating gitignore file in %s' % r_dir
-                    )
-                    ret.append(cmd)
+            # agregar un gitignore
+            for module in self._get_packs():
+                r_dir = '{}{}'.format(self.client.version_dir, module)
+                cmd = CreateGitignore(
+                    self,
+                    command='%s/.gitignore' % r_dir,
+                    usr_msg='Creating gitignore file in %s' % r_dir
+                )
+                ret.append(cmd)
 
-                for module in self._get_packs():
-                    # create git repo
-                    command = 'git -C {}{}/ init '.format(
-                        self._client.version_dir, module)
-                    cmd = Command(
-                        self,
-                        command=command,
-                        usr_msg='Init repository for %s' % module
-                    )
-                    ret.append(cmd)
+            for module in self._get_packs():
+                # create git repo
+                command = 'git -C {}{}/ init '.format(
+                    self._client.version_dir, module)
+                cmd = Command(
+                    self,
+                    command=command,
+                    usr_msg='Init repository for %s' % module
+                )
+                ret.append(cmd)
 
-                for module in self._get_packs():
-                    command = 'git -C {}{}/ add . '.format(
-                        self._client.version_dir, module)
-                    cmd = Command(
-                        self,
-                        command=command,
-                        usr_msg='Add files to repository for %s' % module
-                    )
-                    ret.append(cmd)
+            for module in self._get_packs():
+                command = 'git -C {}{}/ add . '.format(
+                    self._client.version_dir, module)
+                cmd = Command(
+                    self,
+                    command=command,
+                    usr_msg='Add files to repository for %s' % module
+                )
+                ret.append(cmd)
 
-                for module in self._get_packs():
-                    command = 'git -C {}{}/ commit -m inicial '.format(
-                        self._client.version_dir, module)
-                    cmd = Command(
-                        self,
-                        command=command,
-                        usr_msg='Commit repository for %s' % module
-                    )
-                    ret.append(cmd)
+            for module in self._get_packs():
+                command = 'git -C {}{}/ commit -m inicial '.format(
+                    self._client.version_dir, module)
+                cmd = Command(
+                    self,
+                    command=command,
+                    usr_msg='Commit repository for %s' % module
+                )
+                ret.append(cmd)
 
         ##################################################################
         # Clone or update repos as needed
@@ -774,3 +766,7 @@ class OdooEnv(object):
     @property
     def nginx(self):
         return self._options['nginx']
+
+    @property
+    def extract_sources(self):
+        return self._options['extract_sources']

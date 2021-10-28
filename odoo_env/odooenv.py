@@ -79,7 +79,7 @@ class OdooEnv(object):
                 if file_extension == '.zip':
                     filenames.append(filedesc)
 
-        if len(filenames) > 1:
+        if len(filenames) > 0:
             filenames.sort()
             msg = 'List of available backups for client %s\n\n' % client_name
             for filedesc in filenames:
@@ -95,8 +95,25 @@ class OdooEnv(object):
         ret.append(cmd)
         return ret
 
-    def restore(self, client_name, database=False, backup_file=False, deactivate=False):
-        """ Restaurar un backup desde el directorio backup_dir
+    def make_scp_command(self, client_name, backup_file):
+        """ Crea el comando para bajar el archivo desde el server
+        """
+        cli = Client(self, client_name)
+        if backup_file:
+            # Bajar el backup backup_file del server
+            cmd = 'scp %s:%s%s %sserver_bkp.zip' % (cli.prod_server, cli.backup_dir,
+                                                    backup_file, cli.backup_dir)
+        else:
+            # bajar el ultimo archivo del server
+            _file = 'ssh %s ls -t %s | head -1' % (cli.prod_server, cli.backup_dir)
+            cmd = 'scp %s:%s$(%s) %sserver_bkp.zip' % (cli.prod_server, cli.backup_dir,
+                                                       _file, cli.backup_dir)
+        return cmd
+
+    def restore(self, client_name, database=False, backup_file=False,
+                no_deactivate=False, from_server=False):
+        """ Restaurar un backup desde el directorio backup_dir o desde el server de
+            produccion
         """
         self._client = Client(self, client_name)
         ret = []
@@ -107,19 +124,30 @@ class OdooEnv(object):
         else:
             msg += 'from newest backup '
 
-        if deactivate:
-            msg += 'and performing deactivation.'
+        if not no_deactivate and self._client.debug:
+            msg += 'and performing deactivation '
+
+        if from_server:
+            command = self.make_scp_command(client_name, backup_file)
+            cmd = Command(
+                self,
+                command=command,
+                usr_msg="Downloading server backup"
+            )
+            ret.append(cmd)
 
         command = 'sudo docker run --rm -i '
         command += '--link pg-%s:db ' % client_name
         command += '-v %s:/backup ' % self.client.backup_dir
         command += '-v %sdata_dir/filestore:/filestore ' % self.client.base_dir
         command += '--env NEW_DBNAME=%s ' % database
-        if backup_file:
+        if backup_file and not from_server:
             command += '--env ZIPFILE=%s ' % backup_file
-        if deactivate:
+        if from_server and self._client.debug:
+            command += '--env ZIPFILE=server_bkp.zip '
+        if not no_deactivate and self._client.debug:
             command += '--env DEACTIVATE=True '
-        command += 'jobiols/dbtools:1.1.0 '
+        command += 'jobiols/dbtools:1.2.0 '
 
         cmd = Command(
             self,

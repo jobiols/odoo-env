@@ -1,0 +1,50 @@
+NOMBRE:
+
+    oe db restore
+
+USO:
+
+    oe db restore [-f bkp_name] [--prod] --no-deactivate
+
+DESCRIPCION:
+
+    Restaura el ultimo backup del directorio por defecto y lo restaura en la base de datos
+    por defecto, luego desactiva la base.
+
+
+PARAMETROS OPCIONALES
+
+    -f backup_name
+
+        Restaura el backup con este nombre del directorio de backup
+
+    --from-prod
+
+        Cambia el directorio por defecto desde donde intenta bajar el archivo de bakcup, el nuevo
+        directorio por defecto es el que esta en el vps de produccion, se puede combinar con -f
+
+    --no-deactivate
+
+        Valido solo en ambiente de desarrollo, no desactiva la base de datos luego de restaurarla.
+
+EJEMPLOS:
+
+    oe db restore
+
+        Restaura el ultimo backup local a la base de datos por defecto
+
+    oe restore -f bkp_name
+
+        Restaura el backup que se llama bkp_name del directorio local por defecto y lo pone en la base de
+        datos por defecto
+
+    oe restore --prod (valido solo en ambiente de desarrollo)
+
+        Baja el ultimo backup del directorio de backups por defecto que esta en el vps de produccion al
+        directorio de backup local, luego lo restaura a la base de datos por defecto y desactiva la base.
+
+    oe restore --prod -f bkp_name (valido solo en ambiente de desarrollo)
+
+        Baja el archivo backup de nombre bkp_name del directorio de backups por defecto que esta en el vps de
+        produccion al directorio de backup local, luego lo restaura a la base de datos por defecto y desactiva
+        la base.

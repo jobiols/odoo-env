@@ -71,9 +71,9 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         help="Go verbose mode. Prints every command")
 
     parser.add_argument(
-        '--deactivate',
+        '--no-deactivate',
         action='store_true',
-        help="Deactivate database before restore")
+        help="No Deactivate database before restore. WARNING this may be a potential risk")
 
     parser.add_argument(
         '--extract-sources',
@@ -98,7 +98,11 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
              'This option is intended to install a production environment.'
              'This option is persistent.'
     )
-
+    parser.add_argument(
+        '--from-prod',
+        action='store_true',
+        help='Restore backup from production server. Use with --restore'
+    )
     parser.add_argument(
         '--no-repos',
         action='store_true',
@@ -201,9 +205,11 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
     if args.restore:
         database = get_param(args, 'database')
         backup_file = get_param(args, 'backup_file')
-        deactivate = get_param(args, 'deactivate')
+        no_deactivate = args.no_deactivate
+        from_server = args.from_prod
         commands += OdooEnv(options).restore(client_name, database,
-                                             backup_file, deactivate)
+                                             backup_file, no_deactivate,
+                                             from_server)
 
     if args.install:
         commands += OdooEnv(options).install(client_name)

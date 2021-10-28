@@ -92,7 +92,7 @@ cd inside the repo and issue this command
 Then you can find a directory structure as this
 
     /odoo_ar
-    ├── odoo-13.0
+    └── odoo-13.0
         └── myproject
             ├── config
             ├── data_dir
@@ -149,6 +149,18 @@ Update odoo database
 
     oe -u
 
+Restore last backup
+
+    oe --restore
+
+Restore last production backup
+
+    oe --restore --from-prod
+
+Restore last production backup without deactivation (this may be dangerous)
+
+    oe --restore --from-prod --no-deactivate
+
 
 Enough for today stay tuned, more documentation on the way.
-Jorge 2020-07-09
+Jorge 2021-10-24

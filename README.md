@@ -104,6 +104,7 @@ Installation
 
 Changelog
 ---------
+    - 0.10.15 base_dir parameter on oe_config.yaml
     - 0.10.14 add --extract-sources option
     - 0.10.13 fix -w to take into account submodules
     - 0.10.12 fix -w to take into account not standard repo structure and odoo.conf rights

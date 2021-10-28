@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "python": "/usr/bin/python3",
-            "args": ["-w", "-c sigo", "--debug"],
+            "args": ["--restore","--from-prod"],
             "justMyCode": false,
             "module": "odoo_env.oe"
         }

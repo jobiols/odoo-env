@@ -39,7 +39,7 @@ class Command:
         cmd = self.command
         self.subrpocess_call(cmd)
 
-    def subrpocess_call(self, params, shell=False):
+    def subrpocess_call(self, params, shell=True):
         """ Run command or command list with arguments.  Wait for commands to
             complete
             If args.verbose is true, prints command

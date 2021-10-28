@@ -100,6 +100,9 @@ class Client(object):
         for img in manifest.get('docker-images'):
             self._images.append(Image2(img))
 
+        # levantar el nombre del user server
+        self._prod_server = manifest.get('prod_server', 'ubuntu')
+
     def check_common(self, manifest):
         self._port = manifest.get('port', 8069)
 
@@ -270,3 +273,7 @@ class Client(object):
     @property
     def debug(self):
         return self._parent.debug
+
+    @property
+    def prod_server(self):
+        return self._prod_server

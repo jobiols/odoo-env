@@ -255,6 +255,14 @@ In this case the branch to download will be main and also as the repository is n
         # if ommited it defaults to CE
         'odoo-license': 'CE',
 
+        # Production Server (change suelos13 and ec2-user for your data)
+        # suelos13 is the alias you set in .ssh/config
+        # i.e. you can access the server typing ssh suelos13
+        # ec2-user is the user who is accessing the server, then when you perform a
+        # oe --restore --from-server
+        # the backup will be transferred from server to your local with scp
+        'prod_server': 'ec2-user@suelos13',
+
         # Port where odoo docker image starts serving pages if ommited defaults to 8069
         'port': '8069',
 

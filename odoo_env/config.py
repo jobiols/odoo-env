@@ -53,6 +53,10 @@ class OeConfig(Singleton):
             yaml.dump(config, config_file, default_flow_style=False,
                       allow_unicode=True)
 
+    def get_base_dir(self):
+        config = self.get_config_data()
+        return config.get('base_dir', '/odoo_ar/')
+
     def get_client_path(self, client_name):
         """ Traer el path de un cliente
         """

@@ -90,7 +90,7 @@ You get this tree
 
 Inside ctmil you will find meli_orp
 
-### What about brances
+### What about branches
 All right but which branches are you getting?. As a general rule:
 
 **It downloads the branches whose name is te mayor version declared in the manifest**
@@ -105,9 +105,11 @@ Then **all the repos** will be from the branch 11.0
 but you can override this, perhaps you want to get a repo that do not follow the best
 practics and are in branch master, so you can write.
 
-        'https://github.com/ctmil/odoo_barcode.git ctmil/odoo_barcode -b main'
+        'https://github.com/ctmil/odoo_barcode.git ctmil/odoo_barcode -b master'
 
-In this case the branch to download will be main and also as the repository is not a set of modules but **is** a module wa add ctmil/odoo_barcode so it is correctly inserted y our sources.
+In this case the branch to download will be main and also as the repository is not a set
+of modules but **is** a module wa add ctmil/odoo_barcode so it is correctly inserted y
+our sources.
 
 ## An example project:
 
@@ -266,7 +268,7 @@ In this case the branch to download will be main and also as the repository is n
         # Port where odoo docker image starts serving pages if ommited defaults to 8069
         'port': '8069',
 
-        # repositories to be installed in sources/ dir
+        # repositories to be installed in sources/
         # syntax:
         #
         #  "https://[github.com|gitlab.com|bitbucket.org/]/user/repo repo-dir -b branch"

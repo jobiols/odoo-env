@@ -10,7 +10,7 @@
 odoo-env
 =========
 jeo Software (c) 2021 jorge.obiols@gmail.com
-This code is distributed under the MIT license
+This code is distributed under the MIT license.
 
 Tool to manage docker based odoo environments. This is a Dockerized
 Environment to manage Odoo. Two environments are provided debug and prod.

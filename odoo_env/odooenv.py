@@ -453,8 +453,8 @@ class OdooEnv(object):
         ##################################################################
 
         image = self.client.get_image('postgres')
-
-        msg = 'Starting postgres image v{}'.format(image.version)
+        if image:
+            msg = 'Starting postgres image v{}'.format(image.version)
 
         command = 'sudo docker run -d '
         if self.debug:
@@ -641,7 +641,8 @@ class OdooEnv(object):
         if self.debug:
             command += self._add_debug_mountings(self.client.numeric_ver)
 
-        command += '--link pg-%s:db ' % self.client.name
+        if self.client.get_image('postgres'):
+            command += '--link pg-%s:db ' % self.client.name
 
         if not (self.debug or write_config):
             command += '--restart=always '

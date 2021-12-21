@@ -635,7 +635,7 @@ class OdooEnv(object):
         # que exponer los puertos.
         if not (self.nginx or write_config):
             command += '-p %s:8069 ' % self.client.port
-            command += '-p 8072:8072 '
+            command += '-p %s:8072 ' % self.client.longpolling_port
 
         command += self._add_normal_mountings()
         if self.debug:

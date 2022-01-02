@@ -104,6 +104,7 @@ Installation
 
 Changelog
 ---------
+    - 0.10.16 FIX overwrite workers in odoo.conf
     - 0.10.15 base_dir parameter on oe_config.yaml
     - 0.10.14 add --extract-sources option
     - 0.10.13 fix -w to take into account submodules

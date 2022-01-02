@@ -11,14 +11,14 @@ class OdooConf(object):
         self.config = dict()
 
     def read_config(self):
-        """ lee el config y lo vuelca a un diccionario
+        """ lee el odoo.conf del archivo y lo vuelca a un diccionario
         """
         config = configparser.ConfigParser()
         config.read(self._filename)
         self.config = config._sections
 
     def write_config(self):
-        """ Escribe o sobreescribe el config file
+        """ Escribe o sobreescribe el odoo.conf file
         """
         config = configparser.ConfigParser(allow_no_value=True)
         config.add_section('options')

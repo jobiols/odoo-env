@@ -137,6 +137,12 @@ class WriteConfigFile(Command):
     def check_args(self):
         return True
 
+    def check_item(self, search_item, search_list):
+        for item in search_list:
+            if search_item in item:
+                return item
+        return False
+
     def execute(self):
         # obtener el cliente a partir del nombre
         arg = self._args
@@ -160,8 +166,9 @@ class WriteConfigFile(Command):
         # obtener la configuracion definida en el manifiesto
         conf = client.config or []
 
-        # pisar el config con las cosas agregadas o modificadas, esto permite mantener
-        # por ejemplo la contraseña
+        # Actualizar el archivo odoo.conf
+
+        # Leer el archivo de configuracion original
         odoo_conf = OdooConf(client.config_file)
         odoo_conf.read_config()
         odoo_conf.add_list_data(conf)
@@ -178,11 +185,24 @@ class WriteConfigFile(Command):
             odoo_conf.add_line('limit_time_cpu = 0')
             odoo_conf.add_line('limit_time_real = 0')
         else:
-            # You should use 2 worker threads + 1 cron thread per available CPU
-            if 'workers' not in odoo_conf.config:
+            # no estoy en modo debug,
+            # si no defino workers en el manifiesto lo calculo
+            line = self.check_item('workers', conf)
+            if not line:
+                # Calculo los workers
+                # You should use 2 worker threads CPU
                 odoo_conf.add_line('workers = %s' % (os.cpu_count() * 2))
-            if 'max_cron_threads' not in odoo_conf.config:
+            else:
+                odoo_conf.add_line(line)
+
+            # si no defino cron_threads en el manifiesto lo calculo
+            line = self.check_item('max_cron_threads', conf)
+            if not line:
+                # Calculo los cron threads
+                # You should use 1 cron thread per available CPU
                 odoo_conf.add_line('max_cron_threads = %s' % os.cpu_count())
+            else:
+                odoo_conf.add_line(line)
 
         odoo_conf.write_config()
 

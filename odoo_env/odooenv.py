@@ -1,3 +1,4 @@
+from odoo_env.messages import Msg
 import pwd
 import os
 from odoo_env.client import Client
@@ -5,6 +6,7 @@ from odoo_env.command import Command, MakedirCommand, \
     ExtractSourcesCommand, CloneRepo, PullRepo, CreateNginxTemplate, \
     MessageOnly, PullImage, CreateGitignore, WriteConfigFile
 from odoo_env.constants import *
+
 
 
 class OdooEnv(object):
@@ -685,6 +687,8 @@ class OdooEnv(object):
         if self.nginx:
             msg = 'Starting nginx reverse proxy'
             image = self.client.get_image('nginx')
+            if not image:
+                Msg().err('There is no nginx image on this proyect')
 
             nginx_dir = self.client.nginx_dir
             command = 'sudo docker run -d '

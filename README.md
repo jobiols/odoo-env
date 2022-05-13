@@ -104,6 +104,8 @@ Installation
 
 Changelog
 ---------
+    - 0.10.20 fix --restore --from-server if does not work when base_dir is not default
+    - 0.10.19 dbtools for postgres 14.2
     - 0.10.18 ADD warning if --nginx issued and there are no nginx image on proyect
     - 0.10.16 FIX overwrite workers in odoo.conf
     - 0.10.15 base_dir parameter on oe_config.yaml

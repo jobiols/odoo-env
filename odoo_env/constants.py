@@ -2,6 +2,7 @@
 from odoo_env.config import OeConfig
 
 BASE_DIR = OeConfig().get_base_dir()
+SERVER_BASE_DIR = '/odoo_ar/'
 IN_CONFIG = '/opt/odoo/etc/'
 IN_DATA = '/opt/odoo/data'
 IN_LOG = '/var/log/odoo'

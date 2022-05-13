@@ -234,6 +234,14 @@ class Client(object):
         return '%sodoo-%s%s/' % (BASE_DIR, self._version, lic)
 
     @property
+    def server_version_dir(self):
+        """ /odoo_ar/odoo-13.0/
+            /odoo_ar/odoo-13.0e/
+        """
+        lic = 'e' if self._license == 'EE' else ''
+        return '%sodoo-%s%s/' % (SERVER_BASE_DIR, self._version, lic)
+
+    @property
     def base_dir(self):
         """ /odoo_ar/odoo-13.0/clientname/
             /odoo_ar/odoo-13.0e/clientname/
@@ -241,10 +249,23 @@ class Client(object):
         return '%s%s/' % (self.version_dir, self._name)
 
     @property
+    def server_dir(self):
+        """ /odoo_ar/odoo-13.0/clientname/
+            /odoo_ar/odoo-13.0e/clientname/
+        """
+        return '%s%s/' % (self.server_version_dir, self._name)
+
+    @property
     def backup_dir(self):
         """ /odoo_ar/odoo-13.0/clientname/backup_dir/
         """
         return self.base_dir + 'backup_dir/'
+
+    @property
+    def server_backup_dir(self):
+        """ /odoo_ar/odoo-13.0/clientname/backup_dir/
+        """
+        return self.server_base_dir + 'backup_dir/'
 
     @property
     def sources_dir(self):

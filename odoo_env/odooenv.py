@@ -103,12 +103,12 @@ class OdooEnv(object):
         cli = Client(self, client_name)
         if backup_file:
             # Bajar el backup backup_file del server
-            cmd = 'scp %s:%s%s %sserver_bkp.zip' % (cli.prod_server, cli.backup_dir,
-                                                    backup_file, cli.server_backup_dir)
+            cmd = 'scp %s:%s%s %sserver_bkp.zip' % (cli.prod_server, cli.server_backup_dir,
+                                                    backup_file, cli.backup_dir)
         else:
             # bajar el ultimo archivo del server
-            _file = 'ssh %s ls -t %s | head -1' % (cli.prod_server, cli.backup_dir)
-            cmd = 'scp %s:%s$(%s) %sserver_bkp.zip' % (cli.prod_server, cli.backup_dir,
+            _file = 'ssh %s ls -t %s | head -1' % (cli.prod_server, cli.server_backup_dir)
+            cmd = 'scp %s:%s$(%s) %sserver_bkp.zip' % (cli.prod_server, cli.server_backup_dir,
                                                        _file, cli.backup_dir)
         return cmd
 
@@ -149,7 +149,7 @@ class OdooEnv(object):
             command += '--env ZIPFILE=server_bkp.zip '
         if not no_deactivate and self._client.debug:
             command += '--env DEACTIVATE=True '
-        command += 'jobiols/dbtools:1.14.2 '
+        command += 'jobiols/dbtools:1.3.0 '
 
         cmd = Command(
             self,

@@ -1,7 +1,7 @@
 import os
 import ast
 from odoo_env.messages import Msg
-from odoo_env.constants import BASE_DIR
+from odoo_env.constants import BASE_DIR, SERVER_BASE_DIR
 from odoo_env.repos import Repo, Repo2
 from odoo_env.images import Image, Image2
 from odoo_env.config import OeConfig
@@ -249,7 +249,7 @@ class Client(object):
         return '%s%s/' % (self.version_dir, self._name)
 
     @property
-    def server_dir(self):
+    def server_base_dir(self):
         """ /odoo_ar/odoo-13.0/clientname/
             /odoo_ar/odoo-13.0e/clientname/
         """

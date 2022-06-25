@@ -54,8 +54,7 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
     parser.add_argument(
         '-E', '--ext-dep',
         action='store_true',
-        help="Stop odoo image.")
-
+        help="Update manifest external dependecies.")
 
     parser.add_argument(
         '-u', '--update',

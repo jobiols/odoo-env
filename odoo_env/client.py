@@ -128,20 +128,13 @@ class Client(object):
             devolver el manifest y el path
         """
         for root, dirs, files in os.walk(path):
-            for file in ['__openerp__.py',
-                         '__manifest__.py',
-                         '__manifest_tst_.py']:
-                if file in files:
-                    manifest_file = '%s/%s' % (root, file)
-                    manifest = self.load_manifest(manifest_file)
-                    name = manifest.get('name', False)
-                    # por si viene sin name
-                    if name:
-                        # get first word of name in lowercase
-                        name = name.split()[0]
-                        name = name.lower()
-                        if name == self._name:
-                            return manifest, root
+            set_files = set(['__openerp__.py', '__manifest__.py']).intersection(files)
+            for file in list(set_files):
+                manifest_file = '%s/%s' % (root, file)
+                manifest = self.load_manifest(manifest_file)
+                name = manifest.get('name', False)
+                if name and name.lower() == self._name:
+                    return manifest, root
         return False, False
 
     def get_manifest(self, path):

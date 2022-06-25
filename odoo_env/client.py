@@ -105,7 +105,8 @@ class Client(object):
 
     def check_common(self, manifest):
         self._port = manifest.get('port', 8069)
-
+        self._longpolling_port = manifest.get('longpolling_port', 8072)
+        self._external_dependencies = manifest.get('external_dependencies', {})
         ver = manifest.get('version')
         if not ver:
             msg.err('No version tag in manifest %s' % self.name)
@@ -217,6 +218,14 @@ class Client(object):
     @property
     def port(self):
         return self._port
+
+    @property
+    def external_dependencies(self):
+        return self._external_dependencies
+
+    @property
+    def longpolling_port(self):
+        return self._longpolling_port
 
     @property
     def version_dir(self):

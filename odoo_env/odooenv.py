@@ -455,8 +455,8 @@ class OdooEnv(object):
         ##################################################################
 
         image = self.client.get_image('postgres')
-
-        msg = 'Starting postgres image v{}'.format(image.version)
+        if image:
+            msg = 'Starting postgres image v{}'.format(image.version)
 
         command = 'sudo docker run -d '
         if self.debug:
@@ -512,6 +512,23 @@ class OdooEnv(object):
             ret.append(cmd)
 
         return ret
+
+    def install_external_dependencies(self, client_name):
+        ret = []
+        self._client = Client(self, client_name)
+        external_dependencies = self.client.external_dependencies
+        if 'python' in external_dependencies and len(external_dependencies['python']):
+            pip_names = (' ').join(external_dependencies['python'])
+ 
+            cmd = Command(
+                self,
+                command='sudo docker exec  {} pip install --upgrade {}'.format(client_name, pip_names),
+                usr_msg='{} installing pip packages {} please wait...'.format(client_name, pip_names),
+            )
+            ret.append(cmd)            
+
+        return ret
+
 
     def stop_client(self, client_name):
         ret = []
@@ -637,13 +654,14 @@ class OdooEnv(object):
         # que exponer los puertos.
         if not (self.nginx or write_config):
             command += '-p %s:8069 ' % self.client.port
-            command += '-p 8072:8072 '
+            command += '-p %s:8072 ' % self.client.longpolling_port
 
         command += self._add_normal_mountings()
         if self.debug:
             command += self._add_debug_mountings(self.client.numeric_ver)
 
-        command += '--link pg-%s:db ' % self.client.name
+        if self.client.get_image('postgres'):
+            command += '--link pg-%s:db ' % self.client.name
 
         if not (self.debug or write_config):
             command += '--restart=always '

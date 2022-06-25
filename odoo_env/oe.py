@@ -52,6 +52,11 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         help="Stop odoo image.")
 
     parser.add_argument(
+        '-E', '--ext-dep',
+        action='store_true',
+        help="Update manifest external dependecies.")
+
+    parser.add_argument(
         '-u', '--update',
         action='store_true',
         help="Update modules to database. Use --debug to force update with "
@@ -228,6 +233,9 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
 
     if args.stop_cli:
         commands += OdooEnv(options).stop_client(client_name)
+
+    if args.ext_dep:
+        commands += OdooEnv(options).install_external_dependencies(client_name)
 
     if args.run_cli:
         commands += OdooEnv(options).run_client(client_name)

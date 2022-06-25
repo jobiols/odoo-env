@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "python": "/usr/bin/python3",
-            "args": ["--restore","--from-prod"],
+            "args": ["-i", "-c", "1waves1", "--debug"],
             "justMyCode": false,
             "module": "odoo_env.oe"
         }

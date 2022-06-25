@@ -166,11 +166,12 @@ our sources.
             # 'data_dir' you can not modify this, is a fixed location inside docker odoo
             # image
 
-            # WORKERS
-            # You should use 2 worker threads + 1 cron thread per available CPU,
-            # and 1 CPU per 10 concurent users.
-            # if ommited oe will calculate workers and cron´s based on # of cpu.
-            # For a developer environment is is set to 0
+            # WORKERS and MAX_CRON_WORKERS
+            # If ommited it will default the calculation
+            # workers = 2 per available CPU
+            # max_cron_threads = 1 per available CPU
+            # In DEBUG mode both are forced to Zero
+
                     'workers = 2',
                     'max_cron_threads = 1',
 
@@ -190,6 +191,7 @@ our sources.
 
             # Prevents the worker from using more than CPU seconds for each request.
             # If the limit is exceeded, the worker is killed. Defaults to 60 sec.
+            # In DEBUG mode it is forced to Zero meaning no timeout
                     'limit_time_cpu = 60',
 
             # Prevents the worker from taking longer than seconds to process a request.
@@ -197,6 +199,7 @@ our sources.
             # Defaults to 120.
             # Differs from --limit-time-cpu in that this is a "wall time" limit
             # including e.g. SQL queries.
+            # In DEBUG mode it is forced to Zero meaning no timeout
                     'limit_time_real = 120',
 
             # default CSV separator for import and export

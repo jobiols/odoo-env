@@ -1,3 +1,4 @@
+from odoo_env.messages import Msg
 import pwd
 import os
 from odoo_env.client import Client
@@ -5,6 +6,7 @@ from odoo_env.command import Command, MakedirCommand, \
     ExtractSourcesCommand, CloneRepo, PullRepo, CreateNginxTemplate, \
     MessageOnly, PullImage, CreateGitignore, WriteConfigFile
 from odoo_env.constants import *
+
 
 
 class OdooEnv(object):
@@ -101,12 +103,12 @@ class OdooEnv(object):
         cli = Client(self, client_name)
         if backup_file:
             # Bajar el backup backup_file del server
-            cmd = 'scp %s:%s%s %sserver_bkp.zip' % (cli.prod_server, cli.backup_dir,
+            cmd = 'scp %s:%s%s %sserver_bkp.zip' % (cli.prod_server, cli.server_backup_dir,
                                                     backup_file, cli.backup_dir)
         else:
             # bajar el ultimo archivo del server
-            _file = 'ssh %s ls -t %s | head -1' % (cli.prod_server, cli.backup_dir)
-            cmd = 'scp %s:%s$(%s) %sserver_bkp.zip' % (cli.prod_server, cli.backup_dir,
+            _file = 'ssh %s ls -t %s | head -1' % (cli.prod_server, cli.server_backup_dir)
+            cmd = 'scp %s:%s$(%s) %sserver_bkp.zip' % (cli.prod_server, cli.server_backup_dir,
                                                        _file, cli.backup_dir)
         return cmd
 
@@ -147,7 +149,7 @@ class OdooEnv(object):
             command += '--env ZIPFILE=server_bkp.zip '
         if not no_deactivate and self._client.debug:
             command += '--env DEACTIVATE=True '
-        command += 'jobiols/dbtools:1.2.0 '
+        command += 'jobiols/dbtools:1.3.0 '
 
         cmd = Command(
             self,
@@ -686,6 +688,8 @@ class OdooEnv(object):
         if self.nginx:
             msg = 'Starting nginx reverse proxy'
             image = self.client.get_image('nginx')
+            if not image:
+                Msg().err('There is no nginx image on this proyect')
 
             nginx_dir = self.client.nginx_dir
             command = 'sudo docker run -d '

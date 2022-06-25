@@ -41,7 +41,7 @@ Functionality
               [-m MODULE] [--nginx] [-Q repo] [--backup-list] [--restore]
               [-f BACKUP_FILE] [-H] [-V]
 
-    Odoo Environment Manager v0.10.11 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.10.22 - by jeo Software <jorge.obiols@gmail.com>
 
     optional arguments:
       -h, --help          show this help message and exit
@@ -104,6 +104,12 @@ Installation
 
 Changelog
 ---------
+    - 0.10.22 find manifest with exact name instaed of part of name.
+    - 0.10.21 change dbtools version to 1.3.0
+    - 0.10.20 fix --restore --from-server if does not work when base_dir is not default
+    - 0.10.19 dbtools for postgres 14.2
+    - 0.10.18 ADD warning if --nginx issued and there are no nginx image on proyect
+    - 0.10.16 FIX overwrite workers in odoo.conf
     - 0.10.15 base_dir parameter on oe_config.yaml
     - 0.10.14 add --extract-sources option
     - 0.10.13 fix -w to take into account submodules

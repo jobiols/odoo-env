@@ -1,7 +1,7 @@
 import os
 import ast
 from odoo_env.messages import Msg
-from odoo_env.constants import BASE_DIR
+from odoo_env.constants import BASE_DIR, SERVER_BASE_DIR
 from odoo_env.repos import Repo, Repo2
 from odoo_env.images import Image, Image2
 from odoo_env.config import OeConfig
@@ -129,20 +129,13 @@ class Client(object):
             devolver el manifest y el path
         """
         for root, dirs, files in os.walk(path):
-            for file in ['__openerp__.py',
-                         '__manifest__.py',
-                         '__manifest_tst_.py']:
-                if file in files:
-                    manifest_file = '%s/%s' % (root, file)
-                    manifest = self.load_manifest(manifest_file)
-                    name = manifest.get('name', False)
-                    # por si viene sin name
-                    if name:
-                        # get first word of name in lowercase
-                        name = name.split()[0]
-                        name = name.lower()
-                        if name == self._name:
-                            return manifest, root
+            set_files = set(['__openerp__.py', '__manifest__.py']).intersection(files)
+            for file in list(set_files):
+                manifest_file = '%s/%s' % (root, file)
+                manifest = self.load_manifest(manifest_file)
+                name = manifest.get('name', False)
+                if name and name.lower() == self._name:
+                    return manifest, root
         return False, False
 
     def get_manifest(self, path):
@@ -239,6 +232,14 @@ class Client(object):
         return '%sodoo-%s%s/' % (BASE_DIR, self._version, lic)
 
     @property
+    def server_version_dir(self):
+        """ /odoo_ar/odoo-13.0/
+            /odoo_ar/odoo-13.0e/
+        """
+        lic = 'e' if self._license == 'EE' else ''
+        return '%sodoo-%s%s/' % (SERVER_BASE_DIR, self._version, lic)
+
+    @property
     def base_dir(self):
         """ /odoo_ar/odoo-13.0/clientname/
             /odoo_ar/odoo-13.0e/clientname/
@@ -246,10 +247,23 @@ class Client(object):
         return '%s%s/' % (self.version_dir, self._name)
 
     @property
+    def server_base_dir(self):
+        """ /odoo_ar/odoo-13.0/clientname/
+            /odoo_ar/odoo-13.0e/clientname/
+        """
+        return '%s%s/' % (self.server_version_dir, self._name)
+
+    @property
     def backup_dir(self):
         """ /odoo_ar/odoo-13.0/clientname/backup_dir/
         """
         return self.base_dir + 'backup_dir/'
+
+    @property
+    def server_backup_dir(self):
+        """ /odoo_ar/odoo-13.0/clientname/backup_dir/
+        """
+        return self.server_base_dir + 'backup_dir/'
 
     @property
     def sources_dir(self):

@@ -513,6 +513,23 @@ class OdooEnv(object):
 
         return ret
 
+    def install_external_dependencies(self, client_name):
+        ret = []
+        self._client = Client(self, client_name)
+        external_dependencies = self.client.external_dependencies()
+        if 'python' in external_dependencies:
+            pip_names = external_dependencies['python'].join(' ')
+ 
+            cmd = Command(
+                self,
+                command='sudo docker exec  {} pip install {}'.format(client_name, pip_names),
+                usr_msg='{} installing pip packages {} please wait...'.format(client_name, pip_names),
+            )
+            ret.append(cmd)            
+
+        return ret
+
+
     def stop_client(self, client_name):
         ret = []
 

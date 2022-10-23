@@ -215,8 +215,9 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         commands += OdooEnv(options).restore(client_name, database,
                                              backup_file, no_deactivate,
                                              from_server)
-
+    from install import do_install
     if args.install:
+        do_install(options, client_name)
         commands += OdooEnv(options).install(client_name)
 
     if args.write_config:

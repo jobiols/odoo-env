@@ -5,11 +5,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug oe myproject",
+            "name": "Debug oe",
             "type": "python",
             "request": "launch",
             "python": "/usr/bin/python3",
-            "args": ["-h"],
+            "args": ["-c","maipu","--create-test"],
             "justMyCode": false,
             "module": "odoo_env.oe"
         }

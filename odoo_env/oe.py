@@ -5,6 +5,7 @@ from odoo_env.messages import Msg
 from odoo_env.options import get_param
 from odoo_env.__init__ import __version__
 from odoo_env.config import OeConfig
+from odoo_env import create_test
 
 
 def main():
@@ -163,6 +164,12 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
              "option and change database name -d option")
 
     parser.add_argument(
+        '--create-test',
+        action='store_true',
+        help="Restores an empty test database. If it doesn't find the backup it "
+             "creates an empty database and saves its backup for future use.")
+
+    parser.add_argument(
         '-f',
         action='append',
         dest='backup_file',
@@ -215,6 +222,8 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         commands += OdooEnv(options).restore(client_name, database,
                                              backup_file, no_deactivate,
                                              from_server)
+    if args.create_test:
+        create_test.create_test(OdooEnv(options), client_name)
 
     if args.install:
         commands += OdooEnv(options).install(client_name)

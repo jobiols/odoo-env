@@ -149,7 +149,7 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         help="Perform QA running tests, argument are repository to test. "
              "Need -d, -m and -c options Note: for the test to run the "
              "database must be created with demo data and must have "
-             "admin user with password admin.")
+             "admin user with password admin. Or use --create-test to create it.")
 
     parser.add_argument(
         '--backup-list',
@@ -166,8 +166,9 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
     parser.add_argument(
         '--create-test',
         action='store_true',
-        help="Restores an empty test database. If it doesn't find the backup it "
-             "creates an empty database and saves its backup for future use.")
+        help="Restores an empty test database named client-name_test from a backup. If "
+             "the baclup does not exists it is created first. Can use -m to specify a "
+             "list of modules to install in the test database.")
 
     parser.add_argument(
         '-f',

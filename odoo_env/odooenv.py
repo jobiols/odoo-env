@@ -463,6 +463,7 @@ class OdooEnv(object):
             command += '-p 5432:5432 '
         command += '-e POSTGRES_USER=odoo '
         command += '-e POSTGRES_PASSWORD=odoo '
+        command += '-e POSTGRES_DB=postgres '
         command += '-v {}:/var/lib/postgresql/data '.format(
             self.client.psql_dir)
         command += '--restart=always '
@@ -519,13 +520,13 @@ class OdooEnv(object):
         external_dependencies = self.client.external_dependencies
         if 'python' in external_dependencies and len(external_dependencies['python']):
             pip_names = (' ').join(external_dependencies['python'])
- 
+
             cmd = Command(
                 self,
                 command='sudo docker exec  {} pip install --upgrade {}'.format(client_name, pip_names),
                 usr_msg='{} installing pip packages {} please wait...'.format(client_name, pip_names),
             )
-            ret.append(cmd)            
+            ret.append(cmd)
 
         return ret
 

@@ -114,7 +114,8 @@ Installation
 
 Changelog
 ---------
-    - 0.10.23 - The postgresql docker is not required anymore it is not necessary.
+    - 0.10.24 - Small patch that allows to use postgres with versions greater than 10.
+    - 0.10.23 - The postgres docker image is not required anymore it is not necessary.
               - new longpolling port exposed if declared in manifest
               - new parameter -E to install external dependences in manifest.py
     - 0.10.22 find manifest with exact name instaed of part of name.

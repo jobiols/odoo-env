@@ -104,8 +104,17 @@ class OeConfig(Singleton):
         config['environment'] = environment
         self.save_config_data(config)
 
+    def save_base_dir(self, value):
+        """ Salvar el base dir
+        """
+        config = self.get_config_data()
+        # Asegurar que termina con /
+        value = os.path.join(value,"")
+        config['base_dir'] = value
+        self.save_config_data(config)
+
     def check_version(self):
-        # me traigo la configuracion
+        """ me traigo la configuracion """
 
         config = self.get_config_data()
         dt_today = datetime.today()
@@ -137,12 +146,11 @@ class OeConfig(Singleton):
                 info = json.loads(response.buffer.read().decode('utf-8'))
                 version = info['info']['version']
                 if version != __version__:
-                    Msg().warn('WARNING you are using odoo-env version %s '
-                               'however version %s is '
-                               'available ' % (__version__, version))
+                    Msg().warn(f'WARNING you are using odoo-env version {__version__} '
+                               f'however version {version} is available. ')
                     Msg().warn('You should consider upgrading via the "pip3 '
                                'install --upgrade odoo-env" command.')
-            except Exception as ex:
+            except Exception:
                 Msg().inf('Can not check odoo-env Version, do you have internet '
                           'connectivity?')
 

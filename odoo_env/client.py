@@ -1,7 +1,7 @@
 import os
 import ast
 from odoo_env.messages import Msg
-from odoo_env.constants import BASE_DIR, SERVER_BASE_DIR
+from odoo_env.constants import BASE_DIR
 from odoo_env.repos import Repo, Repo2
 from odoo_env.images import Image, Image2
 from odoo_env.config import OeConfig
@@ -10,6 +10,7 @@ msg = Msg()
 
 
 class Client(object):
+    """ Clase cliente """
     def __init__(self, odooenv, name):
         """ Busca el cliente en la estructura de directorios, pero si no lo
             encuentra pide un directorio donde esta el repo que lo contiene
@@ -32,8 +33,8 @@ class Client(object):
         else:
             manifest = self.get_manifest(BASE_DIR)
         if not manifest:
-            msg.inf('Can not find client %s in this host installation.\n'
-                    'We will try in current dir' % self._name)
+            msg.inf(f'Can not find client {self._name} in this host installation.\n'
+                    'We will try in current dir')
 
             # mantener compatibilidad con python2
             import six
@@ -241,7 +242,7 @@ class Client(object):
             /odoo_ar/odoo-13.0e/
         """
         lic = 'e' if self._license == 'EE' else ''
-        return '%sodoo-%s%s/' % (SERVER_BASE_DIR, self._version, lic)
+        return f'{BASE_DIR}odoo-{self._version}{lic}/'
 
     @property
     def base_dir(self):
@@ -267,7 +268,7 @@ class Client(object):
     def server_backup_dir(self):
         """ /odoo_ar/odoo-13.0/clientname/backup_dir/
         """
-        return self.server_base_dir + 'backup_dir/'
+        return f'{self.server_base_dir}backup_dir/'
 
     @property
     def sources_dir(self):

@@ -1,16 +1,20 @@
 #!/usr/bin/env python
+""" Este es el modulo principal de odoo-env """
+
+import sys
 import argparse
 from odoo_env.odooenv import OdooEnv
 from odoo_env.messages import Msg
 from odoo_env.options import get_param
 from odoo_env.__init__ import __version__
 from odoo_env.config import OeConfig
-
+from odoo_env.create_database import create_database
 
 def main():
-    parser = argparse.ArgumentParser(description="""
-Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
-""" % __version__)
+    """ main """
+    parser = argparse.ArgumentParser(description=f"""
+Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.com>
+""")
 
     parser.add_argument(
         '-i',
@@ -182,12 +186,35 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         action='store_true',
         help="Show version number and exit.")
 
+    parser.add_argument(
+        '--create-test-db',
+        action='store_true',
+        help='Create database with demo data.',
+    )
+
+    parser.add_argument(
+        '--force-create',
+        action='store_true',
+        help='Force database creation.',
+    )
+    parser.add_argument(
+        '--base-dir',
+        action='append',
+        dest='base_dir',
+        help='Set default base-dir'
+             'This option is persistent.'
+    )
+
     args = parser.parse_args()
     if args.debug:
         OeConfig().save_environment('debug')
 
     if args.prod:
         OeConfig().save_environment('prod')
+
+    if args.base_dir:
+        OeConfig().save_base_dir(args.base_dir[0])
+
 
     debug_option = OeConfig().get_environment() == 'debug'
     options = {
@@ -197,6 +224,7 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         'nginx': args.nginx,
         'backup_file': args.backup_file,
         'extract_sources': args.extract_sources,
+        'force-create': args.force_create,
     }
     commands = []
     client_name = get_param(args, 'client').strip()
@@ -250,8 +278,13 @@ Odoo Environment Manager v%s - by jeo Software <jorge.obiols@gmail.com>
         commands += OdooEnv(options).qa(client_name, database,
                                         args.quality_assurance[0])
     if args.version:
-        Msg().inf('oe version %s' % __version__)
-        exit()
+        Msg().inf(f"oe version {__version__}")
+        sys.exit()
+
+    if args.create_test_db:
+        Msg().inf('Creating test database with demo data.')
+        create_database(OdooEnv(options=options), client_name)
+        sys.exit()
 
     # Verificar la version del script en pypi
     conf = OeConfig()

@@ -821,3 +821,7 @@ class OdooEnv(object):
     @property
     def extract_sources(self):
         return self._options['extract_sources']
+
+    @property
+    def force_create(self):
+        return self._options['force-create']

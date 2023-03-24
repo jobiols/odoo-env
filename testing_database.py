@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import odoorpc
 
 odoo = odoorpc.ODOO("localhost", port=80)

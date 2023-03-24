@@ -1,10 +1,9 @@
-# -*- coding: utf-8 -*-
 from odoo_env.messages import Msg
 
 msg = Msg()
 
 
-class Image(object):
+class Image:
     def __init__(self, values):
         self._dict = values
 
@@ -30,7 +29,7 @@ class Image(object):
         return ret
 
 
-class Image2(object):
+class Image2:
     def __init__(self, values):
         values = values.split()
         if len(values) != 2:

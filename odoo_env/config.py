@@ -1,13 +1,15 @@
+import json
 import os
 from datetime import datetime
-import json
-import yaml
+
 import tornado
 import tornado.httpclient
 import tornado.options
 import tornado.process
 import tornado.web
 import tornado.websocket
+import yaml
+
 from odoo_env.__init__ import __version__
 from odoo_env.messages import Msg
 
@@ -20,7 +22,7 @@ oe_config = False
 _instances = {}
 
 
-class Singleton(object):
+class Singleton:
     def __new__(cls, *args, **kw):
         if cls not in _instances:
             instance = super().__new__(cls)
@@ -34,7 +36,7 @@ class OeConfig(Singleton):
         template = {"clients": []}
         # obtener el archivo con los datos de clientes
         try:
-            with open(USER_CONFIG_FILE, "r") as config:
+            with open(USER_CONFIG_FILE) as config:
                 ret = yaml.safe_load(config)
         except Exception:
             return template

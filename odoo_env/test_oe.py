@@ -1,13 +1,13 @@
-# -*- coding: utf-8 -*-
 ##############################################################################
 
 import unittest
-from odoo_env.command import Command, MakedirCommand, CreateNginxTemplate
+
 from odoo_env.client import Client
-from odoo_env.odooenv import OdooEnv
+from odoo_env.command import Command, CreateNginxTemplate, MakedirCommand
 from odoo_env.config import OeConfig
-from odoo_env.repos import Repo, Repo2
 from odoo_env.images import Image, Image2
+from odoo_env.odooenv import OdooEnv
+from odoo_env.repos import Repo, Repo2
 
 
 class TestRepository(unittest.TestCase):

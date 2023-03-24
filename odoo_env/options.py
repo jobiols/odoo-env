@@ -1,7 +1,5 @@
-# -*- coding: utf-8 -*-
-
-from odoo_env.messages import Msg
 from odoo_env.config import OeConfig
+from odoo_env.messages import Msg
 
 
 def get_client(args):

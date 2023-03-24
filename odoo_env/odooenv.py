@@ -1,23 +1,16 @@
-from odoo_env.messages import Msg
-import pwd
 import os
+import pwd
+
 from odoo_env.client import Client
-from odoo_env.command import (
-    Command,
-    MakedirCommand,
-    ExtractSourcesCommand,
-    CloneRepo,
-    PullRepo,
-    CreateNginxTemplate,
-    MessageOnly,
-    PullImage,
-    CreateGitignore,
-    WriteConfigFile,
-)
+from odoo_env.command import (CloneRepo, Command, CreateGitignore,
+                              CreateNginxTemplate, ExtractSourcesCommand,
+                              MakedirCommand, MessageOnly, PullImage, PullRepo,
+                              WriteConfigFile)
 from odoo_env.constants import *
+from odoo_env.messages import Msg
 
 
-class OdooEnv(object):
+class OdooEnv:
     """
     Implementa metodos que corresponden a cada una de las acciones que se
     proveen en la interfase argparse.
@@ -245,7 +238,6 @@ class OdooEnv(object):
         # create dirs for extracting sources, only for debug
         ##################################################################
         if self.debug:
-
             for w_dir in self._get_packs():
                 r_dir = "%s%s" % (self.client.version_dir, w_dir)
                 cmd = MakedirCommand(
@@ -380,7 +372,6 @@ class OdooEnv(object):
         return ret
 
     def _add_debug_mountings(self, version):
-
         iea = IN_EXTRA_ADDONS
         if version in (11, 12):
             idp = IN_DIST_PACKAGES.format("3")

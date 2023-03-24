@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-
-
-class Repo(object):
+class Repo:
     def __init__(self, value):
         self._dict = value
 
@@ -45,7 +42,7 @@ class Repo(object):
         return "pull"
 
 
-class Repo2(object):
+class Repo2:
     def __init__(self, value, branch):
         """Sintaxis <repo> [<directory>[/<directory>] [-b <branch>]
         El branch debe estar despues del repo, si no esta se toma el branch

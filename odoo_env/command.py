@@ -1,6 +1,7 @@
-import os, stat
+import os
+import stat
 import subprocess
-from odoo_env.__init__ import __version__
+
 from odoo_env.messages import Msg
 from odoo_env.odoo_conf import OdooConf
 
@@ -131,7 +132,7 @@ class CreateNginxTemplate(Command):
 
     def execute(self):
         # leer el nginx.conf
-        with open("/usr/local/nginx.conf", "r") as _f:
+        with open("/usr/local/nginx.conf") as _f:
             conf = _f.read()
 
         # poner el nombre del cliente en el config

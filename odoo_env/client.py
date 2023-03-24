@@ -1,15 +1,16 @@
-import os
 import ast
-from odoo_env.messages import Msg
-from odoo_env.constants import BASE_DIR
-from odoo_env.repos import Repo, Repo2
-from odoo_env.images import Image, Image2
+import os
+
 from odoo_env.config import OeConfig
+from odoo_env.constants import BASE_DIR
+from odoo_env.images import Image, Image2
+from odoo_env.messages import Msg
+from odoo_env.repos import Repo, Repo2
 
 msg = Msg()
 
 
-class Client(object):
+class Client:
     """Clase cliente"""
 
     def __init__(self, odooenv, name):
@@ -40,9 +41,8 @@ class Client(object):
             )
 
             # mantener compatibilidad con python2
-            import six
 
-            six.moves.input("Hit Enter to continue or CTRL C to exit")
+            input("Hit Enter to continue or CTRL C to exit")
             manifest, _ = self.get_manifest_from_struct(os.getcwd())
             if not manifest:
                 msg.err("Can not find client %s in current dir" % name)
@@ -141,7 +141,7 @@ class Client(object):
         devolver el manifest y el path
         """
         for root, dirs, files in os.walk(path):
-            set_files = set(["__openerp__.py", "__manifest__.py"]).intersection(files)
+            set_files = {"__openerp__.py", "__manifest__.py"}.intersection(files)
             for file in list(set_files):
                 manifest_file = "%s/%s" % (root, file)
                 manifest = self.load_manifest(manifest_file)
@@ -178,7 +178,7 @@ class Client(object):
         :return: manifest in dictionary format
         """
         manifest = ""
-        with open(filename, "r") as _f:
+        with open(filename) as _f:
             for line in _f:
                 if line.strip() and line.strip()[0] != "#":
                     manifest += line

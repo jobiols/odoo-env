@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
-
 import setuptools
+
 from odoo_env import __version__
 
-with open("README.md", "r") as fh:
+with open("README.md") as fh:
     long_description = fh.read()
 
 setuptools.setup(

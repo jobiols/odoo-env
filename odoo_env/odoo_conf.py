@@ -1,8 +1,9 @@
 import configparser
+
 from odoo_env import __version__
 
 
-class OdooConf(object):
+class OdooConf:
     """Representa el archivo odoo.conf y sus metodos para leer
     salvar y agregarle datos
     """

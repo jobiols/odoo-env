@@ -1,4 +1,5 @@
 ![workflow](https://github.com/jobiols/odoo-env/actions/workflows/pythonapp.yml/badge.svg)
+[![CodeFactor](https://www.codefactor.io/repository/github/jobiols/odoo-env/badge)](https://www.codefactor.io/repository/github/jobiols/odoo-env)
 
 [Project documentation](https://jobiols.github.io/odoo-env/)
 

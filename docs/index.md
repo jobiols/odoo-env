@@ -11,6 +11,7 @@ Odoo is a powerful platform for managing business operations, such as sales, acc
 Odoo-env is a set of easy-to-learn commands that make it simple to install and manage Odoo using Docker. With odoo-env, you can:
 
 - Deploy an Odoo instance in minutes, without needing to know anything about Docker
+
 - Have all the information needed to deploy the instance in a unique place, an odoo module
 - Deploy a development environment with wdb debugger included
 - Deploy a production environment with nginx included, or traefik and letsencrypt certificate with a little manual work if you want

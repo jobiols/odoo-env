@@ -8,7 +8,7 @@ YELLOW_LIGHT = "\033[33m"
 CLEAR = "\033[0;m"
 
 
-class Msg():
+class Msg:
     @staticmethod
     def green(string):
         return GREEN + string + CLEAR

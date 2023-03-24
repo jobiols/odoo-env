@@ -2,11 +2,19 @@ from odoo_env.messages import Msg
 import pwd
 import os
 from odoo_env.client import Client
-from odoo_env.command import Command, MakedirCommand, \
-    ExtractSourcesCommand, CloneRepo, PullRepo, CreateNginxTemplate, \
-    MessageOnly, PullImage, CreateGitignore, WriteConfigFile
+from odoo_env.command import (
+    Command,
+    MakedirCommand,
+    ExtractSourcesCommand,
+    CloneRepo,
+    PullRepo,
+    CreateNginxTemplate,
+    MessageOnly,
+    PullImage,
+    CreateGitignore,
+    WriteConfigFile,
+)
 from odoo_env.constants import *
-
 
 
 class OdooEnv(object):
@@ -24,17 +32,15 @@ class OdooEnv(object):
         self._client = False
 
     def _get_packs(self):
-        """ Packs a montar en modo debug segun la version de odoo
-        """
+        """Packs a montar en modo debug segun la version de odoo"""
         ver = self.client.numeric_ver
-        packs = ['dist-packages', 'dist-local-packages']
+        packs = ["dist-packages", "dist-local-packages"]
         if ver < 11:
-            packs += ['extra-addons']
+            packs += ["extra-addons"]
         return packs
 
     def _process_repos(self):
-        """ Clone or update repos as needed
-        """
+        """Clone or update repos as needed"""
         ret = []
         # do nothing if no-repos option is true
 
@@ -47,9 +53,9 @@ class OdooEnv(object):
             ##############################################################
             cmd = CloneRepo(
                 self,
-                usr_msg='cloning %s' % repo.formatted,
-                command='git -C %s %s' % (self.client.sources_dir, repo.clone),
-                args='%s%s' % (self.client.sources_dir, repo.dir_name)
+                usr_msg="cloning %s" % repo.formatted,
+                command="git -C %s %s" % (self.client.sources_dir, repo.clone),
+                args="%s%s" % (self.client.sources_dir, repo.dir_name),
             )
             ret.append(cmd)
 
@@ -58,18 +64,17 @@ class OdooEnv(object):
             ##############################################################
             cmd = PullRepo(
                 self,
-                usr_msg='pulling %s' % repo.formatted,
-                command='git -C %s%s %s' %(self.client.sources_dir, repo.dir_name,
-                                           repo.pull),
-                args='%s%s' % (self.client.sources_dir, repo.dir_name)
+                usr_msg="pulling %s" % repo.formatted,
+                command="git -C %s%s %s"
+                % (self.client.sources_dir, repo.dir_name, repo.pull),
+                args="%s%s" % (self.client.sources_dir, repo.dir_name),
             )
             ret.append(cmd)
 
         return ret
 
     def backup_list(self, client_name):
-        """ Listar los archivos disponibles para restore
-        """
+        """Listar los archivos disponibles para restore"""
         self._client = Client(self, client_name)
         ret = []
 
@@ -78,16 +83,16 @@ class OdooEnv(object):
         for root, dirs, files in os.walk(self.client.backup_dir):
             for filedesc in files:
                 filename, file_extension = os.path.splitext(filedesc)
-                if file_extension == '.zip':
+                if file_extension == ".zip":
                     filenames.append(filedesc)
 
         if len(filenames) > 0:
             filenames.sort()
-            msg = 'List of available backups for client %s\n\n' % client_name
+            msg = "List of available backups for client %s\n\n" % client_name
             for filedesc in filenames:
-                msg += filedesc + '\n'
+                msg += filedesc + "\n"
         else:
-            msg = 'There are no files to restore'
+            msg = "There are no files to restore"
 
         cmd = MessageOnly(
             self,
@@ -98,58 +103,70 @@ class OdooEnv(object):
         return ret
 
     def make_scp_command(self, client_name, backup_file):
-        """ Crea el comando para bajar el archivo desde el server
-        """
+        """Crea el comando para bajar el archivo desde el server"""
         cli = Client(self, client_name)
         if backup_file:
             # Bajar el backup backup_file del server
-            cmd = 'scp %s:%s%s %sserver_bkp.zip' % (cli.prod_server, cli.server_backup_dir,
-                                                    backup_file, cli.backup_dir)
+            cmd = "scp %s:%s%s %sserver_bkp.zip" % (
+                cli.prod_server,
+                cli.server_backup_dir,
+                backup_file,
+                cli.backup_dir,
+            )
         else:
             # bajar el ultimo archivo del server
-            _file = 'ssh %s ls -t %s | head -1' % (cli.prod_server, cli.server_backup_dir)
-            cmd = 'scp %s:%s$(%s) %sserver_bkp.zip' % (cli.prod_server, cli.server_backup_dir,
-                                                       _file, cli.backup_dir)
+            _file = "ssh %s ls -t %s | head -1" % (
+                cli.prod_server,
+                cli.server_backup_dir,
+            )
+            cmd = "scp %s:%s$(%s) %sserver_bkp.zip" % (
+                cli.prod_server,
+                cli.server_backup_dir,
+                _file,
+                cli.backup_dir,
+            )
         return cmd
 
-    def restore(self, client_name, database=False, backup_file=False,
-                no_deactivate=False, from_server=False):
-        """ Restaurar un backup desde el directorio backup_dir o desde el server de
-            produccion
+    def restore(
+        self,
+        client_name,
+        database=False,
+        backup_file=False,
+        no_deactivate=False,
+        from_server=False,
+    ):
+        """Restaurar un backup desde el directorio backup_dir o desde el server de
+        produccion
         """
         self._client = Client(self, client_name)
         ret = []
 
-        msg = 'Restoring database %s ' % database
+        msg = "Restoring database %s " % database
         if backup_file:
-            msg += 'from backup %s ' % backup_file
+            msg += "from backup %s " % backup_file
         else:
-            msg += 'from newest backup '
+            msg += "from newest backup "
 
         if not no_deactivate and self._client.debug:
-            msg += 'and performing deactivation '
+            msg += "and performing deactivation "
 
         if from_server:
             command = self.make_scp_command(client_name, backup_file)
-            cmd = Command(
-                self,
-                command=command,
-                usr_msg="Downloading server backup"
-            )
+            cmd = Command(self, command=command, usr_msg="Downloading server backup")
             ret.append(cmd)
 
-        command = 'sudo docker run --rm -i '
-        command += '--link pg-%s:db ' % client_name
-        command += '-v %s:/backup ' % self.client.backup_dir
-        command += '-v %sdata_dir/filestore:/filestore ' % self.client.base_dir
-        command += '--env NEW_DBNAME=%s ' % database
+        command = "sudo docker run --rm -i "
+        command += "--link pg-%s:db " % client_name
+        command += "-v %s:/backup " % self.client.backup_dir
+        command += "-v %sdata_dir/filestore:/filestore " % self.client.base_dir
+        command += "--env NEW_DBNAME=%s " % database
         if backup_file and not from_server:
-            command += '--env ZIPFILE=%s ' % backup_file
+            command += "--env ZIPFILE=%s " % backup_file
         if from_server and self._client.debug:
-            command += '--env ZIPFILE=server_bkp.zip '
+            command += "--env ZIPFILE=server_bkp.zip "
         if not no_deactivate and self._client.debug:
-            command += '--env DEACTIVATE=True '
-        command += 'jobiols/dbtools:1.3.0 '
+            command += "--env DEACTIVATE=True "
+        command += "jobiols/dbtools:1.3.0 "
 
         cmd = Command(
             self,
@@ -160,49 +177,42 @@ class OdooEnv(object):
         return ret
 
     def write_config(self, client_name):
-        """ Sobreescribe el config con los datos que vienen en el manifiesto
-        """
+        """Sobreescribe el config con los datos que vienen en el manifiesto"""
         self._client = Client(self, client_name)
         ret = []
         if self._client.numeric_ver not in WRITE_CONFIG_OLD_MODE:
             cmd = WriteConfigFile(
-                self,
-                args={'client': self._client},
-                usr_msg='Writing config file')
+                self, args={"client": self._client}, usr_msg="Writing config file"
+            )
             ret.append(cmd)
         else:
             ret += self.run_client(client_name, write_config=True)
         return ret
 
     def pull_images(self, client_name):
-        """ Forzar la bajada de las imagenes
-        """
+        """Forzar la bajada de las imagenes"""
         ret = []
         self._client = Client(self, client_name)
         for image in self._client._images:
             cmd = PullImage(
                 self,
-                command='sudo docker pull %s' % image.name,
-                usr_msg='Pulling Image %s' % image.short_name
+                command="sudo docker pull %s" % image.name,
+                usr_msg="Pulling Image %s" % image.short_name,
             )
             ret.append(cmd)
         return ret
 
     def install(self, client_name):
-        """ Instalacion de cliente,
-        """
+        """Instalacion de cliente,"""
         self._client = Client(self, client_name)
         ret = []
 
         ##################################################################
         # Create base dir with sudo
         ##################################################################
-        msg = 'Installing client %s' % client_name
+        msg = "Installing client %s" % client_name
         cmd = MakedirCommand(
-            self,
-            command='sudo mkdir %s' % BASE_DIR,
-            args=BASE_DIR,
-            usr_msg=msg
+            self, command="sudo mkdir %s" % BASE_DIR, args=BASE_DIR, usr_msg=msg
         )
         ret.append(cmd)
 
@@ -212,22 +222,23 @@ class OdooEnv(object):
 
         username = pwd.getpwuid(os.getuid()).pw_name
         cmd = Command(
-            self,
-            command='sudo chown %s:%s %s' % (username, username, BASE_DIR)
+            self, command="sudo chown %s:%s %s" % (username, username, BASE_DIR)
         )
         ret.append(cmd)
 
         ##################################################################
         # create all client hierarchy
         ##################################################################
-        for w_dir in ['postgresql', 'config', 'data_dir', 'backup_dir', 'log',
-                      'sources']:
-            r_dir = '%s%s' % (self.client.base_dir, w_dir)
-            cmd = MakedirCommand(
-                self,
-                command='mkdir -p %s' % r_dir,
-                args='%s' % r_dir
-            )
+        for w_dir in [
+            "postgresql",
+            "config",
+            "data_dir",
+            "backup_dir",
+            "log",
+            "sources",
+        ]:
+            r_dir = "%s%s" % (self.client.base_dir, w_dir)
+            cmd = MakedirCommand(self, command="mkdir -p %s" % r_dir, args="%s" % r_dir)
             ret.append(cmd)
 
         ##################################################################
@@ -236,11 +247,9 @@ class OdooEnv(object):
         if self.debug:
 
             for w_dir in self._get_packs():
-                r_dir = '%s%s' % (self.client.version_dir, w_dir)
+                r_dir = "%s%s" % (self.client.version_dir, w_dir)
                 cmd = MakedirCommand(
-                    self,
-                    command='mkdir -p %s' % r_dir,
-                    args='%s' % r_dir
+                    self, command="mkdir -p %s" % r_dir, args="%s" % r_dir
                 )
                 ret.append(cmd)
 
@@ -250,23 +259,17 @@ class OdooEnv(object):
 
         if self.debug:
             for w_dir in self._get_packs():
-                r_dir = '%s%s' % (self.client.version_dir, w_dir)
-                cmd = Command(
-                    self,
-                    command='chmod og+w %s' % r_dir
-                )
+                r_dir = "%s%s" % (self.client.version_dir, w_dir)
+                cmd = Command(self, command="chmod og+w %s" % r_dir)
                 ret.append(cmd)
 
         ##################################################################
         # change o+w for config, data, log and backup_dir
         ##################################################################
 
-        for w_dir in ['config', 'data_dir', 'log', 'backup_dir']:
-            r_dir = '%s%s' % (self.client.base_dir, w_dir)
-            cmd = Command(
-                self,
-                command='chmod o+w %s' % r_dir
-            )
+        for w_dir in ["config", "data_dir", "log", "backup_dir"]:
+            r_dir = "%s%s" % (self.client.base_dir, w_dir)
+            cmd = Command(self, command="chmod o+w %s" % r_dir)
             ret.append(cmd)
 
         ##################################################################
@@ -274,12 +277,10 @@ class OdooEnv(object):
         ##################################################################
 
         if self.nginx:
-            for w_dir in ['cert', 'conf', 'log']:
-                r_dir = '%s%s' % (BASE_DIR, 'nginx/' + w_dir)
+            for w_dir in ["cert", "conf", "log"]:
+                r_dir = "%s%s" % (BASE_DIR, "nginx/" + w_dir)
                 cmd = MakedirCommand(
-                    self,
-                    command='mkdir -p %s' % r_dir,
-                    args='%s' % r_dir
+                    self, command="mkdir -p %s" % r_dir, args="%s" % r_dir
                 )
                 ret.append(cmd)
 
@@ -288,13 +289,13 @@ class OdooEnv(object):
         ##################################################################
 
         if self.nginx:
-            r_dir = '%s%s' % (BASE_DIR, 'nginx/conf/')
+            r_dir = "%s%s" % (BASE_DIR, "nginx/conf/")
             cmd = CreateNginxTemplate(
                 self,
-                command='%snginx.conf' % r_dir,
-                args='%snginx.conf' % r_dir,
-                usr_msg='Generating nginx.conf template',
-                client_name=client_name
+                command="%snginx.conf" % r_dir,
+                args="%snginx.conf" % r_dir,
+                usr_msg="Generating nginx.conf template",
+                client_name=client_name,
             )
             ret.append(cmd)
 
@@ -303,69 +304,70 @@ class OdooEnv(object):
         ##################################################################
         if self.debug and self.extract_sources:
             for module in self._get_packs():
-                msg = 'Extracting %s from image %s.debug' % (module,
-                    self.client.get_image('odoo').name)
-                command = 'sudo docker run -it --rm '
-                command += '--entrypoint=/extract_%s.sh ' % module
-                command += '-v %s%s/:/mnt/%s ' % (self.client.version_dir, module, module)
-                command += '%s.debug ' % self.client.get_image('odoo').name
+                msg = "Extracting %s from image %s.debug" % (
+                    module,
+                    self.client.get_image("odoo").name,
+                )
+                command = "sudo docker run -it --rm "
+                command += "--entrypoint=/extract_%s.sh " % module
+                command += "-v %s%s/:/mnt/%s " % (
+                    self.client.version_dir,
+                    module,
+                    module,
+                )
+                command += "%s.debug " % self.client.get_image("odoo").name
 
                 cmd = ExtractSourcesCommand(
                     self,
                     command=command,
-                    args='%s%s' % (self.client.version_dir, module),
+                    args="%s%s" % (self.client.version_dir, module),
                     usr_msg=msg,
                 )
                 ret.append(cmd)
 
             # poner permisos de escritura
             for module in self._get_packs():
-                r_dir = '%s%s' % (self.client.version_dir, module)
+                r_dir = "%s%s" % (self.client.version_dir, module)
                 cmd = Command(
                     self,
-                    command='sudo chmod -R og+w %s/' % r_dir,
-                    usr_msg='Making writable %s' % r_dir
+                    command="sudo chmod -R og+w %s/" % r_dir,
+                    usr_msg="Making writable %s" % r_dir,
                 )
                 ret.append(cmd)
 
             # agregar un gitignore
             for module in self._get_packs():
-                r_dir = '{}{}'.format(self.client.version_dir, module)
+                r_dir = "{}{}".format(self.client.version_dir, module)
                 cmd = CreateGitignore(
                     self,
-                    command='%s/.gitignore' % r_dir,
-                    usr_msg='Creating gitignore file in %s' % r_dir
+                    command="%s/.gitignore" % r_dir,
+                    usr_msg="Creating gitignore file in %s" % r_dir,
                 )
                 ret.append(cmd)
 
             for module in self._get_packs():
                 # create git repo
-                command = 'git -C {}{}/ init '.format(
-                    self._client.version_dir, module)
+                command = "git -C {}{}/ init ".format(self._client.version_dir, module)
                 cmd = Command(
-                    self,
-                    command=command,
-                    usr_msg='Init repository for %s' % module
+                    self, command=command, usr_msg="Init repository for %s" % module
                 )
                 ret.append(cmd)
 
             for module in self._get_packs():
-                command = 'git -C {}{}/ add . '.format(
-                    self._client.version_dir, module)
+                command = "git -C {}{}/ add . ".format(self._client.version_dir, module)
                 cmd = Command(
                     self,
                     command=command,
-                    usr_msg='Add files to repository for %s' % module
+                    usr_msg="Add files to repository for %s" % module,
                 )
                 ret.append(cmd)
 
             for module in self._get_packs():
-                command = 'git -C {}{}/ commit -m inicial '.format(
-                    self._client.version_dir, module)
+                command = "git -C {}{}/ commit -m inicial ".format(
+                    self._client.version_dir, module
+                )
                 cmd = Command(
-                    self,
-                    command=command,
-                    usr_msg='Commit repository for %s' % module
+                    self, command=command, usr_msg="Commit repository for %s" % module
                 )
                 ret.append(cmd)
 
@@ -381,63 +383,61 @@ class OdooEnv(object):
 
         iea = IN_EXTRA_ADDONS
         if version in (11, 12):
-            idp = IN_DIST_PACKAGES.format('3')
-            idlp = IN_DIST_LOCAL_PACKAGES.format('3.5')
+            idp = IN_DIST_PACKAGES.format("3")
+            idlp = IN_DIST_LOCAL_PACKAGES.format("3.5")
         elif version >= 13:
-            idp = IN_DIST_PACKAGES.format('3')
-            idlp = IN_DIST_LOCAL_PACKAGES.format('3.7')
+            idp = IN_DIST_PACKAGES.format("3")
+            idlp = IN_DIST_LOCAL_PACKAGES.format("3.7")
         else:
-            idp = IN_DIST_PACKAGES.format('2.7')
-            idlp = IN_DIST_LOCAL_PACKAGES.format('2.7')
+            idp = IN_DIST_PACKAGES.format("2.7")
+            idlp = IN_DIST_LOCAL_PACKAGES.format("2.7")
 
         cvd = self.client.version_dir
 
-        ret = '-v {}extra-addons:{} '.format(cvd, iea)
-        ret += '-v {}dist-packages:{} '.format(cvd, idp)
-        ret += '-v {}dist-local-packages:{} '.format(cvd, idlp)
+        ret = "-v {}extra-addons:{} ".format(cvd, iea)
+        ret += "-v {}dist-packages:{} ".format(cvd, idp)
+        ret += "-v {}dist-local-packages:{} ".format(cvd, idlp)
         return ret
 
     def _add_normal_mountings(self):
-        ret = '-v {}config:{} '.format(self.client.base_dir, IN_CONFIG)
-        ret += '-v {}data_dir:{} '.format(self.client.base_dir, IN_DATA)
-        ret += '-v {}log:{} '.format(self.client.base_dir, IN_LOG)
-        ret += '-v {}sources:{} '.format(self.client.base_dir,
-                                         IN_CUSTOM_ADDONS)
-        ret += '-v {}backup_dir:{} '.format(self.client.base_dir,
-                                            IN_BACKUP_DIR)
+        ret = "-v {}config:{} ".format(self.client.base_dir, IN_CONFIG)
+        ret += "-v {}data_dir:{} ".format(self.client.base_dir, IN_DATA)
+        ret += "-v {}log:{} ".format(self.client.base_dir, IN_LOG)
+        ret += "-v {}sources:{} ".format(self.client.base_dir, IN_CUSTOM_ADDONS)
+        ret += "-v {}backup_dir:{} ".format(self.client.base_dir, IN_BACKUP_DIR)
         return ret
 
     def stop_environment(self, client_name):
         self._client = Client(self, client_name)
         ret = []
 
-        img2 = 'pg-{}'.format(self.client.name)
+        img2 = "pg-{}".format(self.client.name)
         images = []
-        if self.client.get_image('aeroo'):
-            images.append('aeroo')
+        if self.client.get_image("aeroo"):
+            images.append("aeroo")
 
         images.append(img2)
         for image in images:
             cmd = Command(
                 self,
-                command='sudo docker stop {}'.format(image),
-                usr_msg='Stopping image {} please wait...'.format(image),
+                command="sudo docker stop {}".format(image),
+                usr_msg="Stopping image {} please wait...".format(image),
             )
             ret.append(cmd)
 
         for image in images:
             cmd = Command(
                 self,
-                command='sudo docker rm {}'.format(image),
-                usr_msg='Removing image {}'.format(image),
+                command="sudo docker rm {}".format(image),
+                usr_msg="Removing image {}".format(image),
             )
             ret.append(cmd)
 
         if self.debug:
             cmd = Command(
                 self,
-                command='sudo docker rm -f {}'.format('wdb'),
-                usr_msg='Removing image {}'.format('wdb'),
+                command="sudo docker rm -f {}".format("wdb"),
+                usr_msg="Removing image {}".format("wdb"),
             )
             ret.append(cmd)
 
@@ -454,20 +454,19 @@ class OdooEnv(object):
         # Launching postgres Image
         ##################################################################
 
-        image = self.client.get_image('postgres')
+        image = self.client.get_image("postgres")
         if image:
-            msg = 'Starting postgres image v{}'.format(image.version)
+            msg = "Starting postgres image v{}".format(image.version)
 
-        command = 'sudo docker run -d '
+        command = "sudo docker run -d "
         if self.debug:
-            command += '-p 5432:5432 '
-        command += '-e POSTGRES_USER=odoo '
-        command += '-e POSTGRES_PASSWORD=odoo '
-        command += '-e POSTGRES_DB=postgres '
-        command += '-v {}:/var/lib/postgresql/data '.format(
-            self.client.psql_dir)
-        command += '--restart=always '
-        command += '--name pg-{} '.format(self.client.name)
+            command += "-p 5432:5432 "
+        command += "-e POSTGRES_USER=odoo "
+        command += "-e POSTGRES_PASSWORD=odoo "
+        command += "-e POSTGRES_DB=postgres "
+        command += "-v {}:/var/lib/postgresql/data ".format(self.client.psql_dir)
+        command += "--restart=always "
+        command += "--name pg-{} ".format(self.client.name)
         command += image.name
 
         cmd = Command(
@@ -481,12 +480,12 @@ class OdooEnv(object):
         # Launching aeroo Image
         ##################################################################
 
-        image = self.client.get_image('aeroo')
+        image = self.client.get_image("aeroo")
         if image:
-            msg = 'Starting aeroo image'
-            command = 'sudo docker run -d '
-            command += '--name={} '.format(image.short_name)
-            command += '--restart=always '
+            msg = "Starting aeroo image"
+            command = "sudo docker run -d "
+            command += "--name={} ".format(image.short_name)
+            command += "--restart=always "
             command += image.name
             cmd = Command(
                 self,
@@ -499,12 +498,12 @@ class OdooEnv(object):
         # Launching wdb Image if debug
         ##################################################################
         if self.debug:
-            msg = 'Starting wdb image'
-            command = 'sudo docker run -d '
-            command += '-p 1984:1984 '
-            command += '--name=wdb '
-            command += '--restart=always '
-            command += 'kozea/wdb'
+            msg = "Starting wdb image"
+            command = "sudo docker run -d "
+            command += "-p 1984:1984 "
+            command += "--name=wdb "
+            command += "--restart=always "
+            command += "kozea/wdb"
             cmd = Command(
                 self,
                 command=command,
@@ -518,40 +517,43 @@ class OdooEnv(object):
         ret = []
         self._client = Client(self, client_name)
         external_dependencies = self.client.external_dependencies
-        if 'python' in external_dependencies and len(external_dependencies['python']):
-            pip_names = (' ').join(external_dependencies['python'])
+        if "python" in external_dependencies and len(external_dependencies["python"]):
+            pip_names = (" ").join(external_dependencies["python"])
 
             cmd = Command(
                 self,
-                command='sudo docker exec  {} pip install --upgrade {}'.format(client_name, pip_names),
-                usr_msg='{} installing pip packages {} please wait...'.format(client_name, pip_names),
+                command="sudo docker exec  {} pip install --upgrade {}".format(
+                    client_name, pip_names
+                ),
+                usr_msg="{} installing pip packages {} please wait...".format(
+                    client_name, pip_names
+                ),
             )
             ret.append(cmd)
 
         return ret
-
 
     def stop_client(self, client_name):
         ret = []
 
         cmd = Command(
             self,
-            command='sudo docker stop {}'.format(client_name),
-            usr_msg='Stopping image {} please wait...'.format(client_name),
+            command="sudo docker stop {}".format(client_name),
+            usr_msg="Stopping image {} please wait...".format(client_name),
         )
         ret.append(cmd)
         cmd = Command(
             self,
-            command='sudo docker rm {}'.format(client_name),
-            usr_msg='Removing image {}'.format(client_name),
+            command="sudo docker rm {}".format(client_name),
+            usr_msg="Removing image {}".format(client_name),
         )
         ret.append(cmd)
 
         if self.nginx:
             cmd = Command(
                 self,
-                command='sudo docker rm -f nginx',
-                usr_msg='Killing image nginx',
+                command="sudo docker rm -f nginx",
+                usr_msg="Killing image nginx",
             )
             ret.append(cmd)
 
@@ -561,40 +563,38 @@ class OdooEnv(object):
         ret = []
         self._client = Client(self, client_name)
 
-        command = 'sudo docker run --rm -it '
+        command = "sudo docker run --rm -it "
         #        command += self._add_normal_mountings()
-        command += '--link pg-{}:db '.format(self.client.name)
-        command += '--name help '
-        command += '{} '.format(self.client.get_image('odoo').name)
-        command += '-- '
-        command += '--help '
+        command += "--link pg-{}:db ".format(self.client.name)
+        command += "--name help "
+        command += "{} ".format(self.client.get_image("odoo").name)
+        command += "-- "
+        command += "--help "
 
         cmd = Command(
             self,
             command=command,
-            usr_msg='Getting odoo help',
+            usr_msg="Getting odoo help",
         )
         ret.append(cmd)
         return ret
 
     def set_config_environment(self):
-        """ Deprecated
-        """
-        command = '-e SERVER_WIDE_MODULES=web,web_kanban,server_mode,' \
-                  'database_tools '
+        """Deprecated"""
+        command = "-e SERVER_WIDE_MODULES=web,web_kanban,server_mode," "database_tools "
 
         # You should use 2 worker threads + 1 cron thread per available CPU,
         # and 1 CPU per 10 concurent users. Make sure you tune the memory
         # limits and cpu limits in your configuration file.
         if self.debug:
-            command += '-e WORKERS=0 '
+            command += "-e WORKERS=0 "
         else:
-            command += '-e WORKERS=3 '
+            command += "-e WORKERS=3 "
 
         # number of workers dedicated to cron jobs. Defaults to 2. The workers
         # are threads in multithreading mode and processes in multiprocessing
         # mode.
-        command += '-e MAX_CRON_THREADS=1 '
+        command += "-e MAX_CRON_THREADS=1 "
 
         # Number of requests a worker will process before being recycled and
         # restarted. Defaults to 8196
@@ -613,84 +613,87 @@ class OdooEnv(object):
         # Prevents the worker from using more than CPU seconds for each
         # request. If the limit is exceeded, the worker is killed. Defaults
         # to 60.
-        command += '-e LIMIT_TIME_CPU=600 '
+        command += "-e LIMIT_TIME_CPU=600 "
 
         # Prevents the worker from taking longer than seconds to process a
         # request. If the limit is exceeded, the worker is killed. Defaults to
         # 120. Differs from --limit-time-cpu in that this is a "wall time"
         # limit including e.g. SQL queries.
-        command += '-e LIMIT_TIME_REAL=120 '
+        command += "-e LIMIT_TIME_REAL=120 "
 
         return command
 
     def run_client(self, client_name, write_config=False):
-        """ El run_client se usa tambien para escribir el config file en las versiones
-            definidas en WRITE_CONFIG_OLD_MODE
+        """El run_client se usa tambien para escribir el config file en las versiones
+        definidas en WRITE_CONFIG_OLD_MODE
         """
 
         self._client = Client(self, client_name)
         ret = []
 
         if write_config:
-            msg = 'Writing config file for client %s' % client_name
+            msg = "Writing config file for client %s" % client_name
         else:
-            msg = 'Starting Odoo image for client %s on port %s' % (client_name, self.client.port)
+            msg = "Starting Odoo image for client %s on port %s" % (
+                client_name,
+                self.client.port,
+            )
 
         if write_config:
-            command = 'sudo docker run --rm '
+            command = "sudo docker run --rm "
         else:
             if self.debug:
-                command = 'sudo docker run --rm -it '
+                command = "sudo docker run --rm -it "
             else:
-                command = 'sudo docker run -d '
+                command = "sudo docker run -d "
 
-        if self.client.get_image('aeroo'):
-            command += '--link aeroo:aeroo '
+        if self.client.get_image("aeroo"):
+            command += "--link aeroo:aeroo "
 
         # open link to wdb image
         if self.debug:
-            command += '--link wdb '
+            command += "--link wdb "
 
         # si tenemos nginx o si estamos escribiendo la configuracion no hay
         # que exponer los puertos.
         if not (self.nginx or write_config):
-            command += '-p %s:8069 ' % self.client.port
-            command += '-p %s:8072 ' % self.client.longpolling_port
+            command += "-p %s:8069 " % self.client.port
+            command += "-p %s:8072 " % self.client.longpolling_port
 
         command += self._add_normal_mountings()
         if self.debug:
             command += self._add_debug_mountings(self.client.numeric_ver)
 
-        if self.client.get_image('postgres'):
-            command += '--link pg-%s:db ' % self.client.name
+        if self.client.get_image("postgres"):
+            command += "--link pg-%s:db " % self.client.name
 
         if not (self.debug or write_config):
-            command += '--restart=always '
+            command += "--restart=always "
 
         # si estamos escribiendo el config no le ponemos el nombre para que
         # pueda correr aunque este levantado el cliente
         if not write_config:
-            command += '--name %s ' % self.client.name
+            command += "--name %s " % self.client.name
 
         if write_config:
             command += self.set_config_environment()
         else:
-            command += '-e ODOO_CONF=/dev/null '
+            command += "-e ODOO_CONF=/dev/null "
 
         # si estamos en modo debug agregarlo al nombre de la imagen
         if self.debug:
-            command += '-e WDB_SOCKET_SERVER=wdb '
-            command += '%s.debug ' % self.client.get_image('odoo').name
+            command += "-e WDB_SOCKET_SERVER=wdb "
+            command += "%s.debug " % self.client.get_image("odoo").name
         else:
-            command += '%s ' % self.client.get_image('odoo').name
+            command += "%s " % self.client.get_image("odoo").name
 
         if not self.debug:
-            command += '--logfile=/var/log/odoo/odoo.log '
+            command += "--logfile=/var/log/odoo/odoo.log "
         else:
-            command += '--logfile=/dev/stdout '
+            command += "--logfile=/dev/stdout "
 
         if write_config:
-            command += '--stop-after-init '
+            command += "--stop-after-init "
 
         cmd = Command(
             self,
@@ -704,22 +707,23 @@ class OdooEnv(object):
         ##################################################################
 
         if self.nginx:
-            msg = 'Starting nginx reverse proxy'
-            image = self.client.get_image('nginx')
+            msg = "Starting nginx reverse proxy"
+            image = self.client.get_image("nginx")
             if not image:
-                Msg().err('There is no nginx image on this proyect')
+                Msg().err("There is no nginx image on this proyect")
 
             nginx_dir = self.client.nginx_dir
-            command = 'sudo docker run -d '
-            command += '-v {}conf:/etc/nginx/conf.d:ro '.format(nginx_dir)
-            command += '-v {}data_dir/letsencrypt:/etc/letsencrypt '.format(
-                self.client.base_dir)
-            command += '-v {}log:/var/log/nginx/ '.format(nginx_dir)
-            command += '-p 80:80 '
-            command += '-p 443:443 '
-            command += '--name={} '.format(image.short_name)
-            command += '--link {}:odoo '.format(client_name)
-            command += '--restart=always '
+            command = "sudo docker run -d "
+            command += "-v {}conf:/etc/nginx/conf.d:ro ".format(nginx_dir)
+            command += "-v {}data_dir/letsencrypt:/etc/letsencrypt ".format(
+                self.client.base_dir
+            )
+            command += "-v {}log:/var/log/nginx/ ".format(nginx_dir)
+            command += "-p 80:80 "
+            command += "-p 443:443 "
+            command += "--name={} ".format(image.short_name)
+            command += "--link {}:odoo ".format(client_name)
+            command += "--restart=always "
 
             command += image.name
             cmd = Command(
@@ -735,23 +739,24 @@ class OdooEnv(object):
         self._client = Client(self, client_name)
         ret = []
 
-        command = 'sudo docker run --rm -it '
+        command = "sudo docker run --rm -it "
         command += self._add_normal_mountings()
         if self.debug:
             command += self._add_debug_mountings(self.client.numeric_ver)
-        command += '--link pg-{}:db '.format(self.client.name)
-        command += '-e ODOO_CONF=/dev/null '
-        command += '{} -- '.format(self.client.get_image('odoo').name)
-        command += '--stop-after-init '
-        command += '--logfile=false '
-        command += '-d {} '.format(database)
-        command += '-u {} '.format(', '.join(modules))
+        command += "--link pg-{}:db ".format(self.client.name)
+        command += "-e ODOO_CONF=/dev/null "
+        command += "{} -- ".format(self.client.get_image("odoo").name)
+        command += "--stop-after-init "
+        command += "--logfile=false "
+        command += "-d {} ".format(database)
+        command += "-u {} ".format(", ".join(modules))
 
         cmd = Command(
             self,
             command=command,
-            usr_msg='Performing update of {} on database {}'.format(
-                ', '.join(modules), database)
+            usr_msg="Performing update of {} on database {}".format(
+                ", ".join(modules), database
+            ),
         )
         ret.append(cmd)
         return ret
@@ -773,28 +778,25 @@ class OdooEnv(object):
             self._client = Client(self, client_name)
         ret = []
 
-        command = 'sudo docker run --rm -it '
+        command = "sudo docker run --rm -it "
         command += self._add_normal_mountings()
         if self.debug:
             command += self._add_debug_mountings(self.client.numeric_ver)
-        command += '--link wdb '  # linkeamos con test y setamos nombre
-        command += '-e WDB_SOCKET_SERVER=wdb '
-        command += '-e ODOO_CONF=/dev/null '
-        command += '--link pg-{}:db '.format(self.client.name)
-        command += '{}.debug -- '.format(self.client.get_image('odoo').name)
-        command += '-d {} '.format(database)
-        command += '--stop-after-init '
-        command += '--log-level=test '
-        command += '--test-enable '
-        command += '-u {} '.format(module_name)
+        command += "--link wdb "  # linkeamos con test y setamos nombre
+        command += "-e WDB_SOCKET_SERVER=wdb "
+        command += "-e ODOO_CONF=/dev/null "
+        command += "--link pg-{}:db ".format(self.client.name)
+        command += "{}.debug -- ".format(self.client.get_image("odoo").name)
+        command += "-d {} ".format(database)
+        command += "--stop-after-init "
+        command += "--log-level=test "
+        command += "--test-enable "
+        command += "-u {} ".format(module_name)
 
-        msg = 'Performing tests on module {} for client {} ' \
-              'and database {}'.format(module_name, client_name, database)
-        cmd = Command(
-            self,
-            command=command,
-            usr_msg=msg
+        msg = "Performing tests on module {} for client {} " "and database {}".format(
+            module_name, client_name, database
         )
+        cmd = Command(self, command=command, usr_msg=msg)
         ret.append(cmd)
         return ret
 
@@ -804,24 +806,24 @@ class OdooEnv(object):
 
     @property
     def debug(self):
-        return self._options['debug']
+        return self._options["debug"]
 
     @property
     def verbose(self):
-        return self._options['verbose']
+        return self._options["verbose"]
 
     @property
     def no_repos(self):
-        return self._options['no-repos']
+        return self._options["no-repos"]
 
     @property
     def nginx(self):
-        return self._options['nginx']
+        return self._options["nginx"]
 
     @property
     def extract_sources(self):
-        return self._options['extract_sources']
+        return self._options["extract_sources"]
 
     @property
     def force_create(self):
-        return self._options['force-create']
+        return self._options["force-create"]

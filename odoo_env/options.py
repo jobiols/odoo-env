@@ -13,7 +13,7 @@ def get_client(args):
         if client:
             return client
         else:
-            Msg().err('Need -c option (client name). Process aborted')
+            Msg().err("Need -c option (client name). Process aborted")
 
 
 def get_database(args):
@@ -22,54 +22,60 @@ def get_database(args):
     else:
         client = get_client(args)
         if client:
-            default_database = client + '_prod'
-            Msg().inf('Using default database: %s, use -d to '
-                      'specify another database' % default_database)
+            default_database = client + "_prod"
+            Msg().inf(
+                "Using default database: %s, use -d to "
+                "specify another database" % default_database
+            )
             return default_database
         else:
-            Msg().err('Need -c option (client name). Process aborted')
+            Msg().err("Need -c option (client name). Process aborted")
 
 
 def get_module(args):
     if args.module:
         return args.module
     else:
-        Msg().inf('Updating all modules. Use -m to specify single module '
-                  'or a comma separated list of modules.')
-        return ['all']
+        Msg().inf(
+            "Updating all modules. Use -m to specify single module "
+            "or a comma separated list of modules."
+        )
+        return ["all"]
 
 
 def get_backup_file(args):
     if args.backup_file:
         return args.backup_file[0]
     else:
-        Msg().inf('Restoring newest LOCAL backup. Use -f to store specific one.')
+        Msg().inf("Restoring newest LOCAL backup. Use -f to store specific one.")
         return False
+
 
 def get_prod_backup_file(args):
     if args.backup_file:
         return args.backup_file[0]
     else:
-        Msg().inf('Restoring newest SERVER backup. Use -f to store specific one.')
+        Msg().inf("Restoring newest SERVER backup. Use -f to store specific one.")
         return False
 
+
 def get_param(args, param):
-    if param == 'client':
+    if param == "client":
         return get_client(args)
 
-    if param == 'database':
+    if param == "database":
         return get_database(args)
 
-    if param == 'module':
+    if param == "module":
         return get_module(args)
 
-    if param == 'backup_file':
+    if param == "backup_file":
         if args.from_prod:
             return get_prod_backup_file(args)
         else:
             return get_backup_file(args)
 
-    if param == 'no-deactivate':
+    if param == "no-deactivate":
         if args.no_deactivate:
             return args.no_deactivate
         else:

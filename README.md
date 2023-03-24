@@ -1,4 +1,4 @@
-![workflow](https://github.com/jobiols/odoo-env/actions/workflows/pythonapp.yml/badge.svg)
+![workflow](https://github.com/jobiols/odoo-env/actions/workflows/pythonapp.yml/badge.svg?branch=2-crear-base-de-datos-de-test)
 
 [Project documentation](https://jobiols.github.io/odoo-env/)
 

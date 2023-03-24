@@ -46,12 +46,8 @@ repos:
     rev: v2.13.0
     hooks:
       - id: pylint
-        name: ejecutar pylint con extension para odoo
-        args:
-          - --rcfile=.pylintrc
+        name: ejecutar pylint
         verbose: true
-        additional_dependencies: &pylint_deps
-          - pylint-odoo==6.2.0
 
   - repo: https://github.com/myint/autoflake
     rev: v2.0.1

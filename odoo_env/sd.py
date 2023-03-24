@@ -1,5 +1,4 @@
 #!/usr/lib/python3
-# -*- coding: utf-8 -*-
 ###############################################
 # shortcut for sudo docker
 # sudo docker $*
@@ -17,54 +16,54 @@ def process_input(params):
     params.pop(0)
 
     # agregamos sudo docker al principio
-    params[0:0] = ['sudo', 'docker']
+    params[0:0] = ["sudo", "docker"]
 
     # pseudo sintaxis
 
-    if params[2] == '-h':
-        print('Help for sd')
-        print('sd               - short for sudo docker')
-        print('sd inside image  - open console inside image')
-        print('sd rmall         - remove all images in memory')
-        print('sd rmdiskall     - remove all images in disk')
-        print('sd attach name   - attach to a running container by name')
-        print(' ')
+    if params[2] == "-h":
+        print("Help for sd")
+        print("sd               - short for sudo docker")
+        print("sd inside image  - open console inside image")
+        print("sd rmall         - remove all images in memory")
+        print("sd rmdiskall     - remove all images in disk")
+        print("sd attach name   - attach to a running container by name")
+        print(" ")
         exit()
 
-    if params[2] == 'inside':
+    if params[2] == "inside":
         try:
-            print('going inside image ' + params[3])
-            params[2:3] = ['run', '-it', '--rm', '--entrypoint=/bin/bash']
+            print("going inside image " + params[3])
+            params[2:3] = ["run", "-it", "--rm", "--entrypoint=/bin/bash"]
         except Exception:
             params = []
 
-    if params[2] == 'rmall':
+    if params[2] == "rmall":
         try:
-            print('removing all images in memory')
-            params[2:3] = ['rm', '-f', '$(sudo docker ps -a -q)']
+            print("removing all images in memory")
+            params[2:3] = ["rm", "-f", "$(sudo docker ps -a -q)"]
         except Exception:
             params = []
 
-    if params[2] == 'rmdiskall':
+    if params[2] == "rmdiskall":
         try:
-            print('removing all images in disk')
-            params[2:3] = ['rmi', '$(sudo docker images -q)']
+            print("removing all images in disk")
+            params[2:3] = ["rmi", "$(sudo docker images -q)"]
         except Exception:
             params = []
 
-    if params[2] == 'attach':
+    if params[2] == "attach":
         try:
             container_name = params[3]
-            print('attaching to ' + container_name)
+            print("attaching to " + container_name)
 
             # sd exec -it mario bash
 
-            params[2:3] = ['exec', '-it']
-            params[4:5] = [container_name, 'bash']
+            params[2:3] = ["exec", "-it"]
+            params[4:5] = [container_name, "bash"]
         except Exception:
             params = []
 
-    params = ' '.join(params)
+    params = " ".join(params)
     return params
 
 
@@ -77,5 +76,5 @@ def main():
         print(ex)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

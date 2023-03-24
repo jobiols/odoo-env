@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import sys
 
 RED = "\033[1;31m"
@@ -8,7 +7,7 @@ YELLOW_LIGHT = "\033[33m"
 CLEAR = "\033[0;m"
 
 
-class Msg():
+class Msg:
     @staticmethod
     def green(string):
         return GREEN + string + CLEAR

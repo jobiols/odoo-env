@@ -1,6 +1,4 @@
-[![Build Status](https://travis-ci.com/jobiols/odoo-env.svg?branch=master)](https://travis-ci.com/jobiols/odoo-env)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/349443f891184544b58e011ae3b6b465)](https://app.codacy.com/app/jobiols/odoo-env?utm_source=github.com&utm_medium=referral&utm_content=jobiols/odoo-env&utm_campaign=Badge_Grade_Settings)
-[![codecov](https://codecov.io/gh/jobiols/odoo-env/branch/master/graph/badge.svg)](https://codecov.io/gh/jobiols/odoo-env)
+![workflow](https://github.com/jobiols/odoo-env/actions/workflows/pythonapp.yml/badge.svg)
 
 ![Python application](https://github.com/jobiols/odoo-env/workflows/Python%20application/badge.svg)
 

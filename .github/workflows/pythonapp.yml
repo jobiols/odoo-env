@@ -1,4 +1,4 @@
-name: Python application
+name: Linter Checking
 
 on: [push]
 

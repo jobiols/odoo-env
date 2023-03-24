@@ -1,7 +1,5 @@
 ![workflow](https://github.com/jobiols/odoo-env/actions/workflows/pythonapp.yml/badge.svg)
 
-![Python application](https://github.com/jobiols/odoo-env/workflows/Python%20application/badge.svg)
-
 [Project documentation](https://jobiols.github.io/odoo-env/)
 
 odoo-env

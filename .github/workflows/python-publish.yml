@@ -5,7 +5,9 @@ run-name: ${{ github.actor }} is Uploading Python Package
 on:
   release:
     types: [published]
-
+  
+  workflow_dispatch:
+  
 permissions:
   contents: read
 

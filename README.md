@@ -14,7 +14,7 @@ Environment to manage Odoo. Two environments are provided debug and prod.
 Directory structure
 
     /odoo_ar
-    ├── odoo-11.0
+    ├── odoo-16.0
     │   ├── client_one
     │   │    ├── config             odoo.conf
     │   │    ├── data_dir           filestore

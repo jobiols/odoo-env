@@ -1,11 +1,11 @@
-![workflow](https://github.com/jobiols/odoo-env/actions/workflows/pythonapp.yml/badge.svg)
+![workflow](https://github.com/jobiols/odoo-env/actions/workflows/ pre-commit.yml/badge.svg)
 [![CodeFactor](https://www.codefactor.io/repository/github/jobiols/odoo-env/badge)](https://www.codefactor.io/repository/github/jobiols/odoo-env)
 
 [Project documentation](https://jobiols.github.io/odoo-env/)
 
 odoo-env
 =========
-jeo Software (c) 2021 jorge.obiols@gmail.com
+jeo Software (c) 2023 jorge.obiols@gmail.com
 This code is distributed under the MIT license.
 
 Tool to manage docker based odoo environments. This is a Dockerized

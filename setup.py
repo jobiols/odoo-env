@@ -2,13 +2,14 @@ import setuptools
 
 from odoo_env import __version__
 
+# https://setuptools.pypa.io/en/latest/userguide/declarative_config.html
+
+
 with open("README.md") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="odoo-env",
     version=__version__,
-    author="Jorge E. Obiols",
     description="A Dockerized environment for Odoo",
     long_description=long_description,
     long_description_content_type="text/markdown",

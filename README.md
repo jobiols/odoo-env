@@ -95,7 +95,7 @@ Installation
 
 Changelog
 ---------
-    - 0.11.2  - Support for submodules, oe -w can write paths for a submodule structure
+    - 0.11.3  - Support for submodules, oe -w can write paths for a submodule structure
     - 0.10.24 - Small patch that allows to use postgres with versions greater than 10.
     - 0.10.23 - The postgres docker image is not required anymore it is not necessary.
               - new longpolling port exposed if declared in manifest

@@ -17,7 +17,7 @@ What you need to know:
 
 Additionally, as a best practice, we can place all the modules required by the
 installation in the depends list, then the project not only serves to install but also to
-create an empty base with all the required modules.
+create an empty database with all the required modules.
 
 It is also recommended that you never install modules from the odoo interface, you can
 simply add in the depends of the project and then issue a **oe -u** that magically
@@ -136,7 +136,7 @@ our sources.
 
     {
         'name': 'test11',
-        'version': '11.0.0.0.0',
+        'version': '11.0.1.0.0',
         'category': 'Tools',
         'summary': "Test for v11 CE",
         'author': "jeo Software",
@@ -214,6 +214,9 @@ our sources.
 
             # Filter listed database REGEXP
                     'dbfilter =',
+
+            # Master password for database
+                     'admin_passwd = my-admin-superpassword',
 
             # other configuration parameters
                     'db_maxconn = 64',
@@ -293,6 +296,7 @@ our sources.
         'git-repos': [
             'https://github.com/jobiols/cl-test.git cl-test -b 11.0',
             'git@github.com:jobiols/odoo-uml.git -b 11.0',
+
             'https://github.com/jobiols/odoo-addons.git',
             'https://github.com/ingadhoc/odoo-argentina.git ingadhoc-odoo-argentina',
             'https://github.com/ingadhoc/account-financial-tools.git',
@@ -301,21 +305,6 @@ our sources.
             'https://github.com/ingadhoc/argentina-reporting.git',
             'https://github.com/ingadhoc/reporting-engine.git',
             'https://github.com/ingadhoc/aeroo_reports.git',
-            'https://github.com/ingadhoc/sale.git',
-            'https://github.com/ingadhoc/product.git',
-            'https://github.com/ingadhoc/account-invoicing.git',
-            'https://github.com/oca/partner-contact.git',
-            'https://github.com/oca/web.git',
-            'https://github.com/oca/server-tools.git',
-            'https://github.com/oca/social.git',
-            'https://github.com/oca/server-ux.git',
-            'https://github.com/oca/server-brand.git',
-            'https://github.com/oca/manufacture.git',
-            'https://github.com/oca/manufacture-reporting.git',
-            'https://github.com/oca/management-system.git',
-            'https://github.com/oca/sale-workflow.git',
-            'https://github.com/oca/stock-logistics-warehouse.git',
-            'https://github.com/oca/stock-logistics-workflow.git'
         ],
 
         # Docker images to be used in this deployment

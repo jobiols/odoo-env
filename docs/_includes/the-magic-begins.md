@@ -162,5 +162,24 @@ Restore last production backup without deactivation (this may be dangerous)
     oe --restore --from-prod --no-deactivate
 
 
-Enough for today stay tuned, more documentation on the way.
-Jorge 2021-10-24
+# Configuration File
+
+odoo-env stores a configuration file at
+~/.config/oe/oe_config.yaml
+
+``` yaml
+base_dir: /odoo/ar/
+client: emafi
+clients:
+    - danone: /odoo/ar/odoo-14.0e/danone/sources/cl-danone/danone_default
+    - atm: /odoo/ar/odoo-13.0/atm/sources/cl-atm/atm_default
+    - villandry: /odoo/ar/odoo-13.0e/villandry/sources/cl-villandry/villandry_default
+    - caepso: /odoo/ar/odoo-13.0e/caepso/sources/cl-caepso/caepso_default
+    - emafi: /odoo/ar/odoo-13.0e/emafi/sources/cl-emafi/emafi_default
+    - lopez: /odoo/ar/odoo-16.0e/lopez/sources/cl-lopez/lopez_default
+environment: debug
+last_version_check: '2023-09-27'
+```
+
+Note that base_dir starts at /odoo_ar/ by default, in some systems
+as MAC OS this should be changed.

@@ -1,0 +1,39 @@
+# https://packaging.python.org/en/latest/tutorials/packaging-projects/
+# https://setuptools.pypa.io/en/latest/
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "odoo-env"
+version = "0.11.1"
+authors = [
+  { name="Jorge Obiols", email="jorge.obiols@gmail.com" },
+]
+description = "A Dockerized environment for Odoo"
+readme = "README.md"
+requires-python = ">=3.4"
+    classifiers=[
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: POSIX :: Linux",
+        "Topic :: Software Development :: Testing :: Unit",
+        "Topic :: System :: Software Distribution",
+    ]
+
+[project.scripts]
+oe = "odoo_env.oe:main"
+sd = "odoo_env.sd:main"
+
+[project.urls]
+"Homepage" = "https://jobiols.github.io/odoo-env/"
+"Bug Tracker" = "https://github.com/jobiols/odoo-env/issues"
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}

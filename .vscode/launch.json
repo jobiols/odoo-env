@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "python": "/usr/bin/python3",
-            "args": ["-c", "testpy", "--create-test", "-m", "l10n_py,l10n_py_autoprinter"],
+            "args": ["-c", "emafi", "-w"],
             "justMyCode": true,
             "module": "odoo_env.oe"
         }

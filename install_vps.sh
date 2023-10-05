@@ -21,13 +21,16 @@ curl -fsSL https://bootstrap.pypa.io/get-pip.py -o get-pip.py
 sudo python3 get-pip.py
 rm get-pip.py
 
+# install pipx
+#sudo apt install pipx
+
 # test pip
-pip -V
+#pip -V
 
 # install sd and oe
 echo
 echo "installing oe"
-sudo pip install odoo-env
+pip install odoo-env
 
 # install docker
 echo
@@ -38,7 +41,7 @@ rm get-docker.sh
 
 # install composer
 # Run this command to download the current stable release of Docker Compose:
-sudo curl -L "https://github.com/docker/compose/releases/download/v2.17.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.22.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 
 #  Apply executable permissions to the binary:
 sudo chmod +x /usr/local/bin/docker-compose

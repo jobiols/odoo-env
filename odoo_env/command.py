@@ -160,14 +160,26 @@ class WriteConfigFile(Command):
         # obtener los repositorios que hay en sources, para eso se recorre souces y se
         # obtienen todos los directorios que tienen un .git adentro.
         repos = list()
-        sources = client.sources_dir
-        for root, dirs, files in os.walk(sources):
-            # si tiene un directorio .git es un repositorio
-            if ".git" in dirs:
-                repos.append(root.replace(sources, ""))
-            # si tiene un archivo .git es un subdirectorio
-            if ".git" in files:
-                repos.append(root.replace(sources, ""))
+        # sources = client.sources_dir
+        # for root, dirs, files in os.walk(sources):
+        #     # si tiene un directorio .git es un repositorio
+        #     if ".git" in dirs:
+        #         repos.append(root.replace(sources, ""))
+        #     # si tiene un archivo .git es un repositorio
+        #     if ".git" in files:
+        #         repos.append(root.replace(sources, ""))
+        # recorrer todos los archivos buscando un __manifest__.py si lo encuentro entonces
+        # agrego a repos un path al directorio que contiene ese archivo sin repetir y salteo
+        # ese directorio
+        from pathlib import Path
+
+        base = Path(client.sources_dir)
+
+        manifest_files = list(base.rglob("__manifest__.py"))
+        for manifest in manifest_files:
+            module_path = str(manifest.parent.parent.relative_to(client.sources_dir))
+            if not module_path in repos:
+                repos.append(module_path)
 
         repos = ["/opt/odoo/custom-addons/" + x for x in repos]
         repos = ",".join(repos)

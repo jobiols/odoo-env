@@ -145,8 +145,8 @@ class OeConfig(Singleton):
                         f"however version {version} is available. "
                     )
                     Msg().warn(
-                        'You should consider upgrading via the "pip3 '
-                        'install --upgrade odoo-env" command.'
+                        'You should consider upgrading via the "pipx '
+                        ' upgrade odoo-env" command.'
                     )
             except Exception:
                 Msg().inf(

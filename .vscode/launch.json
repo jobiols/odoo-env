@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "python": "/usr/bin/python3",
-            "args": ["-c", "emafi", "-w"],
+            "args": ["-i", "-c", "emafi"],
             "justMyCode": true,
             "module": "odoo_env.oe"
         }

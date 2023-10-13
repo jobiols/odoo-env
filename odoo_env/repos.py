@@ -44,7 +44,7 @@ class Repo:
 
 class Repo2:
     def __init__(self, value, branch):
-        """Sintaxis <repo> [<directory>[/<directory>] [-b <branch>]
+        """Sintaxis <repo> [<directory>[/<directory>] [-b <branch>] [optios]
         El branch debe estar despues del repo, si no esta se toma el branch
         que viene como parametro, si no viene nada es una excepcion.
         El directorio va despues del repo y puede no estar
@@ -53,6 +53,13 @@ class Repo2:
         parsed = value.split(" ")
         # eliminar los espacios
         parsed = [i for i in parsed if i != ""]
+
+        if "--recurse-submodules" in parsed:
+            parsed.remove("--recurse-submodules")
+            self._recurse_submodules = True
+        else:
+            self._recurse_submodules = False
+
         # obtener el branch si es que existe
         if "-b" in parsed:
             index = parsed.index("-b")
@@ -86,21 +93,24 @@ class Repo2:
     @property
     def url(self):
         if self._extra_dir:
-            return "%s %s" % (self._url, self._dir)
+            return f"{self._url} {self._dir}"
         else:
             return self._url
 
     @property
     def formatted(self):
+        recurse = "recursive" if self._recurse_submodules else ""
         if self._extra_dir:
-            return "b %s     %s >> %s" % (self.branch, self._url, self._dir)
+            return f"b {self.branch} {recurse}    {self._url} >> {self._dir}"
         else:
-            return "b %s     %s" % (self.branch, self.url)
+            return f"b {self.branch} {recurse}    {self.url}"
 
     @property
     def clone(self):
-        return "clone --depth 1 -b %s %s" % (self.branch, self.url)
+        recurse = "--recurse-submodules" if self._recurse_submodules else ""
+        return f"clone --depth 1 {recurse} -b {self.branch} {self.url}"
 
     @property
     def pull(self):
-        return "pull"
+        recurse = "--recurse-submodules" if self._recurse_submodules else ""
+        return f"pull {recurse}"

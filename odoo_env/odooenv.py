@@ -48,9 +48,9 @@ class OdooEnv:
             ##############################################################
             cmd = CloneRepo(
                 self,
-                usr_msg="cloning %s" % repo.formatted,
-                command="git -C %s %s" % (self.client.sources_dir, repo.clone),
-                args="%s%s" % (self.client.sources_dir, repo.dir_name),
+                usr_msg=f"cloning {repo.formatted}",
+                command=f"git -C {self.client.sources_dir} {repo.clone}",
+                args=f"{self.client.sources_dir}{repo.dir_name}",
             )
             ret.append(cmd)
 
@@ -59,10 +59,9 @@ class OdooEnv:
             ##############################################################
             cmd = PullRepo(
                 self,
-                usr_msg="pulling %s" % repo.formatted,
-                command="git -C %s%s %s"
-                % (self.client.sources_dir, repo.dir_name, repo.pull),
-                args="%s%s" % (self.client.sources_dir, repo.dir_name),
+                usr_msg=f"pulling {repo.formatted}",
+                command=f"git -C {self.client.sources_dir}{repo.dir_name} {repo.pull}",
+                args=f"{self.client.sources_dir}{repo.dir_name}",
             )
             ret.append(cmd)
 
@@ -207,7 +206,7 @@ class OdooEnv:
         ##################################################################
         msg = "Installing client %s" % client_name
         cmd = MakedirCommand(
-            self, command="sudo mkdir %s" % BASE_DIR, args=BASE_DIR, usr_msg=msg
+            self, command=f"sudo mkdir {BASE_DIR}", args=BASE_DIR, usr_msg=msg
         )
         ret.append(cmd)
 
@@ -232,7 +231,7 @@ class OdooEnv:
             "log",
             "sources",
         ]:
-            r_dir = "%s%s" % (self.client.base_dir, w_dir)
+            r_dir = f"{self.client.base_dir}{w_dir}"
             cmd = MakedirCommand(self, command="mkdir -p %s" % r_dir, args="%s" % r_dir)
             ret.append(cmd)
 
@@ -241,7 +240,7 @@ class OdooEnv:
         ##################################################################
         if self.debug:
             for w_dir in self._get_packs():
-                r_dir = "%s%s" % (self.client.version_dir, w_dir)
+                r_dir = f"{self.client.version_dir}{w_dir}"
                 cmd = MakedirCommand(
                     self, command="mkdir -p %s" % r_dir, args="%s" % r_dir
                 )

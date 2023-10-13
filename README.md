@@ -95,6 +95,7 @@ Installation
 
 Changelog
 ---------
+    - 0.11.4  - FIX now can download repositories with submodules
     - 0.11.3  - Support for submodules, oe -w can write paths for a submodule structure
     - 0.10.24 - Small patch that allows to use postgres with versions greater than 10.
     - 0.10.23 - The postgres docker image is not required anymore it is not necessary.
@@ -102,7 +103,7 @@ Changelog
               - new parameter -E to install external dependences in manifest.py
     - 0.10.22 find manifest with exact name instaed of part of name.
     - 0.10.21 change dbtools version to 1.3.0
-    - 0.10.20 fix --restore --from-server if does not work when base_dir is not default
+    - 0.10.20 fix --restore --from-server does not work when base_dir is not default
     - 0.10.19 dbtools for postgres 14.2
     - 0.10.18 ADD warning if --nginx issued and there are no nginx image on proyect
     - 0.10.16 FIX overwrite workers in odoo.conf

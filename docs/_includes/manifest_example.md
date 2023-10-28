@@ -267,7 +267,7 @@ our sources.
         # suelos13 is the alias you set in .ssh/config
         # i.e. you can access the server typing ssh suelos13
         # ec2-user is the user who is accessing the server, then when you perform a
-        # oe --restore --from-server
+        # oe --restore --from-prod
         # the backup will be transferred from server to your local with scp
         'prod_server': 'ec2-user@suelos13',
 

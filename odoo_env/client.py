@@ -251,23 +251,25 @@ class Client:
     def server_version_dir(self):
         """/odoo_ar/odoo-13.0/
         /odoo_ar/odoo-13.0e/
+        Esta funcion no tiene que tomar BASE_DIR porque en el servidor es siempre
+        /odoo_ar/
         """
         lic = "e" if self._license == "EE" else ""
-        return f"{BASE_DIR}odoo-{self._version}{lic}/"
+        return f"/odoo_ar/odoo-{self._version}{lic}/"
 
     @property
     def base_dir(self):
         """/odoo_ar/odoo-13.0/clientname/
         /odoo_ar/odoo-13.0e/clientname/
         """
-        return "%s%s/" % (self.version_dir, self._name)
+        return f"{self.version_dir}{self._name}/"
 
     @property
     def server_base_dir(self):
         """/odoo_ar/odoo-13.0/clientname/
         /odoo_ar/odoo-13.0e/clientname/
         """
-        return "%s%s/" % (self.server_version_dir, self._name)
+        return f"{self.server_version_dir}{self._name}/"
 
     @property
     def backup_dir(self):

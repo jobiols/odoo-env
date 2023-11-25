@@ -236,6 +236,20 @@ class OdooEnv:
             ret.append(cmd)
 
         ##################################################################
+        # removing dirs for extracting sources, only for debug
+        ##################################################################
+        if self.debug:
+            for w_dir in self._get_packs():
+                r_dir = f"{self.client.version_dir}{w_dir}"
+                cmd = RemovedirCommand(
+                    self,
+                    command=f"sudo rm -r {r_dir}",
+                    args=r_dir,
+                    usr_msg=f"Removing {r_dir}",
+                )
+                ret.append(cmd)
+
+        ##################################################################
         # create dirs for extracting sources, only for debug
         ##################################################################
         if self.debug:
@@ -330,11 +344,11 @@ class OdooEnv:
 
             # agregar un gitignore
             for module in self._get_packs():
-                r_dir = "{}{}".format(self.client.version_dir, module)
+                r_dir = f"{self.client.version_dir}{module}"
                 cmd = CreateGitignore(
                     self,
-                    command="%s/.gitignore" % r_dir,
-                    usr_msg="Creating gitignore file in %s" % r_dir,
+                    command=f"{r_dir}/.gitignore",
+                    usr_msg=f"Creating gitignore file in {r_dir}",
                 )
                 ret.append(cmd)
 

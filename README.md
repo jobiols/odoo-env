@@ -95,6 +95,7 @@ Installation
 
 Changelog
 ---------
+    - 0.11.6  - FIX --extract-sources now can remove directory packages
     - 0.11.5  - FIX --from-server does not download the database
     - 0.11.4  - FIX now can download repositories with submodules
     - 0.11.3  - Support for submodules, oe -w can write paths for a submodule structure

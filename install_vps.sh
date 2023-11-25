@@ -17,8 +17,8 @@ python3 -V
 sudo apt install python3-distutils -y
 
 # install pip
-#curl -fsSL https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-#sudo python3 get-pip.py
+curl -fsSL https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+sudo python3 get-pip.py
 #rm get-pip.py
 
 # install pipx

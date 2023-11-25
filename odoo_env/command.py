@@ -101,6 +101,12 @@ class MakedirCommand(Command):
         return not os.path.isdir(self._args)
 
 
+class RemovedirCommand(Command):
+    def check_args(self):
+        # si el directorio existe lo borramos
+        return os.path.isdir(self._args)
+
+
 class ExtractSourcesCommand(Command):
     @staticmethod
     def check_args():

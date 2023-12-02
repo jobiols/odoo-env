@@ -7,7 +7,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "odoo-env"
-version = "0.11.6"
+version = "0.11.7"
 authors = [
   { name="Jorge Obiols", email="jorge.obiols@gmail.com" },
 ]

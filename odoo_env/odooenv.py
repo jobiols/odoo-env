@@ -213,11 +213,8 @@ class OdooEnv:
         ##################################################################
         # change ownership of base dir
         ##################################################################
-
         username = pwd.getpwuid(os.getuid()).pw_name
-        cmd = Command(
-            self, command="sudo chown %s:%s %s" % (username, username, BASE_DIR)
-        )
+        cmd = Command(self, command=f"sudo chown {username}:{username} {BASE_DIR}")
         ret.append(cmd)
 
         ##################################################################
@@ -238,7 +235,7 @@ class OdooEnv:
         ##################################################################
         # removing dirs for extracting sources, only for debug
         ##################################################################
-        if self.debug:
+        if self.debug and self.extract_sources:
             for w_dir in self._get_packs():
                 r_dir = f"{self.client.version_dir}{w_dir}"
                 cmd = RemovedirCommand(
@@ -252,22 +249,20 @@ class OdooEnv:
         ##################################################################
         # create dirs for extracting sources, only for debug
         ##################################################################
-        if self.debug:
+        if self.debug and self.extract_sources:
             for w_dir in self._get_packs():
                 r_dir = f"{self.client.version_dir}{w_dir}"
-                cmd = MakedirCommand(
-                    self, command="mkdir -p %s" % r_dir, args="%s" % r_dir
-                )
+                cmd = MakedirCommand(self, command=f"mkdir -p {r_dir}", args=r_dir)
                 ret.append(cmd)
 
         ##################################################################
         # change og+w for those dirs
         ##################################################################
 
-        if self.debug:
+        if self.debug and self.extract_sources:
             for w_dir in self._get_packs():
-                r_dir = "%s%s" % (self.client.version_dir, w_dir)
-                cmd = Command(self, command="chmod og+w %s" % r_dir)
+                r_dir = f"{self.client.version_dir}{w_dir}"
+                cmd = Command(self, command=f"chmod og+w {r_dir}")
                 ret.append(cmd)
 
         ##################################################################
@@ -275,8 +270,8 @@ class OdooEnv:
         ##################################################################
 
         for w_dir in ["config", "data_dir", "log", "backup_dir"]:
-            r_dir = "%s%s" % (self.client.base_dir, w_dir)
-            cmd = Command(self, command="chmod o+w %s" % r_dir)
+            r_dir = f"{self.client.base_dir}{w_dir}"
+            cmd = Command(self, command=f"chmod o+w {r_dir}")
             ret.append(cmd)
 
         ##################################################################
@@ -286,9 +281,7 @@ class OdooEnv:
         if self.nginx:
             for w_dir in ["cert", "conf", "log"]:
                 r_dir = "%s%s" % (BASE_DIR, "nginx/" + w_dir)
-                cmd = MakedirCommand(
-                    self, command="mkdir -p %s" % r_dir, args="%s" % r_dir
-                )
+                cmd = MakedirCommand(self, command=f"mkdir -p {r_dir}", args=r_dir)
                 ret.append(cmd)
 
         ##################################################################
@@ -400,9 +393,9 @@ class OdooEnv:
 
         cvd = self.client.version_dir
 
-        ret = "-v {}extra-addons:{} ".format(cvd, iea)
-        ret += "-v {}dist-packages:{} ".format(cvd, idp)
-        ret += "-v {}dist-local-packages:{} ".format(cvd, idlp)
+        ret = f"-v {cvd}extra-addons:{iea} "
+        ret += f"-v {cvd}dist-packages:{idp} "
+        ret += f"-v {cvd}dist-local-packages:{idlp} "
         return ret
 
     def _add_normal_mountings(self):
@@ -462,7 +455,7 @@ class OdooEnv:
 
         image = self.client.get_image("postgres")
         if image:
-            msg = "Starting postgres image v{}".format(image.version)
+            msg = f"Starting postgres image v{image.version}"
 
         command = "sudo docker run -d "
         if self.debug:
@@ -470,9 +463,9 @@ class OdooEnv:
         command += "-e POSTGRES_USER=odoo "
         command += "-e POSTGRES_PASSWORD=odoo "
         command += "-e POSTGRES_DB=postgres "
-        command += "-v {}:/var/lib/postgresql/data ".format(self.client.psql_dir)
+        command += f"-v {self.client.psql_dir}:/var/lib/postgresql/data "
         command += "--restart=always "
-        command += "--name pg-{} ".format(self.client.name)
+        command += f"--name pg-{self.client.name} "
         command += image.name
 
         cmd = Command(
@@ -519,42 +512,15 @@ class OdooEnv:
 
         return ret
 
-    def install_external_dependencies(self, client_name):
-        ret = []
-        self._client = Client(self, client_name)
-        external_dependencies = self.client.external_dependencies
-        if "python" in external_dependencies and len(external_dependencies["python"]):
-            pip_names = (" ").join(external_dependencies["python"])
-
-            cmd = Command(
-                self,
-                command="sudo docker exec  {} pip install --upgrade {}".format(
-                    client_name, pip_names
-                ),
-                usr_msg="{} installing pip packages {} please wait...".format(
-                    client_name, pip_names
-                ),
-            )
-            ret.append(cmd)
-
-        return ret
-
     def stop_client(self, client_name):
         ret = []
 
         cmd = Command(
             self,
-            command="sudo docker stop {}".format(client_name),
-            usr_msg="Stopping image {} please wait...".format(client_name),
+            command=f"sudo docker stop {client_name}",
+            usr_msg=f"Stopping image {client_name} please wait...",
         )
         ret.append(cmd)
-        cmd = Command(
-            self,
-            command="sudo docker rm {}".format(client_name),
-            usr_msg="Removing image {}".format(client_name),
-        )
-        ret.append(cmd)
-
         if self.nginx:
             cmd = Command(
                 self,

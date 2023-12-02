@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "python": "/usr/bin/python3",
-            "args": ["-i", "--extract-sources", "-c", "lopez"],
+            "args": ["-s",],
             "justMyCode": true,
             "module": "odoo_env.oe"
         }

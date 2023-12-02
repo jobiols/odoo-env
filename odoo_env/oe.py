@@ -24,9 +24,9 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "-i",
         "--install",
         action="store_true",
-        help="Install. Creates dir structure, and pull all the repositories "
-        "declared in the client manifest. Use with --debug to copy Odoo "
-        "image sources to host",
+        help="Install. The first time id creates dir structure, and pull all the "
+        "repositories declared in the client manifest. Use with --extract-sources to "
+        "copy Odoo image sources to host (needed for debug purpouses)",
     )
 
     parser.add_argument(
@@ -44,24 +44,23 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     )
 
     parser.add_argument(
-        "-R", "--run-env", action="store_true", help="Run postgres and aeroo images."
+        "-R",
+        "--run-env",
+        action="store_true",
+        help="Run postgres, wdb and aeroo images (aeroo only for old odoo versions).",
     )
 
     parser.add_argument("-r", "--run-cli", action="store_true", help="Run odoo image")
 
     parser.add_argument(
-        "-S", "--stop-env", action="store_true", help="Stop postgres and aeroo images."
+        "-S",
+        "--stop-env",
+        action="store_true",
+        help="Stop postgres, wdb and aeroo images.",
     )
 
     parser.add_argument(
         "-s", "--stop-cli", action="store_true", help="Stop odoo image."
-    )
-
-    parser.add_argument(
-        "-E",
-        "--ext-dep",
-        action="store_true",
-        help="Update manifest external dependecies.",
     )
 
     parser.add_argument(
@@ -103,25 +102,27 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     parser.add_argument(
         "--debug",
         action="store_true",
-        help="Set default environment mode to debug"
+        help="Set default environment mode to debug "
         "This option has the following efects: "
         "1.- When doing an install it copies the image sources to host "
-        "and clones repos with depth=100"
+        "and clones repos with depth=1 "
         "2.- When doing an update all, (option -u) it forces update with "
-        "image sources."
-        "This option is persistent.",
+        "image sources. "
+        "This option is persistent. ",
     )
     parser.add_argument(
         "--prod",
         action="store_true",
-        help="Set default environment mode to production"
-        "This option is intended to install a production environment."
-        "This option is persistent.",
+        help="Set default environment mode to production "
+        "This option is intended to install a production environment. "
+        "This option is persistent. "
+        "Warning this option is deprecated in favor of docker-compose installations",
     )
     parser.add_argument(
         "--from-prod",
         action="store_true",
-        help="Restore backup from production server. Use with --restore",
+        help="Restore backup from production server. Use with --restore. "
+        "it needs the option 'prod_server': 'user@vps-alias' in the manifest",
     )
     parser.add_argument(
         "--no-repos",
@@ -164,9 +165,8 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         nargs=1,
         dest="quality_assurance",
         help="Perform QA running tests, argument are repository to test. "
-        "Need -d, -m and -c options Note: for the test to run the "
-        "database must be created with demo data and must have "
-        "admin user with password admin.",
+        "Need -d, -m and -c options Note: for the test to run the database must be"
+        "created with demo data and must have admin user with password admin.",
     )
 
     parser.add_argument(
@@ -277,9 +277,6 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
 
     if args.stop_cli:
         commands += OdooEnv(options).stop_client(client_name)
-
-    if args.ext_dep:
-        commands += OdooEnv(options).install_external_dependencies(client_name)
 
     if args.run_cli:
         commands += OdooEnv(options).run_client(client_name)

@@ -23,10 +23,20 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     parser.add_argument(
         "-i",
         "--install",
-        action="store_true",
-        help="Install. The first time id creates dir structure, and pull all the "
-        "repositories declared in the client manifest. Use with --extract-sources to "
-        "copy Odoo image sources to host (needed for debug purpouses)",
+        nargs="?",
+        const=False,
+        #        action="store_true",
+        help="-i [git-project-url] will download the project and install the directory "
+        "tree with all the necessary elements to run the installation locally. "
+        "-i [git-project-url] -b 16.0 same as before but using the 16.0 branch; "
+        "if -b is omitted, it will use the default branch. "
+        "-i without any parameters will update all related repositories.",
+    )
+
+    parser.add_argument(
+        "-b",
+        "--branch",
+        help="Used in conjunction con -i to set a branch different from default",
     )
 
     parser.add_argument(
@@ -96,7 +106,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     parser.add_argument(
         "--extract-sources",
         action="store_true",
-        help="Extract sources from images on -i",
+        help="Used in conjuntion with -i to extract sources to host from images",
     )
 
     parser.add_argument(
@@ -110,6 +120,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "image sources. "
         "This option is persistent. ",
     )
+
     parser.add_argument(
         "--prod",
         action="store_true",
@@ -118,12 +129,14 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "This option is persistent. "
         "Warning this option is deprecated in favor of docker-compose installations",
     )
+
     parser.add_argument(
         "--from-prod",
         action="store_true",
         help="Restore backup from production server. Use with --restore. "
         "it needs the option 'prod_server': 'user@vps-alias' in the manifest",
     )
+
     parser.add_argument(
         "--no-repos",
         action="store_true",

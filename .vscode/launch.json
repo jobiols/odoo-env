@@ -8,8 +8,9 @@
             "name": "Debug oe myproject",
             "type": "python",
             "request": "launch",
+            "args": ["-i","git@github.com:jobiols/cl-test.git","-b","16.0",],
+//"args": ["-h"],
             "python": "/usr/bin/python3",
-            "args": ["-c lopez",],
             "justMyCode": true,
             "module": "odoo_env.oe"
         }

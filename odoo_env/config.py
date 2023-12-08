@@ -108,7 +108,7 @@ class OeConfig(Singleton):
         self.save_config_data(config)
 
     def check_version(self):
-        """me traigo la configuracion"""
+        """Chequea si la vcersion de odoo-env es la última"""
 
         config = self.get_config_data()
         dt_today = datetime.today()
@@ -134,24 +134,29 @@ class OeConfig(Singleton):
             try:
                 response = http.fetch(
                     "https://pypi.python.org/pypi/odoo-env/json",
-                    connect_timeout=1,
-                    request_timeout=1,
+                    connect_timeout=5,
+                    request_timeout=5,
                 )
                 info = json.loads(response.buffer.read().decode("utf-8"))
                 version = info["info"]["version"]
                 if version != __version__:
                     Msg().warn(
-                        f"WARNING you are using odoo-env version {__version__} "
-                        f"however version {version} is available. "
+                        f"BE CAREFUL, you are using version {__version__} of odoo-env "
+                        "however version {version} is already available."
                     )
                     Msg().warn(
-                        'You should consider upgrading via the "pipx '
-                        ' upgrade odoo-env" command.'
+                        'You should update using "pipx upgrade odoo-env" or "pip '
+                        'install --upgrade odoo-env" (old style).\n'
                     )
+                    Msg().warn(
+                        "Do it right now before chaos knocks your digital door. Dont risk it."
+                    )
+
             except Exception:
                 Msg().inf(
-                    "Can not check odoo-env Version, do you have internet "
-                    "connectivity?"
+                    "Oops! It seems my cowboy hat ran out of internet connection. "
+                    "Did you feed coins to the internet ranch, or did the Wi-Fi birds "
+                    "fly away?"
                 )
 
         return True

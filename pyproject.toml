@@ -13,7 +13,7 @@ authors = [
 ]
 description = "A Dockerized environment for Odoo"
 readme = "README.md"
-requires-python = ">=3.4"
+requires-python = ">=3.5"
     classifiers=[
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
@@ -28,7 +28,7 @@ requires-python = ">=3.4"
     ]
 dependencies = [
   "PyYAML >= 6.0.1",
-  "tornado >= 6.3.3",
+  "tornado >= 6.4",
 ]
 
 [project.scripts]

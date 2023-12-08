@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "python": "/usr/bin/python3",
-            "args": ["-s",],
+            "args": ["-c lopez",],
             "justMyCode": true,
             "module": "odoo_env.oe"
         }

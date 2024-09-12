@@ -22,7 +22,7 @@ sudo python3 get-pip.py
 #rm get-pip.py
 
 # install pipx
-sudo apt install pipx
+sudo apt install pipxoe -
 pipx --version
 
 # test pip

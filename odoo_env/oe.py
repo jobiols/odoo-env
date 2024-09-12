@@ -10,7 +10,7 @@ from odoo_env.create_database import create_database
 from odoo_env.messages import Msg
 from odoo_env.odooenv import OdooEnv
 from odoo_env.options import get_param
-
+from odoo_env.install_actualize import install, actualize
 
 def main():
     """main"""
@@ -24,13 +24,11 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "-i",
         "--install",
         nargs="?",
-        const=False,
-        #        action="store_true",
-        help="-i [git-project-url] will download the project and install the directory "
+        help="-i update all proyect repositories."
+        "-i [git-project-url] will download the default branch of the project and "
+        "install the directory "
         "tree with all the necessary elements to run the installation locally. "
-        "-i [git-project-url] -b 16.0 same as before but using the 16.0 branch; "
-        "if -b is omitted, it will use the default branch. "
-        "-i without any parameters will update all related repositories.",
+        "-i [git-project-url] [-b 16.0] same as before but using the 16.0 branch; "
     )
 
     parser.add_argument(
@@ -272,6 +270,12 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         commands += OdooEnv(options).restore(
             client_name, database, backup_file, no_deactivate, from_server
         )
+
+    if args.install == None:
+        actualize(args, options, client_name)
+
+    if args.install:
+        install(args, options)
 
     if args.install:
         commands += OdooEnv(options).install(client_name)

@@ -16,7 +16,7 @@ jobs:
       - uses: actions/setup-python@v4
         name: Instalar Python
         with:
-          python-version: '3.8'
+          python-version: '3.12'
 
       - uses: actions/cache@v3
         name: Preparar cache para reducir tiempo de ejecución

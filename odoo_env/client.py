@@ -199,7 +199,7 @@ class Client:
                 if ver:
                     ret += ":" + ver
                 return ret
-        msg.err("There is no %s image found in this manifest" % image_name)
+        msg.err(f"There is no {image_name} image found in this manifest")
 
     def get_image(self, value):
         for image in self._images:

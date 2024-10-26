@@ -20,10 +20,11 @@ def get_database(args):
     else:
         client = get_client(args)
         if client:
-            default_database = client + "_prod"
+            suffix = "_test" if args.quality_assurance else "_prod"
+            default_database = client + suffix
             Msg().inf(
-                "Using default database: %s, use -d to "
-                "specify another database" % default_database
+                f"Using default database: {default_database}, use -d to "
+                "specify another database."
             )
             return default_database
         else:

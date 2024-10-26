@@ -95,6 +95,7 @@ Installation
 
 Changelog
 ---------
+    - 0.12.1  - When the -p command is run in debug mode, it pulls the debug image and performs an extract-sources; in production mode, it pulls the production image.
     - 0.12.0  - When running tests, if no database is specified, it will use the default database, which is the project name + test.
     - 0.11.7  - FIX -i is no longer removing directory packages
     - 0.11.6  - FIX --extract-sources now can remove directory packages

@@ -95,26 +95,33 @@ Installation
 
 Changelog
 ---------
-    - 0.12.0  - When running tests, if no database is specified, it will use the default database, which is the project name + test.
+    - 0.12.0  - When running tests, if no database is specified, it will use the
+                default database, which is the project name + test.
     - 0.11.7  - FIX -i is no longer removing directory packages
     - 0.11.6  - FIX --extract-sources now can remove directory packages
     - 0.11.5  - FIX --from-server does not download the database
     - 0.11.4  - FIX now can download repositories with submodules
-    - 0.11.3  - Support for submodules, oe -w can write paths for a submodule structure
-    - 0.10.24 - Small patch that allows to use postgres with versions greater than 10.
-    - 0.10.23 - The postgres docker image is not required anymore it is not necessary.
+    - 0.11.3  - Support for submodules, oe -w can write paths for a submodule
+                structure
+    - 0.10.24 - Small patch that allows to use postgres with versions greater
+                than 10.
+    - 0.10.23 - The postgres docker image is not required anymore it is not
+                necessary.
               - new longpolling port exposed if declared in manifest
               - new parameter -E to install external dependences in manifest.py
     - 0.10.22 find manifest with exact name instaed of part of name.
     - 0.10.21 change dbtools version to 1.3.0
-    - 0.10.20 fix --restore --from-server does not work when base_dir is not default
+    - 0.10.20 fix --restore --from-server does not work when base_dir is not
+              default
     - 0.10.19 dbtools for postgres 14.2
-    - 0.10.18 ADD warning if --nginx issued and there are no nginx image on proyect
+    - 0.10.18 ADD warning if --nginx issued and there are no nginx image on
+              proyect
     - 0.10.16 FIX overwrite workers in odoo.conf
     - 0.10.15 base_dir parameter on oe_config.yaml
     - 0.10.14 add --extract-sources option
     - 0.10.13 fix -w to take into account submodules
-    - 0.10.12 fix -w to take into account not standard repo structure and odoo.conf rights
+    - 0.10.12 fix -w to take into account not standard repo structure and
+              odoo.conf rights
     - 0.10.11 ask before overwriting local image sources
     - 0.10.10 minor refactoring, improving doc
     - 0.10.9 minor fixes, more documentation

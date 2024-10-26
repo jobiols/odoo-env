@@ -95,6 +95,7 @@ Installation
 
 Changelog
 ---------
+    - 0.12.0  - When running tests, if no database is specified, it will use the default database, which is the project name + test.
     - 0.11.7  - FIX -i is no longer removing directory packages
     - 0.11.6  - FIX --extract-sources now can remove directory packages
     - 0.11.5  - FIX --from-server does not download the database

@@ -6,11 +6,6 @@ from odoo_env.command import *
 from odoo_env.constants import *
 from odoo_env.messages import Msg
 
-# from odoo_env.command import (CloneRepo, Command, CreateGitignore,
-#                               CreateNginxTemplate, ExtractSourcesCommand,
-#                               MakedirCommand, MessageOnly, PullImage, PullRepo,
-#                               WriteConfigFile)
-
 
 class OdooEnv:
     """

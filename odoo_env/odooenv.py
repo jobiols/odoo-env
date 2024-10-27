@@ -189,24 +189,56 @@ class OdooEnv:
                 usr_msg=f"Pulling Image {image.short_name}",
             )
             ret.append(cmd)
+
+        cmd = self.do_extract_sources(client_name)
+        ret.extend(cmd)
         return ret
 
     def do_extract_sources(self, client_name):
+        """Extrae los fuentes de la imagen debug"""
+
         self._client = Client(self, client_name)
         ret = []
 
+        ##################################################################
+        # removing dirs for extracting sources
+        ##################################################################
+        for w_dir in self._get_packs():
+            r_dir = f"{self.client.version_dir}{w_dir}"
+            cmd = RemovedirCommand(
+                self,
+                command=f"sudo rm -r {r_dir}",
+                args=r_dir,
+                usr_msg=f"Removing {r_dir}",
+            )
+            ret.append(cmd)
+
+        ##################################################################
+        # create dirs for extracting sources, only for debug
+        ##################################################################
+        for w_dir in self._get_packs():
+            r_dir = f"{self.client.version_dir}{w_dir}"
+            cmd = MakedirCommand(self, command=f"mkdir -p {r_dir}", args=r_dir)
+            ret.append(cmd)
+
+        ##################################################################
+        # change og+w for those dirs
+        ##################################################################
+        for w_dir in self._get_packs():
+            r_dir = f"{self.client.version_dir}{w_dir}"
+            cmd = Command(self, command=f"chmod og+w {r_dir}")
+            ret.append(cmd)
+
+        ##################################################################
+        # Extracting sources
+        ##################################################################
         for module in self._get_packs():
-            msg = "Extracting %s from image %s.debug" % (
-                module,
-                self.client.get_image("odoo").name,
+            msg = (
+                f"Extracting {module} from image {self.client.get_image("odoo").name} "
             )
             command = "sudo docker run -it --rm "
-            command += "--entrypoint=/extract_%s.sh " % module
-            command += "-v %s%s/:/mnt/%s " % (
-                self.client.version_dir,
-                module,
-                module,
-            )
+            command += f"--entrypoint=/extract_{module}.sh "
+            command += f"-v {self.client.version_dir}{module}/:/mnt/{module} "
             command += f"{self.client.get_image("odoo").name} "
 
             cmd = ExtractSourcesCommand(
@@ -239,27 +271,25 @@ class OdooEnv:
 
         for module in self._get_packs():
             # create git repo
-            command = "git -C {}{}/ init ".format(self._client.version_dir, module)
+            command = f"git -C {self._client.version_dir}{module}/ init "
             cmd = Command(
-                self, command=command, usr_msg="Init repository for %s" % module
+                self, command=command, usr_msg=f"Init repository for {module}"
             )
             ret.append(cmd)
 
         for module in self._get_packs():
-            command = "git -C {}{}/ add . ".format(self._client.version_dir, module)
+            command = f"git -C {self._client.version_dir}{module}/ add . "
             cmd = Command(
                 self,
                 command=command,
-                usr_msg="Add files to repository for %s" % module,
+                usr_msg=f"Add files to repository for {module}",
             )
             ret.append(cmd)
 
         for module in self._get_packs():
-            command = "git -C {}{}/ commit -m inicial ".format(
-                self._client.version_dir, module
-            )
+            command = f"git -C {self._client.version_dir}{module}/ commit -m inicial "
             cmd = Command(
-                self, command=command, usr_msg="Commit repository for %s" % module
+                self, command=command, usr_msg=f"Commit repository for {module}"
             )
             ret.append(cmd)
 
@@ -300,38 +330,6 @@ class OdooEnv:
             r_dir = f"{self.client.base_dir}{w_dir}"
             cmd = MakedirCommand(self, command="mkdir -p %s" % r_dir, args="%s" % r_dir)
             ret.append(cmd)
-
-        ##################################################################
-        # removing dirs for extracting sources, only for debug
-        ##################################################################
-        if self.debug and self.extract_sources:
-            for w_dir in self._get_packs():
-                r_dir = f"{self.client.version_dir}{w_dir}"
-                cmd = RemovedirCommand(
-                    self,
-                    command=f"sudo rm -r {r_dir}",
-                    args=r_dir,
-                    usr_msg=f"Removing {r_dir}",
-                )
-                ret.append(cmd)
-
-        ##################################################################
-        # create dirs for extracting sources, only for debug
-        ##################################################################
-        if self.debug and self.extract_sources:
-            for w_dir in self._get_packs():
-                r_dir = f"{self.client.version_dir}{w_dir}"
-                cmd = MakedirCommand(self, command=f"mkdir -p {r_dir}", args=r_dir)
-                ret.append(cmd)
-
-        ##################################################################
-        # change og+w for those dirs
-        ##################################################################
-        if self.debug and self.extract_sources:
-            for w_dir in self._get_packs():
-                r_dir = f"{self.client.version_dir}{w_dir}"
-                cmd = Command(self, command=f"chmod og+w {r_dir}")
-                ret.append(cmd)
 
         ##################################################################
         # change o+w for config, data, log and backup_dir

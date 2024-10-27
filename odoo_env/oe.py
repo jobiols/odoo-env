@@ -220,7 +220,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "--base-dir",
         action="append",
         dest="base_dir",
-        help="Set default base-dir" "This option is persistent.",
+        help="Set default base-dir This option is persistent.",
     )
 
     args = parser.parse_args()
@@ -301,8 +301,9 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         create_database(OdooEnv(options=options), client_name)
         sys.exit()
 
-    # Verificar la version del script en pypi
     conf = OeConfig()
+
+    # Verificar la version del script en pypi
     conf.check_version()
 
     # #####################################################################

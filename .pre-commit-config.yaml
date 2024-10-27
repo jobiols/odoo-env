@@ -43,7 +43,7 @@ repos:
         exclude: /__init__\.py$
 
   - repo: https://github.com/PyCQA/pylint
-    rev: v3.3.1
+    rev: v3.1.1
     hooks:
       - id: pylint
         name: ejecutar pylint

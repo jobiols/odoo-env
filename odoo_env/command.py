@@ -67,7 +67,7 @@ class Command:
                 msg.run(" ")
             ret = subprocess.call(cmd, shell=shell)
             if ret:
-                return msg.err("The command %s returned with %s" % (cmd, str(ret)))
+                return msg.err(f"The command {cmd} returned with {str(ret)}")
 
     @property
     def args(self):

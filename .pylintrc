@@ -1,7 +1,15 @@
+# ########################################################
+# Chequeos obligatorios
+# ########################################################
+
+[MASTER]
+score=n
+
 [MESSAGES CONTROL]
 disable=all
 
-enable=anomalous-backslash-in-string,
+enable=
+    anomalous-backslash-in-string,
     api-one-deprecated,
     api-one-multi-together,
     assignment-from-none,

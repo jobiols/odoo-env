@@ -90,17 +90,15 @@ class Client:
     def check_v2(self, manifest):
         # Chequar que el manifiesto tenga bien las cosas
         if not manifest.get("docker-images"):
-            msg.err(
-                "No images in manifest %s please " "add a docker-images key" % self.name
-            )
+            msg.err(f"No images in manifest {self.name} please add a docker-images key")
 
         if not manifest.get("git-repos"):
-            msg.err("No repos in manifest %s please add a git-repos key" % self.name)
+            msg.err(f"No repos in manifest {self.name} please add a git-repos key")
 
         # leer si es enterprise o community, default community
         self._license = manifest.get("odoo-license", "CE")
 
-        if self._license not in ["EE", "CE"]:
+        if self._license not in {"EE", "CE"}:
             msg.err("License must be EE or CE")
 
         # Crear imagenes y repos
@@ -108,7 +106,7 @@ class Client:
             self._repos.append(Repo2(rep, self._version))
 
         for img in manifest.get("docker-images"):
-            self._images.append(Image2(img))
+            self._images.append(Image2(img, self._parent.debug))
 
         # levantar el nombre del user server
         self._prod_server = manifest.get("prod_server", "ubuntu")

@@ -7,10 +7,10 @@
 
         {
             "name": "Debug oe myproject",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "python": "/odoo/vs_env/bin/python3.12",
-            "args": ["-Q dan_website_delivery_date -d danone16_test",],
+            "args": ["-h"],
             "justMyCode": true,
             "module": "odoo_env.oe"
         }

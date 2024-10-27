@@ -97,12 +97,12 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "deprecated",
     )
 
-    parser.add_argument(
-        "--extract-sources",
-        action="store_true",
-        help="Extracts the sources from the Odoo image to the host; it can only "
-        "be used together with -i.",
-    )
+    # parser.add_argument(
+    #     "--extract-sources",
+    #     action="store_true",
+    #     help="Extracts the sources from the Odoo image to the host; it can only "
+    #     "be used together with -i.",
+    # )
 
     parser.add_argument(
         "--debug", action="store_true", help="Set default environment mode to debug "
@@ -240,7 +240,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "no-repos": args.no_repos,
         "nginx": args.nginx,
         "backup_file": args.backup_file,
-        "extract_sources": args.extract_sources,
+        #        "extract_sources": args.extract_sources,
         "force-create": args.force_create,
     }
     commands = []

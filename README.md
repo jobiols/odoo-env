@@ -61,7 +61,6 @@ options:
   -v, --verbose        Go verbose mode. Prints every command
   --no-deactivate      No Deactivate database before restore. WARNING this
                        command is deprecated
-  --extract-sources    Extracts the sources from the Odoo image to the host;
                        it can only be used together with -i.
   --debug              Set default environment mode to debug
   --prod               Set default environment mode to production

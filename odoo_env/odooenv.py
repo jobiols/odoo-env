@@ -190,8 +190,9 @@ class OdooEnv:
             )
             ret.append(cmd)
 
-        cmd = self.do_extract_sources(client_name)
-        ret.extend(cmd)
+        if self.debug:
+            cmd = self.do_extract_sources(client_name)
+            ret.extend(cmd)
         return ret
 
     def do_extract_sources(self, client_name):
@@ -365,9 +366,9 @@ class OdooEnv:
         ##################################################################
         # Extracting sources from image if debug enabled
         ##################################################################
-        if self.debug and self.extract_sources:
-            cmd = self.do_extract_sources(client_name)
-            ret.append(cmd)
+        # if self.debug and self.extract_sources:
+        #     cmd = self.do_extract_sources(client_name)
+        #     ret.append(cmd)
 
         ##################################################################
         # Clone or update repos as needed
@@ -751,20 +752,19 @@ class OdooEnv:
         command += self._add_normal_mountings()
         if self.debug:
             command += self._add_debug_mountings(self.client.numeric_ver)
-        command += "--link wdb "  # linkeamos con test y setamos nombre
+        command += "--link wdb "
         command += "-e WDB_SOCKET_SERVER=wdb "
         command += "-e ODOO_CONF=/dev/null "
-        command += "--link pg-{}:db ".format(self.client.name)
-        command += "{}.debug -- ".format(self.client.get_image("odoo").name)
-        command += "-d {} ".format(database)
+        command += f"--link pg-{self.client.name}:db "
+        command += f"{self.client.get_image("odoo").name} -- "
+        command += f"-d {database} "
         command += "--stop-after-init "
         command += "--log-level=test "
         command += "--test-enable "
-        command += "-u {} ".format(module_name)
+        command += f"-u {module_name} "
 
-        msg = "Performing tests on module {} for client {} " "and database {}".format(
-            module_name, client_name, database
-        )
+        msg = f"Performing tests on module {module_name} for client {client_name} and database {database}"
+
         cmd = Command(self, command=command, usr_msg=msg)
         ret.append(cmd)
         return ret
@@ -789,9 +789,9 @@ class OdooEnv:
     def nginx(self):
         return self._options["nginx"]
 
-    @property
-    def extract_sources(self):
-        return self._options["extract_sources"]
+    # @property
+    # def extract_sources(self):
+    #     return self._options["extract_sources"]
 
     @property
     def force_create(self):

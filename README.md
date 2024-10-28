@@ -110,6 +110,7 @@ Installation
 Changelog
 ---------
 
+- 0.12.2  - Fix bug that prevented Python versions lower than 3.12.
 - 0.12.1  - When the -p command is run in debug mode, it pulls the debug
             image and performs an extract-sources; in production mode, it
             pulls the production image.

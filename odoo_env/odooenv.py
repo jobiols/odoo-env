@@ -235,12 +235,12 @@ class OdooEnv:
         ##################################################################
         for module in self._get_packs():
             msg = (
-                f"Extracting {module} from image {self.client.get_image("odoo").name} "
+                f"Extracting {module} from image {self.client.get_image('odoo').name} "
             )
             command = "sudo docker run -it --rm "
             command += f"--entrypoint=/extract_{module}.sh "
             command += f"-v {self.client.version_dir}{module}/:/mnt/{module} "
-            command += f"{self.client.get_image("odoo").name} "
+            command += f"{self.client.get_image('odoo').name} "
 
             cmd = ExtractSourcesCommand(
                 self,
@@ -536,9 +536,9 @@ class OdooEnv:
 
         command = "sudo docker run --rm -it "
         #        command += self._add_normal_mountings()
-        command += "--link pg-{}:db ".format(self.client.name)
+        command += f"--link pg-{self.client.name}:db "
         command += "--name help "
-        command += "{} ".format(self.client.get_image("odoo").name)
+        command += f"{self.client.get_image('odoo').name} "
         command += "-- "
         command += "--help "
 
@@ -655,7 +655,7 @@ class OdooEnv:
         if self.debug:
             command += "-e WDB_SOCKET_SERVER=wdb "
 
-        command += f"{self.client.get_image("odoo").name} "
+        command += f"{self.client.get_image('odoo').name} "
 
         if not self.debug:
             command += "--logfile=/var/log/odoo/odoo.log "
@@ -756,7 +756,7 @@ class OdooEnv:
         command += "-e WDB_SOCKET_SERVER=wdb "
         command += "-e ODOO_CONF=/dev/null "
         command += f"--link pg-{self.client.name}:db "
-        command += f"{self.client.get_image("odoo").name} -- "
+        command += f"{self.client.get_image('odoo').name} -- "
         command += f"-d {database} "
         command += "--stop-after-init "
         command += "--log-level=test "

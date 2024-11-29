@@ -14,7 +14,7 @@ python3 -V
 #sudo apt install python3 -y
 
 # instalar distutils
-sudo apt install python3-distutils -y
+#sudo apt install python3-distutils -y en el ultimo ubuntu no tiene candidato
 
 # install pip
 curl -fsSL https://bootstrap.pypa.io/get-pip.py -o get-pip.py
@@ -42,16 +42,16 @@ rm get-docker.sh
 # install docker en produccion Ubuntu
 # https://docs.docker.com/engine/install/ubuntu/
 
-# Add Docker's official GPG key:
+# Add Docker's official GPG key: EN DEBIAN
 sudo apt-get update
 sudo apt-get install ca-certificates curl gnupg
 sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
-# Add the repository to Apt sources:
+# Add the repository to Apt sources: EN DEBIAN
 echo \
-  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
   "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 sudo apt-get update

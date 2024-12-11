@@ -39,11 +39,7 @@ class Command:
 
     def execute(self):
         cmd = self.command
-        try:
-            self.subrpocess_call(cmd)
-        except Exception as e:
-            msg.warn(str(e))
-        return
+        self.subrpocess_call(cmd)
 
     def subrpocess_call(self, params, shell=True):
         """Run command or command list with arguments.  Wait for commands to
@@ -71,7 +67,10 @@ class Command:
                 msg.run(" ")
             ret = subprocess.call(cmd, shell=shell)
             if ret:
-                return msg.err(f"The command {cmd} returned with {str(ret)}")
+                if "hmod o+w" in cmd:
+                    return msg.warn(f"The command {cmd} returned with {str(ret)}")
+                else:
+                    return msg.err(f"The command {cmd} returned with {str(ret)}")
 
     @property
     def args(self):

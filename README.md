@@ -109,6 +109,7 @@ Installation
 
 Changelog
 ---------
+
 - 0.12.4  - A bug was found when oe attempts to change permissions on the
             backup_dir folder. In some cases, this folder is an S3 or OBS bucket,
             depending on the cloud provider. In such cases, the error is caught,

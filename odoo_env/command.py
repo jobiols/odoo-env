@@ -39,14 +39,11 @@ class Command:
 
     def execute(self):
         cmd = self.command
-        if "chmod o+w" in cmd:
-            try:
-                self.subrpocess_call(cmd)
-            except Exception as e:
-                msg.warn(str(e))
-            return
-        else:
+        try:
             self.subrpocess_call(cmd)
+        except Exception as e:
+            msg.warn(str(e))
+        return
 
     def subrpocess_call(self, params, shell=True):
         """Run command or command list with arguments.  Wait for commands to

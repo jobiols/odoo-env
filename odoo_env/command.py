@@ -43,9 +43,10 @@ class Command:
             try:
                 self.subrpocess_call(cmd)
             except Exception as e:
-                msg.warning(str(e))
+                msg.warn(str(e))
             return
-        msg.warning(str(e))
+        else:
+            self.subrpocess_call(cmd)
 
     def subrpocess_call(self, params, shell=True):
         """Run command or command list with arguments.  Wait for commands to

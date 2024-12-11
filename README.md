@@ -35,7 +35,7 @@ Functionality
                 [-f BACKUP_FILE] [-H] [-V] [--create-test-db] [--force-create]
                 [--base-dir BASE_DIR]
 
-    Odoo Environment Manager v0.12.1 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.12.3 - by jeo Software <jorge.obiols@gmail.com>
 
     options:
       -h, --help           show this help message and exit
@@ -109,7 +109,11 @@ Installation
 
 Changelog
 ---------
-
+- 0.12.3  - A bug was found when oe attempts to change permissions on the
+            backup_dir folder. In some cases, this folder is an S3 or OBS bucket,
+            depending on the cloud provider. In such cases, the error is caught,
+            and only a warning is displayed, as changing the permissions is not
+            necessary.
 - 0.12.2  - Fix bug that prevented Python versions lower than 3.12.
 - 0.12.1  - When the -p command is run in debug mode, it pulls the debug
             image and performs an extract-sources; in production mode, it

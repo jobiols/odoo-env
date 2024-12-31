@@ -109,7 +109,11 @@ Installation
 
 Changelog
 ---------
-
+- 0.13.0  - A second configuration section is defined. The original is used when
+            setting up a server, while the other, called config-local, is used
+            to define the configuration for the local environment.
+            This way, the server configuration file can be defined along with
+            the configuration used when working in local mode.
 - 0.12.6  - A bug was found when oe attempts to change permissions on the
             backup_dir folder. In some cases, this folder is an S3 or OBS bucket,
             depending on the cloud provider. In such cases, the error is caught,

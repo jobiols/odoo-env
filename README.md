@@ -104,7 +104,7 @@ Functionality
 
 Installation
 ------------
-    sudo pip install odoo-env
+    sudo pipx install odoo-env
     see proyect in https://pypi.org/project/odoo-env/
 
 Changelog

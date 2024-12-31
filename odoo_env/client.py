@@ -41,7 +41,6 @@ class Client:
             )
 
             # mantener compatibilidad con python2
-
             input("Hit Enter to continue or CTRL C to exit")
             manifest, _ = self.get_manifest_from_struct(os.getcwd())
             if not manifest:
@@ -117,7 +116,7 @@ class Client:
         self._external_dependencies = manifest.get("external_dependencies", {})
         ver = manifest.get("version")
         if not ver:
-            msg.err("No version tag in manifest %s" % self.name)
+            msg.err(f"No version tag in manifest {self.name}")
 
         _x = ver.find(".") + 1
         _y = ver[_x:].find(".") + _x
@@ -126,12 +125,15 @@ class Client:
         name = manifest.get("name").lower()
         if not self._name == name.split()[0]:
             msg.err(
-                "You intend to install client %s but in manifest, "
-                "the name is %s" % (self._name, manifest.get("name"))
+                f"You intend to install client {self._name} but in manifest, "
+                f"the name is {manifest.get("name")}"
             )
 
         # Tomar los datos para odoo.conf
-        self.config = manifest.get("config", [])
+        if self._parent.debug:
+            self.config = manifest.get("config-local", [])
+        else:
+            self.config = manifest.get("config", [])
 
     def get_manifest_from_struct(self, path):
         """leer un manifest que esta dentro de una estructura de directorios

@@ -1,6 +1,7 @@
 import os
 import stat
 import subprocess
+from pathlib import Path
 
 from odoo_env.messages import Msg
 from odoo_env.odoo_conf import OdooConf
@@ -162,26 +163,12 @@ class WriteConfigFile(Command):
         return False
 
     def execute(self):
-        # obtener el cliente a partir del nombre
         arg = self._args
         client = arg["client"]
 
         # obtener los repositorios que hay en sources, para eso se recorre souces y se
         # obtienen todos los directorios que tienen un .git adentro.
-        repos = list()
-        # sources = client.sources_dir
-        # for root, dirs, files in os.walk(sources):
-        #     # si tiene un directorio .git es un repositorio
-        #     if ".git" in dirs:
-        #         repos.append(root.replace(sources, ""))
-        #     # si tiene un archivo .git es un repositorio
-        #     if ".git" in files:
-        #         repos.append(root.replace(sources, ""))
-        # recorrer todos los archivos buscando un __manifest__.py si lo encuentro entonces
-        # agrego a repos un path al directorio que contiene ese archivo sin repetir y salteo
-        # ese directorio
-        from pathlib import Path
-
+        repos = []
         base = Path(client.sources_dir)
 
         manifest_files = list(base.rglob("__manifest__.py"))
@@ -193,15 +180,13 @@ class WriteConfigFile(Command):
         repos = ["/opt/odoo/custom-addons/" + x for x in repos]
         repos = ",".join(repos)
 
-        # obtener la configuracion definida en el manifiesto
-        conf = client.config or []
-
         # Actualizar el archivo odoo.conf
 
         # Leer el archivo de configuracion original
         odoo_conf = OdooConf(client.config_file)
         odoo_conf.read_config()
-        odoo_conf.add_list_data(conf)
+
+        odoo_conf.add_list_data(client.config)
 
         # siempre sobreescribimos estas tres cosas.
         odoo_conf.add_line("addons_path = %s" % repos)
@@ -217,20 +202,20 @@ class WriteConfigFile(Command):
         else:
             # no estoy en modo debug,
             # si no defino workers en el manifiesto lo calculo
-            line = self.check_item("workers", conf)
+            line = self.check_item("workers", client.config)
             if not line:
                 # Calculo los workers
-                # You should use 2 worker threads CPU
-                odoo_conf.add_line("workers = %s" % (os.cpu_count() * 2))
+                # You should use 2 worker threads per CPU
+                odoo_conf.add_line(f"workers = {(os.cpu_count() * 2)}")
             else:
                 odoo_conf.add_line(line)
 
             # si no defino cron_threads en el manifiesto lo calculo
-            line = self.check_item("max_cron_threads", conf)
+            line = self.check_item("max_cron_threads", client.config)
             if not line:
                 # Calculo los cron threads
                 # You should use 1 cron thread per available CPU
-                odoo_conf.add_line("max_cron_threads = %s" % os.cpu_count())
+                odoo_conf.add_line("max_cron_threads = 1")
             else:
                 odoo_conf.add_line(line)
 

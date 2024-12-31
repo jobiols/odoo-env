@@ -109,7 +109,7 @@ Installation
 
 Changelog
 ---------
-- 0.13.0  - A second configuration section is defined. The original is used when
+- 0.13.1  - A second configuration section is defined. The original is used when
             setting up a server, while the other, called config-local, is used
             to define the configuration for the local environment.
             This way, the server configuration file can be defined along with

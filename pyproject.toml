@@ -7,7 +7,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "odoo-env"
-version = "0.12.6"
+version = "0.13.1"
 
 authors = [
   { name="Jorge Obiols", email="jorge.obiols@gmail.com" },
@@ -21,6 +21,7 @@ requires-python = ">=3.8"
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3.12",
+        "Programming Language :: Python :: 3.13",
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
@@ -30,7 +31,7 @@ requires-python = ">=3.8"
     ]
 dependencies = [
   "PyYAML >= 6.0.2",
-  "tornado >= 6.4",
+  "tornado >= 6.4.2",
 ]
 
 [project.scripts]

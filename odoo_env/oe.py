@@ -7,10 +7,11 @@ import sys
 from odoo_env.__init__ import __version__
 from odoo_env.config import OeConfig
 from odoo_env.create_database import create_database
+from odoo_env.install_actualize import actualize, install
 from odoo_env.messages import Msg
 from odoo_env.odooenv import OdooEnv
 from odoo_env.options import get_param
-from odoo_env.install_actualize import install, actualize
+
 
 def main():
     """main"""
@@ -28,7 +29,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "-i [git-project-url] will download the default branch of the project and "
         "install the directory "
         "tree with all the necessary elements to run the installation locally. "
-        "-i [git-project-url] [-b 16.0] same as before but using the 16.0 branch; "
+        "-i [git-project-url] [-b 16.0] same as before but using the 16.0 branch; ",
     )
 
     parser.add_argument(

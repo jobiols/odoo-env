@@ -109,6 +109,7 @@ Installation
 
 Changelog
 ---------
+- 0.14.0  - New function to install a project from GitHub
 - 0.13.2  - Correction of a paragraph with double quotes inside double quotes.
 - 0.13.1  - A second configuration section is defined. The original is used when
             setting up a server, while the other, called config-local, is used

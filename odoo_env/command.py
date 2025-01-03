@@ -70,8 +70,8 @@ class Command:
             if ret:
                 if "hmod o+w" in cmd:
                     return msg.warn(f"The command {cmd} returned with {str(ret)}")
-                else:
-                    return msg.err(f"The command {cmd} returned with {str(ret)}")
+                return msg.err(f"The command {cmd} returned with {str(ret)}")
+        return None
 
     @property
     def args(self):
@@ -90,12 +90,11 @@ class CreateGitignore(Command):
     def execute(self):
         # crear el gitignore en el archivo que viene del comando
         values = [".idea/\n", "*.pyc\n", "__pycache__\n"]
-        with open(self._command, "w") as _f:
+        with open(self._command, "w", encoding="utf-8") as _f:
             for value in values:
                 _f.write(value)
 
-    @staticmethod
-    def check_args():
+    def check_args(self):
         return True
 
 
@@ -112,8 +111,7 @@ class RemovedirCommand(Command):
 
 
 class ExtractSourcesCommand(Command):
-    @staticmethod
-    def check_args():
+    def check_args(self):
         return True
 
 
@@ -130,8 +128,7 @@ class PullRepo(Command):
 
 
 class PullImage(Command):
-    @staticmethod
-    def check_args():
+    def check_args(self):
         return True
 
 
@@ -142,13 +139,13 @@ class CreateNginxTemplate(Command):
 
     def execute(self):
         # leer el nginx.conf
-        with open("/usr/local/nginx.conf") as _f:
+        with open("/usr/local/nginx.conf", encoding="utf-8") as _f:
             conf = _f.read()
 
         # poner el nombre del cliente en el config
         conf = conf.replace("$client$", self._client_name)
 
-        with open(self._command, "w") as _f:
+        with open(self._command, "w", encoding="utf-8") as _f:
             _f.write(conf)
 
 
@@ -174,7 +171,7 @@ class WriteConfigFile(Command):
         manifest_files = list(base.rglob("__manifest__.py"))
         for manifest in manifest_files:
             module_path = str(manifest.parent.parent.relative_to(client.sources_dir))
-            if not module_path in repos:
+            if module_path not in repos:
                 repos.append(module_path)
 
         repos = ["/opt/odoo/custom-addons/" + x for x in repos]
@@ -189,7 +186,7 @@ class WriteConfigFile(Command):
         odoo_conf.add_list_data(client.config)
 
         # siempre sobreescribimos estas tres cosas.
-        odoo_conf.add_line("addons_path = %s" % repos)
+        odoo_conf.add_line(f"addons_path = {repos}")
         odoo_conf.add_line("unaccent = True")
         odoo_conf.add_line("data_dir = /opt/odoo/data")
 
@@ -229,11 +226,9 @@ class WriteConfigFile(Command):
 
 
 class MessageOnly(Command):
-    @staticmethod
-    def check_args():
+    def check_args(self):
         """Siempre lo dejamos pasar"""
         return True
 
-    @staticmethod
-    def execute():
+    def execute(self):
         pass

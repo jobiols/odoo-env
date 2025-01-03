@@ -13,9 +13,9 @@ msg = Msg()
 class Client:
     """Clase cliente"""
 
-    def __init__(self, odooenv, name):
-        """Busca el cliente en la estructura de directorios, pero si no lo
-        encuentra pide un directorio donde esta el repo que lo contiene
+    def __init__(self, odooenv, name, manifest=False):
+        """Si recibe como parametro el manifiesto lo usa
+        Si no lo recibe lo busca en el config.yaml
         """
         # parent es siempre un objeto OdooEnv
         self._parent = odooenv
@@ -33,24 +33,7 @@ class Client:
             manifest = self.get_manifest(path)
             OeConfig().save_client_path(name, path)
         else:
-            manifest = self.get_manifest(BASE_DIR)
-        if not manifest:
-            msg.inf(
-                f"Can not find client {self._name} in this host installation.\n"
-                "We will try in current dir"
-            )
-
-            # mantener compatibilidad con python2
-            input("Hit Enter to continue or CTRL C to exit")
-            manifest, _ = self.get_manifest_from_struct(os.getcwd())
-            if not manifest:
-                msg.err("Can not find client %s in current dir" % name)
-
-            msg.inf("Client found!")
-            msg.inf(
-                "Name %s\nversion %s\n"
-                % (manifest.get("name"), manifest.get("version"))
-            )
+            manifest = self.get_manifest(BASE_DIR) if not manifest else manifest
 
         self.check_common(manifest)
 
@@ -72,10 +55,10 @@ class Client:
     def check_v1(self, manifest):
         # Chequar que el manifiesto tenga bien las cosas
         if not manifest.get("docker"):
-            msg.err("No images in manifest %s" % self.name)
+            msg.err(f"No images in manifest {self.name}")
 
         if not manifest.get("repos"):
-            msg.err("No repos in manifest %s" % self.name)
+            msg.err(f"No repos in manifest {self.name}")
 
         # Crear imagenes y repos
         self._repos = []
@@ -140,10 +123,10 @@ class Client:
         revisar toda la estructura hasta encontrar un manifest.
         devolver el manifest y el path
         """
-        for root, dirs, files in os.walk(path):
+        for root, _, files in os.walk(path):
             set_files = {"__openerp__.py", "__manifest__.py"}.intersection(files)
             for file in list(set_files):
-                manifest_file = "%s/%s" % (root, file)
+                manifest_file = f"{root}/{file}"
                 manifest = self.load_manifest(manifest_file)
                 name = manifest.get("name", False)
                 if name and name.lower() == self._name:
@@ -161,14 +144,14 @@ class Client:
         if client_path:
             manifest, _ = self.get_manifest_from_struct(client_path)
             return manifest
-        else:
-            # no lo encuentro, busco en toda la estructura de directorios
-            manifest, path = self.get_manifest_from_struct(path)
-            if manifest:
-                # si lo encuentro lo guardo en el archivo para la proxima
-                OeConfig().save_client_path(self._name, path)
-            # devuelvo el manifiesto o false si no esta
-            return manifest
+
+        # no lo encuentro, busco en toda la estructura de directorios
+        manifest, path = self.get_manifest_from_struct(path)
+        if manifest:
+            # si lo encuentro lo guardo en el archivo para la proxima
+            OeConfig().save_client_path(self._name, path)
+        # devuelvo el manifiesto o false si no esta
+        return manifest
 
     @staticmethod
     def load_manifest(filename):
@@ -178,14 +161,14 @@ class Client:
         :return: manifest in dictionary format
         """
         manifest = ""
-        with open(filename) as _f:
+        with open(filename, encoding="utf-8") as _f:
             for line in _f:
                 if line.strip() and line.strip()[0] != "#":
                     manifest += line
             try:
                 ret = ast.literal_eval(manifest)
-            except Exception:
-                return {"name": "none"}
+            except Exception as e:
+                msg.err(f"Error reading the manifest {e}")
             return ret
 
     def image(self, image_name):
@@ -200,6 +183,7 @@ class Client:
                     ret += ":" + ver
                 return ret
         msg.err(f"There is no {image_name} image found in this manifest")
+        return None
 
     def get_image(self, value):
         for image in self._images:
@@ -245,7 +229,7 @@ class Client:
         /odoo_ar/odoo-13.0e/
         """
         lic = "e" if self._license == "EE" else ""
-        return "%sodoo-%s%s/" % (BASE_DIR, self._version, lic)
+        return f"{BASE_DIR}odoo-{self._version}{lic}/"
 
     @property
     def server_version_dir(self):
@@ -299,7 +283,7 @@ class Client:
     @property
     def nginx_dir(self):
         """/odoo_ar/nginx/"""
-        return "%snginx/" % BASE_DIR
+        return f"{BASE_DIR}nginx/"
 
     @property
     def debug(self):

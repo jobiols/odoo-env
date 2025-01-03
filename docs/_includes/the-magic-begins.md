@@ -1,63 +1,84 @@
 ## THE MAGIC BEGINS, From a fresh VPS to an installed odoo system
 
-Start fresh, this example was build with Ubuntu Server 20.04 LTS
+Start fresh, this example was build with Ubuntu Server 24.04 LTS
 
 ```bash
 # start by upgrading the system
 sudo apt update && sudo apt upgrade -y
 
-# check if python 3 is installed
-python3 -V
-
-# if not installed do it
-sudo apt install python3 -y
-
-# install distutils
-sudo apt install python3-distutils -y
-
-# install pip
-curl -fsSL https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-sudo python3 get-pip.py
-rm get-pip.py
-
-# test pip
-pip -V
+# install pipx
+sudo apt install pipx
+pipx ensurepath
 
 # install odoo-env
-sudo pip install odoo-env
-
-# install docker
+pipx install odoo-env
+```
+## install docker (easy way, DO NOT RECOMMENDED FOR PRODUCTION)
+```
 curl -fsSL get.docker.com -o get-docker.sh
 sh get-docker.sh
 rm get-docker.sh
-
-# install docker composer
-sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-#  Apply executable permissions to the binary:
-sudo chmod +x /usr/local/bin/docker-compose
-
-# test tools
-oe -h -v
-sd --version
-docker-compose --version
 ```
+## install docker (best way DEBIAN)
+```bash
+# Add Docker's official GPG key:
+sudo apt-get update
+sudo apt-get install ca-certificates curl gnupg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
-Ok this is all we need in the host, now begin creating a project
+# Add the repository to Apt sources:
+echo \
+  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+  "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
 
-You have to select a short and memorable project name and please it must be unique for you.
-We selected **myproject** as proyect name, then a minimum manifest working will be:
+# install latest Docker versin
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+## install docker (best way UBUNTU)
+```bash
+# Add Docker's official GPG key:
+sudo apt-get update
+sudo apt-get install ca-certificates curl gnupg
+sudo install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+# Add the repository to Apt sources:
+echo \
+  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+
+# install latest Docker versin
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+```
+## test tools
+- oe -v
+- sd --version
+
+# Installing project
+
+Alright, this is everything we need on the host. Now, let's start creating a project. Choose a short, memorable, and unique name for your project.
+
+For example, we chose **myproject** as the project name.
+With this, a minimal working manifest would look like:"
 
 ```python
-    ##############################################################################
-    #    Copyright (C) 2021 jeo Software  (http://www.jeosoft.com.ar)
-    #    All Rights Reserved.
-    ##############################################################################
+##########################################################################
+#    Copyright (C) 2024 jeo Software  (http://www.jeosoft.com.ar)
+#    All Rights Reserved.
+##########################################################################
 
 {
     'name': 'myproject',
-    'version': '13.0.1.0.0',
+    'version': '17.0.1.0.0',
     'category': 'Tools',
-    'summary': "Project example for v13 CE",
+    'summary': "Project example for v17 CE",
     'author': "jeo Software",
     'license': 'AGPL-3',
     'depends': [],
@@ -65,34 +86,37 @@ We selected **myproject** as proyect name, then a minimum manifest working will 
     'application': False,
 
     'env-ver': '2',
-
+    'config': [
+                'workers = 4,
+                'max_cron_threads = 1',
+                'admin_passwd = k0923%098',
+                'proxy_mode = True',
+                'list_db = False',
+              ]
+    'config-local': ['admin_passwd = admin',]
     'git-repos': [
         'https://github.com/jobiols/cl-myproject.git',
         'https://github.com/ingadhoc/odoo-argentina.git',
     ],
 
     'docker-images': [
-        'odoo jobiols/odoo-jeo:13.0',
-        'postgres postgres:10.1-alpine',
+        'odoo jobiols/odoo-jeo:17.0',
+        'postgres postgres:14.13-alpine',
         'nginx nginx'
     ]
 }
 ```
 
-You can find this project at https://github.com/jobiols/cl-example.git branch 13.0
+You can find this project at https://github.com/jobiols/cl-example.git branch 17.0
 
-Then go to your VPS and clone this:
+Go to your VPS or local machine and clone the project this way:
 
-    git clone https://github.com/jobiols/cl-myproject.git
+    oe -i -c https://github.com/jobiols/cl-myproject.git -b 17.0
 
-cd inside the repo and issue this command
-
-    oe -i -c myproject
-
-Then you can find a directory structure as this
+oe will download the repository with the project and install it locally, generating the following directory structure.
 
     /odoo_ar
-    └── odoo-13.0
+    └── odoo-17.0
         └── myproject
             ├── config
             ├── data_dir
@@ -102,28 +126,13 @@ Then you can find a directory structure as this
                 ├── cl-myproject
                 └── odoo-argentina
 
-You can remove the proyect you clone at first as it will not be used anymore, and can
-lead to confusion. The useful one is in sources/
-
 Then issue the command:
 
-    oe -R -r --nginx
+    oe -R -r
 
-This will download all the necesary images and start them.
+This will download all the necesary images and start the project
 
-The odoo database manager starts blocked in nginex, so you have to comment some lines at the bottom of /odoo_ar/nginx/conf/nginx.conf
-
-    # Block database manager and selector
-    location ~* /web/database/manager {
-            return 404;
-    }
-    location ~* /web/database/selector {
-            return 404;
-    }
-
-This will unblock the database manager and let you start working with odoo databases.
-
-now some commands:
+# some command examples
 
 Restart odoo
 
@@ -135,7 +144,7 @@ Stop all images
 
 Start all again
 
-    oe -R -r --nginx
+    oe -R -r
 
 Update all repositories
 
@@ -164,8 +173,8 @@ Restore last production backup without deactivation (this may be dangerous)
 
 # Configuration File
 
-odoo-env stores a configuration file at
-~/.config/oe/oe_config.yaml
+odoo-env stores a configuration file at ~/.config/oe/oe_config.yaml
+This file is maintained automatically by oe, although it's sometimes good to review it.
 
 ``` yaml
 base_dir: /odoo/ar/
@@ -182,4 +191,4 @@ last_version_check: '2023-09-27'
 ```
 
 Note that base_dir starts at /odoo_ar/ by default, in some systems
-as MAC OS this should be changed.
+as MAC OS this should be changed adding the first line base_dir: /your-base-dir

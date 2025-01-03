@@ -7,16 +7,15 @@ build-backend = "hatchling.build"
 
 [project]
 name = "odoo-env"
-version = "0.13.2"
+version = "0.14.0"
 
 authors = [
   { name="Jorge Obiols", email="jorge.obiols@gmail.com" },
 ]
 description = "A Dockerized environment for Odoo"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
     classifiers=[
-        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
@@ -32,6 +31,7 @@ requires-python = ">=3.8"
 dependencies = [
   "PyYAML >= 6.0.2",
   "tornado >= 6.4.2",
+  "requests >= 2.32.3",
 ]
 
 [project.scripts]

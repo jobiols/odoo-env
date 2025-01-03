@@ -9,10 +9,9 @@
             "name": "Debug oe myproject",
             "type": "debugpy",
             "request": "launch",
-            "args": ["-i","git@github.com:jobiols/cl-test.git","-b","16.0",],
-//"args": ["-h"],
-            "python": "/usr/bin/python3",
-            "justMyCode": true,
+            "args": ["-i","https://github.com/jobiols/cl-myproject.git","-b","17.0", "-c", "myproject"],
+            "python": "/odoo/vs_env/bin/python3",
+            "justMyCode": false,
             "module": "odoo_env.oe"
         }
     ]

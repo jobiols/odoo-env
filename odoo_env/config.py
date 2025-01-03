@@ -17,13 +17,11 @@ USER_CONFIG_PATH = os.path.expanduser("~") + "/.config/oe/"
 USER_CONFIG_FILE = USER_CONFIG_PATH + "oe_config.yaml"
 USER_CONFIG_FILE_TEST = USER_CONFIG_PATH + "oe_config_test.yaml"
 
-oe_config = False
-
 _instances = {}
 
 
-class Singleton:
-    def __new__(cls, *args, **kw):
+class Singleton:  # pylint: disable=too-few-public-methods
+    def __new__(cls):
         if cls not in _instances:
             instance = super().__new__(cls)
             _instances[cls] = instance
@@ -36,7 +34,7 @@ class OeConfig(Singleton):
         template = {"clients": []}
         # obtener el archivo con los datos de clientes
         try:
-            with open(USER_CONFIG_FILE) as config:
+            with open(USER_CONFIG_FILE, encoding="utf-8") as config:
                 ret = yaml.safe_load(config)
         except Exception:
             return template
@@ -49,7 +47,7 @@ class OeConfig(Singleton):
         if not os.path.exists(USER_CONFIG_PATH):
             os.makedirs(USER_CONFIG_PATH)
 
-        with open(USER_CONFIG_FILE, "w") as config_file:
+        with open(USER_CONFIG_FILE, "w", encoding="utf-8") as config_file:
             yaml.dump(config, config_file, default_flow_style=False, allow_unicode=True)
 
     def get_base_dir(self):

@@ -4,6 +4,7 @@ import pwd
 from odoo_env.client import Client
 from odoo_env.command import *
 from odoo_env.constants import *
+from odoo_env.install_actualize import download_manifest_from_github
 from odoo_env.messages import Msg
 
 
@@ -96,24 +97,11 @@ class OdooEnv:
         cli = Client(self, client_name)
         if backup_file:
             # Bajar el backup backup_file del server
-            cmd = "scp %s:%s%s %sserver_bkp.zip" % (
-                cli.prod_server,
-                cli.server_backup_dir,
-                backup_file,
-                cli.backup_dir,
-            )
+            cmd = f"scp {cli.prod_server}:{cli.server_backup_dir}{backup_file} {cli.backup_dir}server_bkp.zip"
         else:
             # bajar el ultimo archivo del server
-            _file = "ssh %s ls -t %s | head -1" % (
-                cli.prod_server,
-                cli.server_backup_dir,
-            )
-            cmd = "scp %s:%s$(%s) %sserver_bkp.zip" % (
-                cli.prod_server,
-                cli.server_backup_dir,
-                _file,
-                cli.backup_dir,
-            )
+            _file = f"ssh {cli.prod_server} ls -t {cli.server_backup_dir} | head -1"
+            cmd = f"scp {cli.prod_server}:{cli.server_backup_dir}$({_file}) {cli.backup_dir}server_bkp.zip"
         return cmd
 
     def restore(
@@ -130,9 +118,9 @@ class OdooEnv:
         self._client = Client(self, client_name)
         ret = []
 
-        msg = "Restoring database %s " % database
+        msg = f"Restoring database {database} "
         if backup_file:
-            msg += "from backup %s " % backup_file
+            msg += f"from backup {backup_file} "
         else:
             msg += "from newest backup "
 
@@ -145,12 +133,12 @@ class OdooEnv:
             ret.append(cmd)
 
         command = "sudo docker run --rm -i "
-        command += "--link pg-%s:db " % client_name
-        command += "-v %s:/backup " % self.client.backup_dir
-        command += "-v %sdata_dir/filestore:/filestore " % self.client.base_dir
-        command += "--env NEW_DBNAME=%s " % database
+        command += f"--link pg-{client_name}:db "
+        command += f"-v {self.client.backup_dir}:/backup "
+        command += f"-v {self.client.base_dir}data_dir/filestore:/filestore "
+        command += f"--env NEW_DBNAME={database} "
         if backup_file and not from_server:
-            command += "--env ZIPFILE=%s " % backup_file
+            command += f"--env ZIPFILE={backup_file} "
         if from_server and self._client.debug:
             command += "--env ZIPFILE=server_bkp.zip "
         if not no_deactivate and self._client.debug:
@@ -296,15 +284,17 @@ class OdooEnv:
 
         return ret
 
-    def install(self, client_name):
+    def install(self, args):
         """Instalacion de cliente,"""
-        self._client = Client(self, client_name)
+        manifest = download_manifest_from_github(args) if args.install else False
+
+        self._client = Client(self, args.client[0], manifest)
         ret = []
 
         ##################################################################
         # Create base dir with sudo
         ##################################################################
-        msg = "Installing client %s" % client_name
+        msg = f"Installing client {args.client[0]}"
         cmd = MakedirCommand(
             self, command=f"sudo mkdir {BASE_DIR}", args=BASE_DIR, usr_msg=msg
         )

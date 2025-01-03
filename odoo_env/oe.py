@@ -7,7 +7,6 @@ import sys
 from odoo_env.__init__ import __version__
 from odoo_env.config import OeConfig
 from odoo_env.create_database import create_database
-from odoo_env.install_actualize import actualize, install
 from odoo_env.messages import Msg
 from odoo_env.odooenv import OdooEnv
 from odoo_env.options import get_param
@@ -27,9 +26,9 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         nargs="?",
         help="-i update all proyect repositories."
         "-i [git-project-url] will download the default branch of the project and "
-        "install the directory "
-        "tree with all the necessary elements to run the installation locally. "
-        "-i [git-project-url] [-b 16.0] same as before but using the 16.0 branch; ",
+        "install the directory tree with all the necessary elements to run the "
+        "installation locally. -i [git-project-url] [-b 16.0] same as before "
+        "but using the 16.0 branch; ",
     )
 
     parser.add_argument(
@@ -42,14 +41,18 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "-p",
         "--pull-images",
         action="store_true",
-        help="Pull Images. Download all images declared in client manifest.",
+        help="Pull Images. The command downloads all the images declared in the "
+        "project. If we are in debug mode, it downloads the debug image and "
+        "also updates the local sources.",
     )
 
     parser.add_argument(
         "-w",
         "--write-config",
         action="store_true",
-        help="Create / Overwrite config file.",
+        help="Create or overwrite the odoo.conf file. If in debug mode, it uses "
+        "the directives defined in the config-local key, and if in production "
+        " mode, it uses the directives from the config key in the manifest.",
     )
 
     parser.add_argument(
@@ -243,7 +246,6 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "no-repos": args.no_repos,
         "nginx": args.nginx,
         "backup_file": args.backup_file,
-        #        "extract_sources": args.extract_sources,
         "force-create": args.force_create,
     }
     commands = []
@@ -264,14 +266,8 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
             client_name, database, backup_file, no_deactivate, from_server
         )
 
-    if args.install == None:
-        actualize(args, options, client_name)
-
     if args.install:
-        install(args, options)
-
-    if args.install:
-        commands += OdooEnv(options).install(client_name)
+        commands += OdooEnv(options).install(args)
 
     if args.write_config:
         commands += OdooEnv(options).write_config(client_name)

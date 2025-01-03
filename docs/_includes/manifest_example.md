@@ -9,20 +9,25 @@ What you need to know:
 
         Odoo Version: The mayor version of the "version" keyword
         env-ver: The version of the extended sintax actually v2
-        config: The data to write in odoo.conf
+        config: The data to write in odoo.conf on the production server (prod mode)
+        config-local: The data to write in odoo.conf on the local machine (debug mode)
         odoo-license: EE o CE
         port: Port where odoo docker image starts serving pages.
         git-repos: list of repositories to install
         docker-images: list of docker images to pull
 
-Additionally, as a best practice, we can place all the modules required by the
-installation in the depends list, then the project not only serves to install but also to
-create an empty database with all the required modules.
 
-It is also recommended that you never install modules from the odoo interface, you can
-simply add in the depends of the project and then issue a **oe -u** that magically
-do an **odoo-bin --update all --stop-after-init** inside the container.
-Then you have a documented list of installed modules.
+As a best practice, we can list all the required modules in the depends section.
+This approach ensures the project can not only handle installation but also
+create an empty database with all the necessary modules preloaded.
+
+It is also recommended to avoid installing modules directly from the Odoo interface.
+Instead, simply add the required modules to the depends list in the project.
+Afterward, you can run the command **oe -u**, which will seamlessly execute
+**odoo-bin --update all --stop-after-init** within the container.
+
+This approach ensures you maintain a documented list of installed modules for
+better organization and reproducibility.
 
 ## Syntax and examples
 ### 'git-repos':

@@ -1,3 +1,5 @@
+# pylint: skip-file
+
 """ Crear base de datos de con datos demo"""
 
 import os

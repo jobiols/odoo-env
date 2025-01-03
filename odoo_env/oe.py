@@ -75,10 +75,11 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "-u",
         "--update",
         action="store_true",
-        help="Update modules to database. Use --debug to force update with "
-        "image sources. use -m modulename to update this only module "
-        "default is all use -d databasename to update this database, "
-        "default is clientname_default",
+        help="Updates modules in the database. With no parameters, all modules "
+        "are updated. Use -m modulename to update only the specified module; "
+        "you can also pass a list of modules separated by commas (without "
+        "spaces). Use -d databasename to update a database other than the "
+        "default database.",
     )
 
     parser.add_argument(
@@ -98,41 +99,29 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     parser.add_argument(
         "--no-deactivate",
         action="store_true",
-        help="No Deactivate database before restore. WARNING this may be a potential risk",
+        help="No Deactivate database before restore. WARNING this command is "
+        "deprecated",
     )
 
     parser.add_argument(
-        "--extract-sources",
-        action="store_true",
-        help="Used in conjuntion with -i to extract sources to host from images",
-    )
-
-    parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="Set default environment mode to debug "
-        "This option has the following efects: "
-        "1.- When doing an install it copies the image sources to host "
-        "and clones repos with depth=1 "
-        "2.- When doing an update all, (option -u) it forces update with "
-        "image sources. "
-        "This option is persistent. ",
+        "--debug", action="store_true", help="Set default environment mode to debug "
     )
 
     parser.add_argument(
         "--prod",
         action="store_true",
-        help="Set default environment mode to production "
-        "This option is intended to install a production environment. "
-        "This option is persistent. "
-        "Warning this option is deprecated in favor of docker-compose installations",
+        help="Set default environment mode to production ",
     )
 
     parser.add_argument(
         "--from-prod",
         action="store_true",
         help="Restore backup from production server. Use with --restore. "
-        "it needs the option 'prod_server': 'user@vps-alias' in the manifest",
+        "it needs the option 'prod_server': 'user@vps-alias' in the manifest"
+        "WARNING: This options may download an exact backup please deactivate"
+        "before use."
+        "You can deactivate a database running odoo with those parameters"
+        "odoo deactivate -d database",
     )
 
     parser.add_argument(
@@ -166,7 +155,8 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "Used with -r starts an nginx container linked to odoo."
         "Used with -s stops nginx container. "
         "If you want to add certificates review nginx.conf file located "
-        "in /odoo_ar/nginx/conf",
+        "in /odoo_ar/nginx/conf NOTE: This option will be deprecated in the"
+        "near future",
     )
 
     parser.add_argument(
@@ -175,9 +165,11 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         metavar="repo",
         nargs=1,
         dest="quality_assurance",
-        help="Perform QA running tests, argument are repository to test. "
-        "Need -d, -m and -c options Note: for the test to run the database must be"
-        "created with demo data and must have admin user with password admin.",
+        help="Run the tests. Required parameters: -m <module name>. Optional "
+        "parameters: -d <database>; if omitted, the default database will be "
+        "used, which is the project name + _test. NOTE: The database used for "
+        "testing must be created with demo data and should have admin/admin "
+        "credentials.",
     )
 
     parser.add_argument(
@@ -230,7 +222,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "--base-dir",
         action="append",
         dest="base_dir",
-        help="Set default base-dir" "This option is persistent.",
+        help="Set default base-dir This option is persistent.",
     )
 
     args = parser.parse_args()
@@ -250,7 +242,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "no-repos": args.no_repos,
         "nginx": args.nginx,
         "backup_file": args.backup_file,
-        "extract_sources": args.extract_sources,
+        #        "extract_sources": args.extract_sources,
         "force-create": args.force_create,
     }
     commands = []
@@ -317,8 +309,9 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         create_database(OdooEnv(options=options), client_name)
         sys.exit()
 
-    # Verificar la version del script en pypi
     conf = OeConfig()
+
+    # Verificar la version del script en pypi
     conf.check_version()
 
     # #####################################################################

@@ -149,28 +149,47 @@ our sources.
         'installable': True,
         'application': False,
 
+        #######################################################################
         # Here begins odoo-env manifest configuration
-        # ===========================================
+        #######################################################################
 
-        # manifest version, if omitted it is backward compatible with v1 but
-        # oe will show a deprecation warning
+        # Manifest version: If omitted, version 1 is used for backward
+        # compatibility. However, this will trigger a deprecation warning since
+        # version 2 is now predominantly used. Support for backward compatibility
+        # will be removed soon.
         'env-ver': '2',
 
-        # Configuration data for odoo.conf, if ommited oe will create an odoo.conf
-        # with default values and with a proper addon_path.
+        # ===================================================================
+        # In this section, the odoo.conf file for the instance is configured.
+        # There are two sections: one for local installation and another for
+        # server installation, as they obviously require different parameters.
+        # ===================================================================
+
+        # in both cases the "addons path" cannot be modified; it will always be
+        # overwritten by the repositories found in the sources directory.
+        # "data_dir" is a fixed location inside the image
+
+        # Local configuration applies when Odoo is in debug mode.
+        'config-local': [
+
+                # Seting an easy password for debug mode
+                'admin_passwd = admin',
+
+                # OVERIDEN PARAMETERS
+                # The following parameters will be overwritten with these values:
+                # "workers = 0"
+                # "max_cron_threads = 0"
+                # "limit_time_cpu = 0"
+                # "limit_time_real = 0"
+        ]
+
+        # Production configuration applies when Odoo is in production mode.
         'config': [
-
-            # 'addons_path' you can not modify this is always computed looking for the
-            # repositories in sources
-
-            # 'data_dir' you can not modify this, is a fixed location inside docker odoo
-            # image
 
             # WORKERS and MAX_CRON_WORKERS
             # If ommited it will default the calculation
             # workers = 2 per available CPU
-            # max_cron_threads = 1 per available CPU
-            # In DEBUG mode both are forced to Zero
+            # max_cron_threads = 1
 
                     'workers = 2',
                     'max_cron_threads = 1',

@@ -4,9 +4,10 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "name": "Debug oe myproject",
-            "type": "python",
+            "type": "debugpy",
             "request": "launch",
             "args": ["-i","git@github.com:jobiols/cl-test.git","-b","16.0",],
 //"args": ["-h"],

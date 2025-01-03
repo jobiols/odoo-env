@@ -30,12 +30,15 @@ class Image:
 
 
 class Image2:
-    def __init__(self, values):
+    def __init__(self, values, debug=False):
+        _odoo_image = "odoo" in values
         values = values.split()
         if len(values) != 2:
-            msg.err("Bad image definition %s" % values)
+            msg.err(f"Bad image definition {values}")
         self._name = values[0]
         self._url = values[1]
+        if _odoo_image and debug:
+            self._url += ".debug"
 
     @property
     def short_name(self):

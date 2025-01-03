@@ -10,7 +10,7 @@ class OdooConf:
 
     def __init__(self, filename):
         self._filename = filename
-        self.config = dict()
+        self.config = {}
 
     def read_config(self):
         """lee el odoo.conf del archivo y lo vuelca a un diccionario"""
@@ -50,5 +50,5 @@ class OdooConf:
         """Agrega al config una linea de configuración, con la forma 'key = value'"""
         key, value = self._parse(line)
         if "options" not in self.config:
-            self.config["options"] = dict()
+            self.config["options"] = {}
         self.config["options"][key] = value

@@ -142,7 +142,7 @@ class OeConfig(Singleton):
                 if version != __version__:
                     Msg().warn(
                         f"BE CAREFUL, you are using version {__version__} of odoo-env "
-                        "however version {version} is already available."
+                        f"however version {version} is already available."
                     )
                     Msg().warn(
                         'You should update using "pipx upgrade odoo-env" or "pip '

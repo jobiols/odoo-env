@@ -126,7 +126,7 @@ class Client:
         if not self._name == name.split()[0]:
             msg.err(
                 f"You intend to install client {self._name} but in manifest, "
-                f"the name is {manifest.get("name")}"
+                f"the name is {manifest.get('name')}"
             )
 
         # Tomar los datos para odoo.conf

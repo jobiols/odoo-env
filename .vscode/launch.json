@@ -9,8 +9,8 @@
             "name": "Debug oe myproject",
             "type": "debugpy",
             "request": "launch",
-            "python": "/odoo/vs_env/bin/python3.12",
-            "args": ["-w", "-c","maverick"],
+            "args": ["-i","git@github.com:jobiols/cl-test.git","-b","16.0",],
+            "python": "/usr/bin/python3",
             "justMyCode": true,
             "module": "odoo_env.oe"
         }

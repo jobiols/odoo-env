@@ -7,6 +7,7 @@ import sys
 from odoo_env.__init__ import __version__
 from odoo_env.config import OeConfig
 from odoo_env.create_database import create_database
+from odoo_env.install_actualize import actualize, install
 from odoo_env.messages import Msg
 from odoo_env.odooenv import OdooEnv
 from odoo_env.options import get_param
@@ -23,12 +24,18 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     parser.add_argument(
         "-i",
         "--install",
-        action="store_true",
-        help="The first time it runs, it creates the directory structure and "
-        "clones all repositories declared in the project. If run again, it "
-        "updates the repositories. Use together with --extract-sources to copy "
-        "the sources from the Odoo image to the host, which is essential for "
-        "working in debug mode.",
+        nargs="?",
+        help="-i update all proyect repositories."
+        "-i [git-project-url] will download the default branch of the project and "
+        "install the directory "
+        "tree with all the necessary elements to run the installation locally. "
+        "-i [git-project-url] [-b 16.0] same as before but using the 16.0 branch; ",
+    )
+
+    parser.add_argument(
+        "-b",
+        "--branch",
+        help="Used in conjunction con -i to set a branch different from default",
     )
 
     parser.add_argument(
@@ -97,21 +104,16 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "deprecated",
     )
 
-    # parser.add_argument(
-    #     "--extract-sources",
-    #     action="store_true",
-    #     help="Extracts the sources from the Odoo image to the host; it can only "
-    #     "be used together with -i.",
-    # )
-
     parser.add_argument(
         "--debug", action="store_true", help="Set default environment mode to debug "
     )
+
     parser.add_argument(
         "--prod",
         action="store_true",
         help="Set default environment mode to production ",
     )
+
     parser.add_argument(
         "--from-prod",
         action="store_true",
@@ -122,6 +124,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "You can deactivate a database running odoo with those parameters"
         "odoo deactivate -d database",
     )
+
     parser.add_argument(
         "--no-repos",
         action="store_true",
@@ -260,6 +263,12 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         commands += OdooEnv(options).restore(
             client_name, database, backup_file, no_deactivate, from_server
         )
+
+    if args.install == None:
+        actualize(args, options, client_name)
+
+    if args.install:
+        install(args, options)
 
     if args.install:
         commands += OdooEnv(options).install(client_name)

@@ -24,11 +24,10 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "-i",
         "--install",
         nargs="?",
-        help="-i update all proyect repositories."
-        "-i [git-project-url] will download the default branch of the project and "
-        "install the directory tree with all the necessary elements to run the "
-        "installation locally. -i [git-project-url] [-b 16.0] same as before "
-        "but using the 16.0 branch; ",
+        help="Install or update all repositories defined in the project. "
+        "If a project's URL is passed as a parameter, it installs that specific project. "
+        "You can use -b branch to clone a branch other than the default."
+        "Currently, the -c clientname option is required, but it will be removed in future versions.",
     )
 
     parser.add_argument(
@@ -41,7 +40,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "-p",
         "--pull-images",
         action="store_true",
-        help="Pull Images. The command downloads all the images declared in the "
+        help="The command downloads all the images declared in the "
         "project. If we are in debug mode, it downloads the debug image and "
         "also updates the local sources.",
     )
@@ -68,7 +67,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "-S",
         "--stop-env",
         action="store_true",
-        help="Stop postgres, wdb and aeroo images.",
+        help="Stop postgres, wdb and aeroo images. (aeroo only for old odoo versions)",
     )
 
     parser.add_argument(
@@ -139,7 +138,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         action="store",
         nargs=1,
         dest="database",
-        help="Set default Database name." "This option is persistent",
+        help="Set default Database name. This option is persistent",
     )
 
     parser.add_argument(
@@ -203,7 +202,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "-H",
         "--server-help",
         action="store_true",
-        help="Show odoo server help, it shows the help from the odoo image"
+        help="Show odoo server help, it shows the help from the odoo image "
         "declared in the cliente manifest",
     )
 
@@ -211,17 +210,17 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "-V", "--version", action="store_true", help="Show version number and exit."
     )
 
-    parser.add_argument(
-        "--create-test-db",
-        action="store_true",
-        help="Create database with demo data.",
-    )
+    # parser.add_argument(
+    #     "--create-test-db",
+    #     action="store_true",
+    #     help="Create database with demo data.",
+    # )
 
-    parser.add_argument(
-        "--force-create",
-        action="store_true",
-        help="Force database creation.",
-    )
+    # parser.add_argument(
+    #     "--force-create",
+    #     action="store_true",
+    #     help="Force database creation.",
+    # )
     parser.add_argument(
         "--base-dir",
         action="append",

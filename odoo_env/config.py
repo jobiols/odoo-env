@@ -41,8 +41,7 @@ class OeConfig(Singleton):
         return ret if ret else template
 
     def save_config_data(self, config):
-        """ Salvar el conjunto de paths a los clientes
-        """ ""
+        """Salvar el conjunto de paths a los clientes"""
         # chequear si esta el archivo y sino crear el path
         if not os.path.exists(USER_CONFIG_PATH):
             os.makedirs(USER_CONFIG_PATH)
@@ -87,9 +86,9 @@ class OeConfig(Singleton):
         self.save_config_data(config)
 
     def get_environment(self):
-        """Traer el ambiente con prod por defecto"""
+        """Traer el ambiente con debug por defecto"""
         config = self.get_config_data()
-        return config.get("environment", "prod")
+        return config.get("environment", "debug")
 
     def save_environment(self, environment):
         """Salvar el ambiente"""
@@ -122,8 +121,8 @@ class OeConfig(Singleton):
         # tiene fecha, la paso a datetime
         dt_last = datetime.strptime(last_check, "%Y-%m-%d")
 
-        # verifico la version cada 10 dias
-        if abs((dt_today - dt_last).days) > 10:
+        # verifico la version cada 5 dias
+        if abs((dt_today - dt_last).days) > 5:
             # guardo la fecha del chequeo
             config["last_version_check"] = dt_today.strftime("%Y-%m-%d")
             self.save_config_data(config)
@@ -140,11 +139,13 @@ class OeConfig(Singleton):
                 if version != __version__:
                     Msg().warn(
                         f"BE CAREFUL, you are using version {__version__} of odoo-env "
-                        f"however version {version} is already available."
+                        f"however version {version} is already available. \n"
                     )
                     Msg().warn(
-                        'You should update using "pipx upgrade odoo-env" or "pip '
-                        'install --upgrade odoo-env" (old style).\n'
+                        "You should update using 'pipx upgrade odoo-env' if you're "
+                        "using Python 3.11 or higher.\n"
+                        "If you're on an older version, you can still use 'pip "
+                        "install --upgrade odoo-env', but it's recommended to start using pipx.\n"
                     )
                     Msg().warn(
                         "Do it right now before chaos knocks your digital door. Dont risk it."

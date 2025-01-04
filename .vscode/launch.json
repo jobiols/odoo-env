@@ -8,11 +8,12 @@
         {
             "name": "Debug oe myproject",
             "type": "debugpy",
+            "args": ["-i","https://github.com/jobiols/cl-umak.git","-b","17.0", "-c", "umak"],
             "request": "launch",
-            "args": ["-i","https://github.com/jobiols/cl-myproject.git","-b","17.0", "-c", "myproject"],
             "python": "/odoo/vs_env/bin/python3",
             "justMyCode": false,
             "module": "odoo_env.oe"
         }
     ]
 }
+//"args": ["-w"],

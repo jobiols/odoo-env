@@ -140,7 +140,7 @@ class Client:
         """
         # traer el path al cliente de la configuracion
         client_path = OeConfig().get_client_path(self._name)
-        # si lo encuentro traigo el manifest rapidamente con el path
+        # si lo encuentro traigo el manifest con el path
         if client_path:
             manifest, _ = self.get_manifest_from_struct(client_path)
             return manifest

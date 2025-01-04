@@ -6,7 +6,6 @@ import sys
 
 from odoo_env.__init__ import __version__
 from odoo_env.config import OeConfig
-from odoo_env.create_database import create_database
 from odoo_env.messages import Msg
 from odoo_env.odooenv import OdooEnv
 from odoo_env.options import get_param
@@ -245,7 +244,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "no-repos": args.no_repos,
         "nginx": args.nginx,
         "backup_file": args.backup_file,
-        "force-create": args.force_create,
+        #        "force-create": args.force_create,
     }
     commands = []
     client_name = get_param(args, "client").strip()
@@ -300,10 +299,10 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         Msg().inf(f"oe version {__version__}")
         sys.exit()
 
-    if args.create_test_db:
-        Msg().inf("Creating test database with demo data.")
-        create_database(OdooEnv(options=options), client_name)
-        sys.exit()
+    # if args.create_test_db:
+    #     Msg().inf("Creating test database with demo data.")
+    #     create_database(OdooEnv(options=options), client_name)
+    #     sys.exit()
 
     conf = OeConfig()
 

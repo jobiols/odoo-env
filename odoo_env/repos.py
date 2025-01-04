@@ -52,7 +52,7 @@ class Repo2:
         # parsear value en una lista
         parsed = value.split(" ")
         # eliminar los espacios
-        parsed = [i for i in parsed if i != ""]
+        parsed = [i for i in parsed if i]
 
         if "--recurse-submodules" in parsed:
             parsed.remove("--recurse-submodules")

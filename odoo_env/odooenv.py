@@ -354,13 +354,6 @@ class OdooEnv:
             ret.append(cmd)
 
         ##################################################################
-        # Extracting sources from image if debug enabled
-        ##################################################################
-        # if self.debug and self.extract_sources:
-        #     cmd = self.do_extract_sources(client_name)
-        #     ret.append(cmd)
-
-        ##################################################################
         # Clone or update repos as needed
         ##################################################################
 
@@ -388,18 +381,18 @@ class OdooEnv:
         return ret
 
     def _add_normal_mountings(self):
-        ret = "-v {}config:{} ".format(self.client.base_dir, IN_CONFIG)
-        ret += "-v {}data_dir:{} ".format(self.client.base_dir, IN_DATA)
-        ret += "-v {}log:{} ".format(self.client.base_dir, IN_LOG)
-        ret += "-v {}sources:{} ".format(self.client.base_dir, IN_CUSTOM_ADDONS)
-        ret += "-v {}backup_dir:{} ".format(self.client.base_dir, IN_BACKUP_DIR)
+        ret = f"-v {self.client.base_dir}config:{IN_CONFIG} "
+        ret += f"-v {self.client.base_dir}data_dir:{IN_DATA} "
+        ret += f"-v {self.client.base_dir}log:{IN_LOG} "
+        ret += f"-v {self.client.base_dir}sources:{IN_CUSTOM_ADDONS} "
+        ret += f"-v {self.client.base_dir}backup_dir:{IN_BACKUP_DIR} "
         return ret
 
     def stop_environment(self, client_name):
         self._client = Client(self, client_name)
         ret = []
 
-        img2 = "pg-{}".format(self.client.name)
+        img2 = f"pg-{self.client.name}"
         images = []
         if self.client.get_image("aeroo"):
             images.append("aeroo")
@@ -408,24 +401,24 @@ class OdooEnv:
         for image in images:
             cmd = Command(
                 self,
-                command="sudo docker stop {}".format(image),
-                usr_msg="Stopping image {} please wait...".format(image),
+                command=f"sudo docker stop {image}",
+                usr_msg=f"Stopping image {image} please wait...",
             )
             ret.append(cmd)
 
         for image in images:
             cmd = Command(
                 self,
-                command="sudo docker rm {}".format(image),
-                usr_msg="Removing image {}".format(image),
+                command=f"sudo docker rm {image}",
+                usr_msg=f"Removing image {image}",
             )
             ret.append(cmd)
 
         if self.debug:
             cmd = Command(
                 self,
-                command="sudo docker rm -f {}".format("wdb"),
-                usr_msg="Removing image {}".format("wdb"),
+                command="sudo docker rm -f wdb",
+                usr_msg="Removing image wdb",
             )
             ret.append(cmd)
 

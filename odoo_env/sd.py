@@ -28,7 +28,7 @@ def process_input(params):
         print("sd rmdiskall     - remove all images in disk")
         print("sd attach name   - attach to a running container by name")
         print(" ")
-        exit()
+        sys.exit()
 
     if params[2] == "inside":
         try:
@@ -71,7 +71,7 @@ def main():
     params = process_input(sys.argv)
     try:
         if len(params) > 1:
-            exit(subprocess.call(params, shell=True))
+            sys.exit(subprocess.call(params, shell=True))
     except Exception as ex:
         print(ex)
 

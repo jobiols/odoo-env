@@ -6,7 +6,6 @@ import sys
 
 from odoo_env.__init__ import __version__
 from odoo_env.config import OeConfig
-from odoo_env.create_database import create_database
 from odoo_env.messages import Msg
 from odoo_env.odooenv import OdooEnv
 from odoo_env.options import get_param
@@ -23,26 +22,35 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     parser.add_argument(
         "-i",
         "--install",
-        action="store_true",
-        help="The first time it runs, it creates the directory structure and "
-        "clones all repositories declared in the project. If run again, it "
-        "updates the repositories. Use together with --extract-sources to copy "
-        "the sources from the Odoo image to the host, which is essential for "
-        "working in debug mode.",
+        nargs="?",
+        help="Install or update all repositories defined in the project. "
+        "If a project's URL is passed as a parameter, it installs that specific project. "
+        "You can use -b branch to clone a branch other than the default."
+        "Currently, the -c clientname option is required, but it will be removed in future versions.",
+    )
+
+    parser.add_argument(
+        "-b",
+        "--branch",
+        help="Used in conjunction con -i to set a branch different from default",
     )
 
     parser.add_argument(
         "-p",
         "--pull-images",
         action="store_true",
-        help="Pull Images. Download all images declared in client manifest.",
+        help="The command downloads all the images declared in the "
+        "project. If we are in debug mode, it downloads the debug image and "
+        "also updates the local sources.",
     )
 
     parser.add_argument(
         "-w",
         "--write-config",
         action="store_true",
-        help="Create / Overwrite config file.",
+        help="Create or overwrite the odoo.conf file. If in debug mode, it uses "
+        "the directives defined in the config-local key, and if in production "
+        " mode, it uses the directives from the config key in the manifest.",
     )
 
     parser.add_argument(
@@ -58,7 +66,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "-S",
         "--stop-env",
         action="store_true",
-        help="Stop postgres, wdb and aeroo images.",
+        help="Stop postgres, wdb and aeroo images. (aeroo only for old odoo versions)",
     )
 
     parser.add_argument(
@@ -97,21 +105,16 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "deprecated",
     )
 
-    # parser.add_argument(
-    #     "--extract-sources",
-    #     action="store_true",
-    #     help="Extracts the sources from the Odoo image to the host; it can only "
-    #     "be used together with -i.",
-    # )
-
     parser.add_argument(
         "--debug", action="store_true", help="Set default environment mode to debug "
     )
+
     parser.add_argument(
         "--prod",
         action="store_true",
         help="Set default environment mode to production ",
     )
+
     parser.add_argument(
         "--from-prod",
         action="store_true",
@@ -122,6 +125,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "You can deactivate a database running odoo with those parameters"
         "odoo deactivate -d database",
     )
+
     parser.add_argument(
         "--no-repos",
         action="store_true",
@@ -133,7 +137,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         action="store",
         nargs=1,
         dest="database",
-        help="Set default Database name." "This option is persistent",
+        help="Set default Database name. This option is persistent",
     )
 
     parser.add_argument(
@@ -197,7 +201,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "-H",
         "--server-help",
         action="store_true",
-        help="Show odoo server help, it shows the help from the odoo image"
+        help="Show odoo server help, it shows the help from the odoo image "
         "declared in the cliente manifest",
     )
 
@@ -205,17 +209,17 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "-V", "--version", action="store_true", help="Show version number and exit."
     )
 
-    parser.add_argument(
-        "--create-test-db",
-        action="store_true",
-        help="Create database with demo data.",
-    )
+    # parser.add_argument(
+    #     "--create-test-db",
+    #     action="store_true",
+    #     help="Create database with demo data.",
+    # )
 
-    parser.add_argument(
-        "--force-create",
-        action="store_true",
-        help="Force database creation.",
-    )
+    # parser.add_argument(
+    #     "--force-create",
+    #     action="store_true",
+    #     help="Force database creation.",
+    # )
     parser.add_argument(
         "--base-dir",
         action="append",
@@ -240,8 +244,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "no-repos": args.no_repos,
         "nginx": args.nginx,
         "backup_file": args.backup_file,
-        #        "extract_sources": args.extract_sources,
-        "force-create": args.force_create,
+        #        "force-create": args.force_create,
     }
     commands = []
     client_name = get_param(args, "client").strip()
@@ -262,7 +265,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         )
 
     if args.install:
-        commands += OdooEnv(options).install(client_name)
+        commands += OdooEnv(options).install(args)
 
     if args.write_config:
         commands += OdooEnv(options).write_config(client_name)
@@ -296,10 +299,10 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         Msg().inf(f"oe version {__version__}")
         sys.exit()
 
-    if args.create_test_db:
-        Msg().inf("Creating test database with demo data.")
-        create_database(OdooEnv(options=options), client_name)
-        sys.exit()
+    # if args.create_test_db:
+    #     Msg().inf("Creating test database with demo data.")
+    #     create_database(OdooEnv(options=options), client_name)
+    #     sys.exit()
 
     conf = OeConfig()
 

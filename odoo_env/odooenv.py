@@ -4,6 +4,7 @@ import pwd
 from odoo_env.client import Client
 from odoo_env.command import *
 from odoo_env.constants import *
+from odoo_env.install_actualize import download_manifest_from_github
 from odoo_env.messages import Msg
 
 
@@ -77,16 +78,16 @@ class OdooEnv:
 
         if len(filenames) > 0:
             filenames.sort()
-            msg = "List of available backups for client %s\n\n" % client_name
+            txt = f"List of available backups for client {client_name}\n\n"
             for filedesc in filenames:
-                msg += filedesc + "\n"
+                txt += filedesc + "\n"
         else:
-            msg = "There are no files to restore"
+            txt = "There are no files to restore"
 
         cmd = MessageOnly(
             self,
             command=False,
-            usr_msg=msg,
+            usr_msg=txt,
         )
         ret.append(cmd)
         return ret
@@ -96,23 +97,16 @@ class OdooEnv:
         cli = Client(self, client_name)
         if backup_file:
             # Bajar el backup backup_file del server
-            cmd = "scp %s:%s%s %sserver_bkp.zip" % (
-                cli.prod_server,
-                cli.server_backup_dir,
-                backup_file,
-                cli.backup_dir,
+            cmd = (
+                f"scp {cli.prod_server}:{cli.server_backup_dir}{backup_file} "
+                f"{cli.backup_dir}server_bkp.zip"
             )
         else:
             # bajar el ultimo archivo del server
-            _file = "ssh %s ls -t %s | head -1" % (
-                cli.prod_server,
-                cli.server_backup_dir,
-            )
-            cmd = "scp %s:%s$(%s) %sserver_bkp.zip" % (
-                cli.prod_server,
-                cli.server_backup_dir,
-                _file,
-                cli.backup_dir,
+            _file = f"ssh {cli.prod_server} ls -t {cli.server_backup_dir} | head -1"
+            cmd = (
+                f"scp {cli.prod_server}:{cli.server_backup_dir}$({_file}) "
+                f"{cli.backup_dir}server_bkp.zip"
             )
         return cmd
 
@@ -130,9 +124,9 @@ class OdooEnv:
         self._client = Client(self, client_name)
         ret = []
 
-        msg = "Restoring database %s " % database
+        msg = f"Restoring database {database} "
         if backup_file:
-            msg += "from backup %s " % backup_file
+            msg += f"from backup {backup_file} "
         else:
             msg += "from newest backup "
 
@@ -145,12 +139,12 @@ class OdooEnv:
             ret.append(cmd)
 
         command = "sudo docker run --rm -i "
-        command += "--link pg-%s:db " % client_name
-        command += "-v %s:/backup " % self.client.backup_dir
-        command += "-v %sdata_dir/filestore:/filestore " % self.client.base_dir
-        command += "--env NEW_DBNAME=%s " % database
+        command += f"--link pg-{client_name}:db "
+        command += f"-v {self.client.backup_dir}:/backup "
+        command += f"-v {self.client.base_dir}data_dir/filestore:/filestore "
+        command += f"--env NEW_DBNAME={database} "
         if backup_file and not from_server:
-            command += "--env ZIPFILE=%s " % backup_file
+            command += f"--env ZIPFILE={backup_file} "
         if from_server and self._client.debug:
             command += "--env ZIPFILE=server_bkp.zip "
         if not no_deactivate and self._client.debug:
@@ -234,8 +228,9 @@ class OdooEnv:
         # Extracting sources
         ##################################################################
         for module in self._get_packs():
-            msg = (
-                f"Extracting {module} from image {self.client.get_image('odoo').name} "
+            txt = (
+                f"Extracting {module} from image "
+                f"{self.client.get_image('odoo').name} "
             )
             command = "sudo docker run -it --rm "
             command += f"--entrypoint=/extract_{module}.sh "
@@ -246,7 +241,7 @@ class OdooEnv:
                 self,
                 command=command,
                 args=f"{self.client.version_dir}{module}",
-                usr_msg=msg,
+                usr_msg=txt,
             )
             ret.append(cmd)
 
@@ -296,15 +291,17 @@ class OdooEnv:
 
         return ret
 
-    def install(self, client_name):
+    def install(self, args):
         """Instalacion de cliente,"""
-        self._client = Client(self, client_name)
+        manifest = download_manifest_from_github(args) if args.install else False
+
+        self._client = Client(self, args.client[0], manifest)
         ret = []
 
         ##################################################################
         # Create base dir with sudo
         ##################################################################
-        msg = "Installing client %s" % client_name
+        msg = f"Installing client {args.client[0]}"
         cmd = MakedirCommand(
             self, command=f"sudo mkdir {BASE_DIR}", args=BASE_DIR, usr_msg=msg
         )
@@ -364,13 +361,6 @@ class OdooEnv:
             ret.append(cmd)
 
         ##################################################################
-        # Extracting sources from image if debug enabled
-        ##################################################################
-        # if self.debug and self.extract_sources:
-        #     cmd = self.do_extract_sources(client_name)
-        #     ret.append(cmd)
-
-        ##################################################################
         # Clone or update repos as needed
         ##################################################################
 
@@ -398,18 +388,18 @@ class OdooEnv:
         return ret
 
     def _add_normal_mountings(self):
-        ret = "-v {}config:{} ".format(self.client.base_dir, IN_CONFIG)
-        ret += "-v {}data_dir:{} ".format(self.client.base_dir, IN_DATA)
-        ret += "-v {}log:{} ".format(self.client.base_dir, IN_LOG)
-        ret += "-v {}sources:{} ".format(self.client.base_dir, IN_CUSTOM_ADDONS)
-        ret += "-v {}backup_dir:{} ".format(self.client.base_dir, IN_BACKUP_DIR)
+        ret = f"-v {self.client.base_dir}config:{IN_CONFIG} "
+        ret += f"-v {self.client.base_dir}data_dir:{IN_DATA} "
+        ret += f"-v {self.client.base_dir}log:{IN_LOG} "
+        ret += f"-v {self.client.base_dir}sources:{IN_CUSTOM_ADDONS} "
+        ret += f"-v {self.client.base_dir}backup_dir:{IN_BACKUP_DIR} "
         return ret
 
     def stop_environment(self, client_name):
         self._client = Client(self, client_name)
         ret = []
 
-        img2 = "pg-{}".format(self.client.name)
+        img2 = f"pg-{self.client.name}"
         images = []
         if self.client.get_image("aeroo"):
             images.append("aeroo")
@@ -418,24 +408,24 @@ class OdooEnv:
         for image in images:
             cmd = Command(
                 self,
-                command="sudo docker stop {}".format(image),
-                usr_msg="Stopping image {} please wait...".format(image),
+                command=f"sudo docker stop {image}",
+                usr_msg=f"Stopping image {image} please wait...",
             )
             ret.append(cmd)
 
         for image in images:
             cmd = Command(
                 self,
-                command="sudo docker rm {}".format(image),
-                usr_msg="Removing image {}".format(image),
+                command=f"sudo docker rm {image}",
+                usr_msg=f"Removing image {image}",
             )
             ret.append(cmd)
 
         if self.debug:
             cmd = Command(
                 self,
-                command="sudo docker rm -f {}".format("wdb"),
-                usr_msg="Removing image {}".format("wdb"),
+                command="sudo docker rm -f wdb",
+                usr_msg="Removing image wdb",
             )
             ret.append(cmd)
 
@@ -763,7 +753,10 @@ class OdooEnv:
         command += "--test-enable "
         command += f"-u {module_name} "
 
-        msg = f"Performing tests on module {module_name} for client {client_name} and database {database}"
+        msg = (
+            f"Performing tests on module {module_name} for client "
+            f"{client_name} and database {database}"
+        )
 
         cmd = Command(self, command=command, usr_msg=msg)
         ret.append(cmd)
@@ -788,10 +781,6 @@ class OdooEnv:
     @property
     def nginx(self):
         return self._options["nginx"]
-
-    # @property
-    # def extract_sources(self):
-    #     return self._options["extract_sources"]
 
     @property
     def force_create(self):

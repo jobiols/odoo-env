@@ -78,16 +78,16 @@ class OdooEnv:
 
         if len(filenames) > 0:
             filenames.sort()
-            msg = "List of available backups for client %s\n\n" % client_name
+            txt = f"List of available backups for client {client_name}\n\n"
             for filedesc in filenames:
-                msg += filedesc + "\n"
+                txt += filedesc + "\n"
         else:
-            msg = "There are no files to restore"
+            txt = "There are no files to restore"
 
         cmd = MessageOnly(
             self,
             command=False,
-            usr_msg=msg,
+            usr_msg=txt,
         )
         ret.append(cmd)
         return ret
@@ -97,11 +97,17 @@ class OdooEnv:
         cli = Client(self, client_name)
         if backup_file:
             # Bajar el backup backup_file del server
-            cmd = f"scp {cli.prod_server}:{cli.server_backup_dir}{backup_file} {cli.backup_dir}server_bkp.zip"
+            cmd = (
+                f"scp {cli.prod_server}:{cli.server_backup_dir}{backup_file} "
+                f"{cli.backup_dir}server_bkp.zip"
+            )
         else:
             # bajar el ultimo archivo del server
             _file = f"ssh {cli.prod_server} ls -t {cli.server_backup_dir} | head -1"
-            cmd = f"scp {cli.prod_server}:{cli.server_backup_dir}$({_file}) {cli.backup_dir}server_bkp.zip"
+            cmd = (
+                f"scp {cli.prod_server}:{cli.server_backup_dir}$({_file}) "
+                f"{cli.backup_dir}server_bkp.zip"
+            )
         return cmd
 
     def restore(
@@ -222,8 +228,9 @@ class OdooEnv:
         # Extracting sources
         ##################################################################
         for module in self._get_packs():
-            msg = (
-                f"Extracting {module} from image {self.client.get_image('odoo').name} "
+            txt = (
+                f"Extracting {module} from image "
+                f"{self.client.get_image('odoo').name} "
             )
             command = "sudo docker run -it --rm "
             command += f"--entrypoint=/extract_{module}.sh "
@@ -234,7 +241,7 @@ class OdooEnv:
                 self,
                 command=command,
                 args=f"{self.client.version_dir}{module}",
-                usr_msg=msg,
+                usr_msg=txt,
             )
             ret.append(cmd)
 
@@ -746,7 +753,10 @@ class OdooEnv:
         command += "--test-enable "
         command += f"-u {module_name} "
 
-        msg = f"Performing tests on module {module_name} for client {client_name} and database {database}"
+        msg = (
+            f"Performing tests on module {module_name} for client "
+            f"{client_name} and database {database}"
+        )
 
         cmd = Command(self, command=command, usr_msg=msg)
         ret.append(cmd)

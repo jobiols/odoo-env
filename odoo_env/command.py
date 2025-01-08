@@ -189,6 +189,7 @@ class WriteConfigFile(Command):
         odoo_conf.add_line(f"addons_path = {repos}")
         odoo_conf.add_line("unaccent = True")
         odoo_conf.add_line("data_dir = /opt/odoo/data")
+        odoo_conf.add_line("proxy_mode = True")
 
         # si estoy en modo debug, sobreescribo esto
         if client.debug:

@@ -1,7 +1,8 @@
 import re
+import shutil
 import subprocess
 from pathlib import Path
-import shutil
+
 from odoo_env.client import Client
 from odoo_env.messages import Msg
 
@@ -26,9 +27,12 @@ def generate_ssh_keypair(key_name="id_ed25519", passphrase=""):
         subprocess.run(
             [
                 ssh_keygen_path,
-                "-t", "ed25519",
-                "-f", str(private_key_path),
-                "-N", passphrase,
+                "-t",
+                "ed25519",
+                "-f",
+                str(private_key_path),
+                "-N",
+                passphrase,
             ],
             stdout=devnull,
             stderr=devnull,

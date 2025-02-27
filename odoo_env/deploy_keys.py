@@ -1,7 +1,7 @@
 import re
 import subprocess
 from pathlib import Path
-
+import shutil
 from odoo_env.client import Client
 from odoo_env.messages import Msg
 
@@ -16,16 +16,19 @@ def generate_ssh_keypair(key_name="id_ed25519", passphrase=""):
         Msg().inf(f"Key '{private_key_path}' already exists.")
         return
 
+    # Buscar la ruta absoluta de ssh-keygen
+    ssh_keygen_path = shutil.which("ssh-keygen")
+    if not ssh_keygen_path:
+        raise FileNotFoundError("ssh-keygen not found in the system.")
+
+    # Ejecutar ssh-keygen de manera silenciosa
     with open("/dev/null", "w") as devnull:
         subprocess.run(
             [
-                "ssh-keygen",
-                "-t",
-                "ed25519",
-                "-f",
-                str(private_key_path),
-                "-N",
-                passphrase,
+                ssh_keygen_path,
+                "-t", "ed25519",
+                "-f", str(private_key_path),
+                "-N", passphrase,
             ],
             stdout=devnull,
             stderr=devnull,

@@ -199,6 +199,7 @@ class WriteConfigFile(Command):
             odoo_conf.add_line("max_cron_threads = 0")
             odoo_conf.add_line("limit_time_cpu = 0")
             odoo_conf.add_line("limit_time_real = 0")
+            odoo_conf.add_line("admin_password = admin")
         else:
             # no estoy en modo debug,
             # si no defino workers en el manifiesto lo calculo
@@ -214,7 +215,6 @@ class WriteConfigFile(Command):
             line = self.check_item("max_cron_threads", client.config)
             if not line:
                 # Calculo los cron threads
-                # You should use 1 cron thread per available CPU
                 odoo_conf.add_line("max_cron_threads = 1")
             else:
                 odoo_conf.add_line(line)

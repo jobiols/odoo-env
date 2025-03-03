@@ -329,7 +329,7 @@ class OdooEnv:
             "sources",
         ]:
             r_dir = f"{self.client.base_dir}{w_dir}"
-            cmd = MakedirCommand(self, command="mkdir -p %s" % r_dir, args="%s" % r_dir)
+            cmd = MakedirCommand(self, command=f"mkdir -p {r_dir}", args=r_dir)
             ret.append(cmd)
 
         ##################################################################
@@ -713,20 +713,18 @@ class OdooEnv:
         command += self._add_normal_mountings()
         if self.debug:
             command += self._add_debug_mountings(self.client.numeric_ver)
-        command += "--link pg-{}:db ".format(self.client.name)
+        command += f"--link pg-{self.client.name}:db "
         command += "-e ODOO_CONF=/dev/null "
-        command += "{} -- ".format(self.client.get_image("odoo").name)
+        command += f"{self.client.get_image("odoo").name} -- "
         command += "--stop-after-init "
         command += "--logfile=false "
-        command += "-d {} ".format(database)
-        command += "-u {} ".format(", ".join(modules))
+        command += f"-d {database} "
+        command += f"-u {', '.join()} "
 
         cmd = Command(
             self,
             command=command,
-            usr_msg="Performing update of {} on database {}".format(
-                ", ".join(modules), database
-            ),
+            usr_msg=f"Performing update of {', '.join(modules)} on database {database}"
         )
         ret.append(cmd)
         return ret
@@ -788,10 +786,6 @@ class OdooEnv:
     @property
     def nginx(self):
         return self._options["nginx"]
-
-    # @property
-    # def extract_sources(self):
-    #     return self._options["extract_sources"]
 
     @property
     def force_create(self):

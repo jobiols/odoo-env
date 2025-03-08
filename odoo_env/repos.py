@@ -78,7 +78,7 @@ class Repo2:
         self._url = parsed[0]
 
         # agregarle a la url el prefijo de ssh si es requerido solo si estamos en produccion
-        if self.protocol == "ssh" and not options['debug']:
+        if self.protocol == "ssh" and not options["debug"]:
             self._url = re.sub(r"@(github)", f"@{self.code_name}.\\1", self._url)
 
         # si me quedan dos parametros tengo un directorio

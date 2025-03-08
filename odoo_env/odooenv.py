@@ -4,8 +4,10 @@ import pwd
 from odoo_env.client import Client
 from odoo_env.command import *
 from odoo_env.constants import *
+from odoo_env.constants import (IN_BACKUP_DIR, IN_CONFIG, IN_CUSTOM_ADDONS,
+                                IN_DATA, IN_LOG)
 from odoo_env.messages import Msg
-from odoo_env.constants import IN_CUSTOM_ADDONS, IN_CONFIG, IN_DATA, IN_LOG, IN_BACKUP_DIR
+
 
 class OdooEnv:
     """
@@ -724,7 +726,7 @@ class OdooEnv:
         cmd = Command(
             self,
             command=command,
-            usr_msg=f"Performing update of {', '.join(modules)} on database {database}"
+            usr_msg=f"Performing update of {', '.join(modules)} on database {database}",
         )
         ret.append(cmd)
         return ret

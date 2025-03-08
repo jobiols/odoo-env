@@ -5,7 +5,7 @@ from odoo_env.client import Client
 from odoo_env.command import *
 from odoo_env.constants import *
 from odoo_env.messages import Msg
-
+from odoo_env.constants import IN_CUSTOM_ADDONS, IN_CONFIG, IN_DATA, IN_LOG, IN_BACKUP_DIR
 
 class OdooEnv:
     """

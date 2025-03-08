@@ -37,6 +37,7 @@ Functionality
     Odoo Environment Manager v0.14.0 - by jeo Software <jorge.obiols@gmail.com>
 
     options:
+
     -h, --help           show this help message and exit
     -i, --install        The first time it runs, it creates the directory structure and
                         clones all repositories declared in the project. If run again,
@@ -107,6 +108,7 @@ Installation
 
 Changelog
 ---------
+
 - 0.14.0  - Support for installation on a server with multiple private repositories.
 - 0.13.2  - Correction of a paragraph with double quotes inside double quotes.
 - 0.13.1  - A second configuration section is defined. The original is used when

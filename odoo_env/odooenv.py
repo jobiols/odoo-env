@@ -12,9 +12,9 @@ class OdooEnv:
     Implementa metodos que corresponden a cada una de las acciones que se
     proveen en la interfase argparse.
 
-        corresponde a una opcion, devuelve una lista de tuplas con accion y
-        mensaje. El mensaje puede estar o no.
-        Si hay mensaje se muestra antes de ejecutar la accion
+    corresponde a una opcion, devuelve una lista de tuplas con accion y
+    mensaje. El mensaje puede estar o no.
+    Si hay mensaje se muestra antes de ejecutar la accion
     """
 
     def __init__(self, options):

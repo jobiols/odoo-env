@@ -6,6 +6,8 @@ import sys
 
 from odoo_env.__init__ import __version__
 from odoo_env.config import OeConfig
+from odoo_env.create_database import create_database
+from odoo_env.deploy_keys import deploy_keys
 from odoo_env.messages import Msg
 from odoo_env.odooenv import OdooEnv
 from odoo_env.options import get_param
@@ -99,10 +101,25 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     )
 
     parser.add_argument(
+        "-d",
+        action="store",
+        nargs=1,
+        dest="database",
+        help="Set default Database name. This option is persistent",
+    )
+
+    parser.add_argument(
         "--no-deactivate",
         action="store_true",
         help="No Deactivate database before restore. WARNING this command is "
         "deprecated",
+    )
+
+    parser.add_argument(
+        "--deploy-keys",
+        action="store_true",
+        help="Available only in production mode. It creates a pair of deploy keys for each private "
+        "repository found in the manifest, lists the public keys for adding to the repositories.",
     )
 
     parser.add_argument(
@@ -133,32 +150,12 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     )
 
     parser.add_argument(
-        "-d",
-        action="store",
-        nargs=1,
-        dest="database",
-        help="Set default Database name. This option is persistent",
-    )
-
-    parser.add_argument(
         "-m",
         action="append",
         dest="module",
         help="Module to update. Used with -u (update) i.e. -m sale for "
         "updating sale module -m all for updating all modules. NOTE: if "
         "you perform -u without -m it asumes all modules",
-    )
-
-    parser.add_argument(
-        "--nginx",
-        action="store_true",
-        help="Add nginx to installation: Used with -i creates nginx dir "
-        "with config file. "
-        "Used with -r starts an nginx container linked to odoo."
-        "Used with -s stops nginx container. "
-        "If you want to add certificates review nginx.conf file located "
-        "in /odoo_ar/nginx/conf NOTE: This option will be deprecated in the"
-        "near future",
     )
 
     parser.add_argument(
@@ -172,20 +169,6 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "used, which is the project name + _test. NOTE: The database used for "
         "testing must be created with demo data and should have admin/admin "
         "credentials.",
-    )
-
-    parser.add_argument(
-        "--backup-list",
-        action="store_true",
-        help="List all backup files available for restore",
-    )
-
-    parser.add_argument(
-        "--restore",
-        action="store_true",
-        help="Restores a backup. it uses last backup and restores to default "
-        "database. You can change the backup file to restore with -f "
-        "option and change database name -d option",
     )
 
     parser.add_argument(
@@ -209,11 +192,37 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "-V", "--version", action="store_true", help="Show version number and exit."
     )
 
-    # parser.add_argument(
-    #     "--create-test-db",
-    #     action="store_true",
-    #     help="Create database with demo data.",
-    # )
+    parser.add_argument(
+        "--nginx",
+        action="store_true",
+        help="Add nginx to installation: Used with -i creates nginx dir "
+        "with config file. "
+        "Used with -r starts an nginx container linked to odoo."
+        "Used with -s stops nginx container. "
+        "If you want to add certificates review nginx.conf file located "
+        "in /odoo_ar/nginx/conf NOTE: This option will be deprecated in the"
+        "near future",
+    )
+
+    parser.add_argument(
+        "--backup-list",
+        action="store_true",
+        help="List all backup files available for restore",
+    )
+
+    parser.add_argument(
+        "--restore",
+        action="store_true",
+        help="Restores a backup. it uses last backup and restores to default "
+        "database. You can change the backup file to restore with -f "
+        "option and change database name -d option",
+    )
+
+    parser.add_argument(
+        "--create-test-db",
+        action="store_true",
+        help="Create database with demo data.",
+    )
 
     # parser.add_argument(
     #     "--force-create",
@@ -244,7 +253,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "no-repos": args.no_repos,
         "nginx": args.nginx,
         "backup_file": args.backup_file,
-        #        "force-create": args.force_create,
+        "force-create": args.force_create,
     }
     commands = []
     client_name = get_param(args, "client").strip()
@@ -303,6 +312,11 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     #     Msg().inf("Creating test database with demo data.")
     #     create_database(OdooEnv(options=options), client_name)
     #     sys.exit()
+
+    if args.deploy_keys:
+        if options["debug"]:
+            Msg().err("Must be in prod mode in order to create deploy keys.")
+        deploy_keys(OdooEnv(options=options), client_name)
 
     conf = OeConfig()
 

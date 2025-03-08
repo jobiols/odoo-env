@@ -6,16 +6,16 @@ from odoo_env.command import *
 from odoo_env.constants import *
 from odoo_env.install_actualize import download_manifest_from_github
 from odoo_env.messages import Msg
-
+from odoo_env.constants import IN_CUSTOM_ADDONS, IN_CONFIG, IN_DATA, IN_LOG, IN_BACKUP_DIR
 
 class OdooEnv:
     """
     Implementa metodos que corresponden a cada una de las acciones que se
     proveen en la interfase argparse.
 
-        corresponde a una opcion, devuelve una lista de tuplas con accion y
-        mensaje. El mensaje puede estar o no.
-        Si hay mensaje se muestra antes de ejecutar la accion
+    corresponde a una opcion, devuelve una lista de tuplas con accion y
+    mensaje. El mensaje puede estar o no.
+    Si hay mensaje se muestra antes de ejecutar la accion
     """
 
     def __init__(self, options):
@@ -326,7 +326,7 @@ class OdooEnv:
             "sources",
         ]:
             r_dir = f"{self.client.base_dir}{w_dir}"
-            cmd = MakedirCommand(self, command="mkdir -p %s" % r_dir, args="%s" % r_dir)
+            cmd = MakedirCommand(self, command=f"mkdir -p {r_dir}", args=r_dir)
             ret.append(cmd)
 
         ##################################################################
@@ -703,20 +703,18 @@ class OdooEnv:
         command += self._add_normal_mountings()
         if self.debug:
             command += self._add_debug_mountings(self.client.numeric_ver)
-        command += "--link pg-{}:db ".format(self.client.name)
+        command += f"--link pg-{self.client.name}:db "
         command += "-e ODOO_CONF=/dev/null "
-        command += "{} -- ".format(self.client.get_image("odoo").name)
+        command += f"{self.client.get_image("odoo").name} -- "
         command += "--stop-after-init "
         command += "--logfile=false "
-        command += "-d {} ".format(database)
-        command += "-u {} ".format(", ".join(modules))
+        command += f"-d {database} "
+        command += f"-u {', '.join()} "
 
         cmd = Command(
             self,
             command=command,
-            usr_msg="Performing update of {} on database {}".format(
-                ", ".join(modules), database
-            ),
+            usr_msg=f"Performing update of {', '.join(modules)} on database {database}"
         )
         ret.append(cmd)
         return ret

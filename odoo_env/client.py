@@ -85,7 +85,7 @@ class Client:
 
         # Crear imagenes y repos
         for rep in manifest.get("git-repos"):
-            self._repos.append(Repo2(rep, self._version))
+            self._repos.append(Repo2(rep, self._version, self._parent._options))
 
         for img in manifest.get("docker-images"):
             self._images.append(Image2(img, self._parent.debug))

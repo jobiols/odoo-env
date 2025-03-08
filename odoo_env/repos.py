@@ -1,3 +1,8 @@
+import re
+
+from odoo_env.messages import Msg
+
+
 class Repo:
     def __init__(self, value):
         self._dict = value
@@ -35,7 +40,7 @@ class Repo:
 
     @property
     def clone(self):
-        return "clone --depth 1 -b {} {}".format(self.branch, self.url)
+        return f"clone --depth 1 -b {self.branch} {self.url}"
 
     @property
     def pull(self):
@@ -43,7 +48,7 @@ class Repo:
 
 
 class Repo2:
-    def __init__(self, value, branch):
+    def __init__(self, value, branch, options):
         """Sintaxis <repo> [<directory>[/<directory>] [-b <branch>] [optios]
         El branch debe estar despues del repo, si no esta se toma el branch
         que viene como parametro, si no viene nada es una excepcion.
@@ -71,6 +76,10 @@ class Repo2:
             self._branch = branch
 
         self._url = parsed[0]
+
+        # agregarle a la url el prefijo de ssh si es requerido solo si estamos en produccion
+        if self.protocol == "ssh" and not options['debug']:
+            self._url = re.sub(r"@(github)", f"@{self.code_name}.\\1", self._url)
 
         # si me quedan dos parametros tengo un directorio
         if len(parsed) > 1:
@@ -114,3 +123,21 @@ class Repo2:
     def pull(self):
         recurse = "--recurse-submodules" if self._recurse_submodules else ""
         return f"pull {recurse}"
+
+    @property
+    def protocol(self):
+        if self._url.startswith("git@"):
+            return "ssh"
+        if self._url.startswith("https:"):
+            return "https"
+        Msg().err(f"Unknown git protocol {self._url}")
+
+    @property
+    def code_name(self):
+        """Obtener el nombre del repositorio del"""
+        pattern = r"[:/](?P<name>[^/]+?)(?:\.git|\s|$)"
+        match = re.search(pattern, self._url)
+        if match:
+            return match.group("name")
+
+        Msg.err(f"invalid repository URL {self._url}")

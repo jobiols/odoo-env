@@ -721,7 +721,7 @@ class OdooEnv:
         command += "--stop-after-init "
         command += "--logfile=false "
         command += f"-d {database} "
-        command += f"-u {', '.join()} "
+        command += f"-u {', '.join(modules)} "
 
         cmd = Command(
             self,

@@ -717,7 +717,7 @@ class OdooEnv:
             command += self._add_debug_mountings(self.client.numeric_ver)
         command += f"--link pg-{self.client.name}:db "
         command += "-e ODOO_CONF=/dev/null "
-        command += f"{self.client.get_image("odoo").name} -- "
+        command += f"{self.client.get_image('odoo').name} -- "
         command += "--stop-after-init "
         command += "--logfile=false "
         command += f"-d {database} "

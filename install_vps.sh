@@ -8,6 +8,9 @@ sudo apt update && sudo apt upgrade -y
 # verificar si esta python 3 instalado
 python3 -V
 
+# Verificar version de linux
+lsb_release -a
+
 # si no esta instalado instalar python 3
 # echo
 #echo "installing python"
@@ -42,7 +45,7 @@ rm get-docker.sh
 # install docker en produccion Ubuntu
 # https://docs.docker.com/engine/install/ubuntu/
 
-# Add Docker's official GPG key: EN DEBIAN
+# Add Docker's official GPG key: EN DEBIAN / UBUNTU
 sudo apt-get update
 sudo apt-get install ca-certificates curl gnupg
 sudo install -m 0755 -d /etc/apt/keyrings

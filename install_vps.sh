@@ -74,5 +74,3 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin 
 # Verificar docker
 sudo docker run hello-world
 
-# test
-docker-compose --version

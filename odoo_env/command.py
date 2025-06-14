@@ -199,7 +199,7 @@ class WriteConfigFile(Command):
             odoo_conf.add_line("max_cron_threads = 0")
             odoo_conf.add_line("limit_time_cpu = 0")
             odoo_conf.add_line("limit_time_real = 0")
-            odoo_conf.add_line("admin_password = admin")
+            odoo_conf.add_line("admin_passwd = admin")
         else:
             # no estoy en modo debug,
             # si no defino workers en el manifiesto lo calculo

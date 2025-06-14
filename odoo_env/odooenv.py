@@ -503,7 +503,11 @@ class OdooEnv:
             command += "-p 1984:1984 "
             command += "--name=wdb "
             command += "--restart=always "
-            command += "kozea/wdb"
+            if self.client.numeric_ver < 18.0:
+                command += "kozea/wdb"
+            else:
+                command += "jobiols/wdb-server:3.3.1"
+
             cmd = Command(
                 self,
                 command=command,

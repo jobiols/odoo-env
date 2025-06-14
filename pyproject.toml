@@ -1,34 +1,30 @@
-# https://packaging.python.org/en/latest/tutorials/packaging-projects/
-# https://setuptools.pypa.io/en/latest/
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
 name = "odoo-env"
-version = "0.14.3"
+version = "0.15.0"
 
 authors = [
   { name="Jorge Obiols", email="jorge.obiols@gmail.com" },
 ]
 description = "A Dockerized environment for Odoo"
 readme = "README.md"
-requires-python = ">=3.8"
-    classifiers=[
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
-        "Programming Language :: Python :: 3.13",
-        "Development Status :: 5 - Production/Stable",
-        "Intended Audience :: Developers",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: POSIX :: Linux",
-        "Topic :: Software Development :: Testing :: Unit",
-        "Topic :: System :: Software Distribution",
-    ]
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Topic :: Software Development :: Testing :: Unit",
+    "Topic :: System :: Software Distribution",
+]
 dependencies = [
   "PyYAML >= 6.0.2",
   "tornado >= 6.4.2",
@@ -41,6 +37,3 @@ sd = "odoo_env.sd:main"
 [project.urls]
 "Homepage" = "https://jobiols.github.io/odoo-env/"
 "Bug Tracker" = "https://github.com/jobiols/odoo-env/issues"
-
-[tool.setuptools.dynamic]
-dependencies = {file = ["requirements.txt"]}

@@ -108,7 +108,7 @@ class OeConfig(Singleton):
         self.save_config_data(config)
 
     def check_version(self):
-        """Chequea si la vcersion de odoo-env es la última"""
+        """Chequea si la version de odoo-env es la última"""
 
         config = self.get_config_data()
         dt_today = datetime.today()

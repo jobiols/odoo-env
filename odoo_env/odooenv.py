@@ -511,7 +511,7 @@ class OdooEnv:
             if self.client.numeric_ver < 18.0:
                 command += "kozea/wdb"
             else:
-                command += "jobiols/wdb-server:3.3.1"
+                command += "jobiols/wdb:3.3.1"
 
             cmd = Command(
                 self,

@@ -34,7 +34,7 @@ Functionality
             [--restore] [-f BACKUP_FILE] [-H] [-V] [--create-test-db] [--force-create]
             [--base-dir BASE_DIR]
 
-    Odoo Environment Manager v0.15.1 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.15.2 - by jeo Software <jorge.obiols@gmail.com>
 
     options:
     -h, --help           show this help message and exit
@@ -107,6 +107,9 @@ Installation
 
 Changelog
 ---------
+- 0.15.2  - Added support for WDB 3.3.1 for Odoo versions >= 16, and remove repository
+            creation when pulling images with -p to speed up the process, since the repository
+            has little use.
 - 0.15.1  - Fix wdb image name, fix python version in images
 - 0.15.0  - Added support for WDB 3.3.1 for Odoo versions > 17.0.
 - 0.14.3  - Compatibility with python 3.11

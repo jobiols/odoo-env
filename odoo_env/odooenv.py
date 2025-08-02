@@ -267,39 +267,39 @@ class OdooEnv:
             )
             ret.append(cmd)
 
-        # agregar un gitignore
-        for module in self._get_packs():
-            r_dir = f"{self.client.version_dir}{module}"
-            cmd = CreateGitignore(
-                self,
-                command=f"{r_dir}/.gitignore",
-                usr_msg=f"Creating gitignore file in {r_dir}",
-            )
-            ret.append(cmd)
+        # # agregar un gitignore
+        # for module in self._get_packs():
+        #     r_dir = f"{self.client.version_dir}{module}"
+        #     cmd = CreateGitignore(
+        #         self,
+        #         command=f"{r_dir}/.gitignore",
+        #         usr_msg=f"Creating gitignore file in {r_dir}",
+        #     )
+        #     ret.append(cmd)
 
-        for module in self._get_packs():
-            # create git repo
-            command = f"git -C {self._client.version_dir}{module}/ init "
-            cmd = Command(
-                self, command=command, usr_msg=f"Init repository for {module}"
-            )
-            ret.append(cmd)
+        # for module in self._get_packs():
+        #     # create git repo
+        #     command = f"git -C {self._client.version_dir}{module}/ init "
+        #     cmd = Command(
+        #         self, command=command, usr_msg=f"Init repository for {module}"
+        #     )
+        #     ret.append(cmd)
 
-        for module in self._get_packs():
-            command = f"git -C {self._client.version_dir}{module}/ add . "
-            cmd = Command(
-                self,
-                command=command,
-                usr_msg=f"Add files to repository for {module}",
-            )
-            ret.append(cmd)
+        # for module in self._get_packs():
+        #     command = f"git -C {self._client.version_dir}{module}/ add . "
+        #     cmd = Command(
+        #         self,
+        #         command=command,
+        #         usr_msg=f"Add files to repository for {module}",
+        #     )
+        #     ret.append(cmd)
 
-        for module in self._get_packs():
-            command = f"git -C {self._client.version_dir}{module}/ commit -m inicial "
-            cmd = Command(
-                self, command=command, usr_msg=f"Commit repository for {module}"
-            )
-            ret.append(cmd)
+        # for module in self._get_packs():
+        #     command = f"git -C {self._client.version_dir}{module}/ commit -m inicial "
+        #     cmd = Command(
+        #         self, command=command, usr_msg=f"Commit repository for {module}"
+        #     )
+        #     ret.append(cmd)
 
         return ret
 
@@ -522,7 +522,7 @@ class OdooEnv:
             command += "-p 1984:1984 "
             command += "--name=wdb "
             command += "--restart=always "
-            if self.client.numeric_ver < 18.0:
+            if self.client.numeric_ver < 16.0:
                 command += "kozea/wdb"
             else:
                 command += "jobiols/wdb:3.3.1"

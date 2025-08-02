@@ -107,7 +107,7 @@ Installation
 
 Changelog
 ---------
-- 0.15.1  - Fix wdb image name.
+- 0.15.1  - Fix wdb image name, fix python version in images
 - 0.15.0  - Added support for WDB 3.3.1 for Odoo versions > 17.0.
 - 0.14.3  - Compatibility with python 3.11
 - 0.14.2  - Fix install bug in debug mode

@@ -386,16 +386,30 @@ class OdooEnv:
         return ret
 
     def _add_debug_mountings(self, version):
+        """ Versiones de python dentro de las imagenes"""
+
         iea = IN_EXTRA_ADDONS
-        if version in (11, 12):
+        if version in {8,9}:
+            idp = IN_DIST_PACKAGES.format("2")
+            idlp = IN_DIST_LOCAL_PACKAGES.format("2.7")
+        if version in {11,12}:
             idp = IN_DIST_PACKAGES.format("3")
             idlp = IN_DIST_LOCAL_PACKAGES.format("3.5")
-        elif version >= 13:
+        elif version in {13}:
             idp = IN_DIST_PACKAGES.format("3")
             idlp = IN_DIST_LOCAL_PACKAGES.format("3.7")
+        elif version in {14,15,16}:
+            idp = IN_DIST_PACKAGES.format("3")
+            idlp = IN_DIST_LOCAL_PACKAGES.format("3.9")
+        elif version in {17}:
+            idp = IN_DIST_PACKAGES.format("3")
+            idlp = IN_DIST_LOCAL_PACKAGES.format("3.10")
+        elif version in {18}:
+            idp = IN_DIST_PACKAGES.format("3")
+            idlp = IN_DIST_LOCAL_PACKAGES.format("3.12")
         else:
-            idp = IN_DIST_PACKAGES.format("2.7")
-            idlp = IN_DIST_LOCAL_PACKAGES.format("2.7")
+            idp = IN_DIST_PACKAGES.format("3")
+            idlp = IN_DIST_LOCAL_PACKAGES.format("3.13")
 
         cvd = self.client.version_dir
 

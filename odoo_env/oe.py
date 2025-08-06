@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-""" Este es el modulo principal de odoo-env """
+"""Este es el modulo principal de odoo-env"""
 
 import argparse
 import sys

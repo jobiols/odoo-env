@@ -1,4 +1,4 @@
-""" Crear base de datos de con datos demo"""
+"""Crear base de datos de con datos demo"""
 
 import os
 import subprocess

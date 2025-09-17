@@ -268,38 +268,6 @@ class OdooEnv:
             ret.append(cmd)
 
         # # agregar un gitignore
-        # for module in self._get_packs():
-        #     r_dir = f"{self.client.version_dir}{module}"
-        #     cmd = CreateGitignore(
-        #         self,
-        #         command=f"{r_dir}/.gitignore",
-        #         usr_msg=f"Creating gitignore file in {r_dir}",
-        #     )
-        #     ret.append(cmd)
-
-        # for module in self._get_packs():
-        #     # create git repo
-        #     command = f"git -C {self._client.version_dir}{module}/ init "
-        #     cmd = Command(
-        #         self, command=command, usr_msg=f"Init repository for {module}"
-        #     )
-        #     ret.append(cmd)
-
-        # for module in self._get_packs():
-        #     command = f"git -C {self._client.version_dir}{module}/ add . "
-        #     cmd = Command(
-        #         self,
-        #         command=command,
-        #         usr_msg=f"Add files to repository for {module}",
-        #     )
-        #     ret.append(cmd)
-
-        # for module in self._get_packs():
-        #     command = f"git -C {self._client.version_dir}{module}/ commit -m inicial "
-        #     cmd = Command(
-        #         self, command=command, usr_msg=f"Commit repository for {module}"
-        #     )
-        #     ret.append(cmd)
 
         return ret
 
@@ -560,7 +528,6 @@ class OdooEnv:
         self._client = Client(self, client_name)
 
         command = "sudo docker run --rm -it "
-        #        command += self._add_normal_mountings()
         command += f"--link pg-{self.client.name}:db "
         command += "--name help "
         command += f"{self.client.get_image('odoo').name} "

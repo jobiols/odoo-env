@@ -1,5 +1,3 @@
-##############################################################################
-
 import unittest
 
 from odoo_env.client import Client
@@ -555,9 +553,6 @@ class TestRepository(unittest.TestCase):
 
         command = "sudo mkdir /odoo_ar/"
         self.assertEqual(cmds[0].command, command)
-
-        # command = 'sudo chown jobiols:jobiols /odoo_ar/'
-        # self.assertEqual(cmds[1].command, command)
 
         command = "mkdir -p /odoo_ar/odoo-9.0/test_client/postgresql"
         self.assertEqual(cmds[2].command, command)

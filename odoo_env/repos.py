@@ -87,7 +87,7 @@ class Repo2:
             self._extra_dir = True
         else:
             parsed = self._url.split("/")
-            self._dir = parsed[len(parsed) - 1].replace(".git", "")
+            self._dir = parsed[-1].replace(".git", "")
             self._extra_dir = False
 
     @property

@@ -269,9 +269,6 @@ class OdooEnv:
 
         # # agregar un gitignore
 
-
-
-
         return ret
 
     def install(self, client_name):

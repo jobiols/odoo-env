@@ -4,10 +4,6 @@ from datetime import datetime
 
 import tornado
 import tornado.httpclient
-import tornado.options
-import tornado.process
-import tornado.web
-import tornado.websocket
 import yaml
 
 from odoo_env.__init__ import __version__

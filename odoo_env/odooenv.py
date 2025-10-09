@@ -76,9 +76,9 @@ class OdooEnv:
 
         filenames = []
         # walk the backup dir
-        for root, dirs, files in os.walk(self.client.backup_dir):
+        for _, _, files in os.walk(self.client.backup_dir):
             for filedesc in files:
-                filename, file_extension = os.path.splitext(filedesc)
+                _, file_extension = os.path.splitext(filedesc)
                 if file_extension == ".zip":
                     filenames.append(filedesc)
 
@@ -451,7 +451,10 @@ class OdooEnv:
         command += "-e POSTGRES_USER=odoo "
         command += "-e POSTGRES_PASSWORD=odoo "
         command += "-e POSTGRES_DB=postgres "
-        command += f"-v {self.client.psql_dir}:/var/lib/postgresql/data "
+        if image.numeric_ver >= 18:
+            command += f"-v {self.client.psql_dir}:/var/lib/postgresql/{image.numeric_ver}/docker "
+        else:
+            command += f"-v {self.client.psql_dir}:/var/lib/postgresql/data "
         command += "--restart=always "
         command += f"--name pg-{self.client.name} "
         command += image.name

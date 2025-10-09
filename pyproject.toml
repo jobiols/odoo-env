@@ -26,9 +26,10 @@ classifiers = [
     "Topic :: System :: Software Distribution",
 ]
 
-# Las dependencias se leen automáticamente desde requirements.txt
-[tool.hatch.metadata.hooks.requirements_txt]
-files = ["requirements.txt"]
+dependencies = [
+  "PyYAML >= 6.0.2",
+  "tornado >= 6.4.2",
+]
 
 [project.scripts]
 oe = "odoo_env.oe:main"

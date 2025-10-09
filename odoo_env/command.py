@@ -174,7 +174,7 @@ class WriteConfigFile(Command):
         manifest_files = list(base.rglob("__manifest__.py"))
         for manifest in manifest_files:
             module_path = str(manifest.parent.parent.relative_to(client.sources_dir))
-            if not module_path in repos:
+            if module_path not in repos:
                 repos.append(module_path)
 
         repos = ["/opt/odoo/custom-addons/" + x for x in repos]

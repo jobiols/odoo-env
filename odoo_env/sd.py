@@ -1,79 +1,95 @@
-#!/usr/lib/python3
+#!/usr/bin/env python3
 ###############################################
 # shortcut for sudo docker
-# sudo docker $*
 ###############################################
 import subprocess
 import sys
 
 
-def process_input(params):
-    # si no tiene parametros termino
-    if len(params) <= 1:
+def get_container_ids():
+    """Obtiene una lista de todos los IDs de contenedores."""
+    cmd = ["sudo", "docker", "ps", "-a", "-q"]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        print("Error getting container IDs:", result.stderr)
         return []
+    return result.stdout.split()
 
-    # el primer elemento es el nombre de este archivo, lo saco
+
+def get_image_ids():
+    """Obtiene una lista de todos los IDs de imágenes."""
+    cmd = ["sudo", "docker", "images", "-q"]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    if result.returncode != 0:
+        print("Error getting image IDs:", result.stderr)
+        return []
+    return result.stdout.split()
+
+
+def process_input(params):
+    # El primer elemento es el nombre de este archivo, lo saco
     params.pop(0)
 
-    # agregamos sudo docker al principio
-    params[0:0] = ["sudo", "docker"]
+    # El comando base es una lista, no una cadena
+    base_cmd = ["sudo", "docker"]
 
-    # pseudo sintaxis
+    # Si no hay subcomando, no hacemos nada
+    if not params:
+        return None
 
-    if params[2] == "-h":
-        print("Help for sd")
+    subcommand = params[0]
+
+    if subcommand == "-h":
+        print("Help for sd v2.0")
         print("sd               - short for sudo docker")
-        print("sd inside image  - open console inside image")
-        print("sd rmall         - remove all images in memory")
-        print("sd rmdiskall     - remove all images in disk")
-        print("sd attach name   - attach to a running container by name")
+        print("sd inside <image> - open console inside an image")
+        print("sd rmall         - remove all containers")
+        print("sd rmdiskall     - remove all images from disk (forced)")
+        print("sd attach <name> - attach to a running container by name")
         print(" ")
-        exit()
+        return None  # No hay comando que ejecutar
 
-    if params[2] == "inside":
-        try:
-            print("going inside image " + params[3])
-            params[2:3] = ["run", "-it", "--rm", "--entrypoint=/bin/bash"]
-        except Exception:
-            params = []
+    if subcommand == "inside" and len(params) > 1:
+        image_name = params[1]
+        print(f"Going inside image {image_name}")
+        return base_cmd + ["run", "-it", "--rm", "--entrypoint=/bin/bash", image_name]
 
-    if params[2] == "rmall":
-        try:
-            print("removing all images in memory")
-            params[2:3] = ["rm", "-f", "$(sudo docker ps -a -q)"]
-        except Exception:
-            params = []
+    if subcommand == "rmall":
+        print("Removing all containers...")
+        container_ids = get_container_ids()
+        if not container_ids:
+            print("No containers to remove.")
+            return None
+        return base_cmd + ["rm", "-f"] + container_ids
 
-    if params[2] == "rmdiskall":
-        try:
-            print("removing all images in disk")
-            params[2:3] = ["rmi", "$(sudo docker images -q)"]
-        except Exception:
-            params = []
+    if subcommand == "rmdiskall":
+        print("Removing all images from disk with force...")
+        image_ids = get_image_ids()
+        if not image_ids:
+            print("No images to remove.")
+            return None
+        return base_cmd + ["rmi", "-f"] + image_ids
 
-    if params[2] == "attach":
-        try:
-            container_name = params[3]
-            print("attaching to " + container_name)
+    if subcommand == "attach" and len(params) > 1:
+        container_name = params[1]
+        print(f"Attaching to {container_name}")
+        return base_cmd + ["exec", "-it", container_name, "bash"]
 
-            # sd exec -it mario bash
-
-            params[2:3] = ["exec", "-it"]
-            params[4:5] = [container_name, "bash"]
-        except Exception:
-            params = []
-
-    params = " ".join(params)
-    return params
+    # Si no es ninguno de los comandos especiales, simplemente pasamos todo a docker
+    return base_cmd + params
 
 
 def main():
-    params = process_input(sys.argv)
     try:
-        if len(params) > 1:
-            exit(subprocess.call(params, shell=True))
+        # process_input ahora devuelve una lista de argumentos (o None)
+        final_cmd_list = process_input(sys.argv)
+
+        if final_cmd_list:
+            result = subprocess.run(final_cmd_list)
+            sys.exit(result.returncode)
+
     except Exception as ex:
-        print(ex)
+        print(f"An unexpected error occurred: {ex}")
 
 
 if __name__ == "__main__":

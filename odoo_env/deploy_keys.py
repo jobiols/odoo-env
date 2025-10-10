@@ -45,7 +45,8 @@ def update_ssh_config(key_name):
     host_alias = f"{key_name}.github.com"
 
     # Bloque a añadir (incluye salto de línea inicial para separar los bloques)
-    config_entry = f"\nHost {host_alias}\n    HostName github.com\n    IdentityFile ~/.ssh/{key_name}\n    IdentitiesOnly yes\n"
+    config_entry = f"\nHost {host_alias}\n    HostName github.com\n    "
+    config_entry += f"IdentityFile ~/.ssh/{key_name}\n    IdentitiesOnly yes\n"
 
     # Crear el archivo si no existe
     if not ssh_config_path.exists():

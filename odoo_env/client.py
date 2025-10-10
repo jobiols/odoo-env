@@ -140,7 +140,7 @@ class Client:
         revisar toda la estructura hasta encontrar un manifest.
         devolver el manifest y el path
         """
-        for root, dirs, files in os.walk(path):
+        for root, _, files in os.walk(path):
             set_files = {"__openerp__.py", "__manifest__.py"}.intersection(files)
             for file in list(set_files):
                 manifest_file = "%s/%s" % (root, file)

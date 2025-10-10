@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "odoo-env"
-version = "0.15.2"
+version = "0.16.0"
 
 authors = [
   { name="Jorge Obiols", email="jorge.obiols@gmail.com" },
@@ -25,6 +25,7 @@ classifiers = [
     "Topic :: Software Development :: Testing :: Unit",
     "Topic :: System :: Software Distribution",
 ]
+
 dependencies = [
   "PyYAML >= 6.0.2",
   "tornado >= 6.4.2",

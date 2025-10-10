@@ -76,9 +76,9 @@ class OdooEnv:
 
         filenames = []
         # walk the backup dir
-        for root, dirs, files in os.walk(self.client.backup_dir):
+        for _, _, files in os.walk(self.client.backup_dir):
             for filedesc in files:
-                filename, file_extension = os.path.splitext(filedesc)
+                _, file_extension = os.path.splitext(filedesc)
                 if file_extension == ".zip":
                     filenames.append(filedesc)
 
@@ -387,18 +387,18 @@ class OdooEnv:
         return ret
 
     def _add_normal_mountings(self):
-        ret = "-v {}config:{} ".format(self.client.base_dir, IN_CONFIG)
-        ret += "-v {}data_dir:{} ".format(self.client.base_dir, IN_DATA)
-        ret += "-v {}log:{} ".format(self.client.base_dir, IN_LOG)
-        ret += "-v {}sources:{} ".format(self.client.base_dir, IN_CUSTOM_ADDONS)
-        ret += "-v {}backup_dir:{} ".format(self.client.base_dir, IN_BACKUP_DIR)
+        ret = f"-v {self.client.base_dir}config:{IN_CONFIG} "
+        ret += f"-v {self.client.base_dir}data_dir:{IN_DATA} "
+        ret += f"-v {self.client.base_dir}log:{IN_LOG} "
+        ret += f"-v {self.client.base_dir}sources:{IN_CUSTOM_ADDONS} "
+        ret += f"-v {self.client.base_dir}backup_dir:{IN_BACKUP_DIR} "
         return ret
 
     def stop_environment(self, client_name):
         self._client = Client(self, client_name)
         ret = []
 
-        img2 = "pg-{}".format(self.client.name)
+        img2 = f"pg-{self.client.name}"
         images = []
         if self.client.get_image("aeroo"):
             images.append("aeroo")
@@ -451,7 +451,10 @@ class OdooEnv:
         command += "-e POSTGRES_USER=odoo "
         command += "-e POSTGRES_PASSWORD=odoo "
         command += "-e POSTGRES_DB=postgres "
-        command += f"-v {self.client.psql_dir}:/var/lib/postgresql/data "
+        if image.numeric_ver >= 18:
+            command += f"-v {self.client.psql_dir}:/var/lib/postgresql/{image.numeric_ver}/docker "
+        else:
+            command += f"-v {self.client.psql_dir}:/var/lib/postgresql/data "
         command += "--restart=always "
         command += f"--name pg-{self.client.name} "
         command += image.name
@@ -471,7 +474,7 @@ class OdooEnv:
         if image:
             msg = "Starting aeroo image"
             command = "sudo docker run -d "
-            command += "--name={} ".format(image.short_name)
+            command += f"--name={image.short_name} "
             command += "--restart=always "
             command += image.name
             cmd = Command(
@@ -595,12 +598,9 @@ class OdooEnv:
         ret = []
 
         if write_config:
-            msg = "Writing config file for client %s" % client_name
+            msg = f"Writing config file for client {client_name}"
         else:
-            msg = "Starting Odoo image for client %s on port %s" % (
-                client_name,
-                self.client.port,
-            )
+            msg = f"Starting Odoo image for client {client_name} on port {self.client.port}"
 
         if write_config:
             command = "sudo docker run --rm "
@@ -620,15 +620,15 @@ class OdooEnv:
         # si tenemos nginx o si estamos escribiendo la configuracion no hay
         # que exponer los puertos.
         if not (self.nginx or write_config):
-            command += "-p %s:8069 " % self.client.port
-            command += "-p %s:8072 " % self.client.longpolling_port
+            command += f"-p {self.client.port}:8069 "
+            command += f"-p {self.client.longpolling_port}:8072 "
 
         command += self._add_normal_mountings()
         if self.debug:
             command += self._add_debug_mountings(self.client.numeric_ver)
 
         if self.client.get_image("postgres"):
-            command += "--link pg-%s:db " % self.client.name
+            command += f"--link pg-{self.client.name}:db "
 
         if not (self.debug or write_config):
             command += "--restart=always "
@@ -636,7 +636,7 @@ class OdooEnv:
         # si estamos escribiendo el config no le ponemos el nombre para que
         # pueda correr aunque este levantado el cliente
         if not write_config:
-            command += "--name %s " % self.client.name
+            command += f"--name {self.client.name} "
 
         if write_config:
             command += self.set_config_environment()
@@ -652,7 +652,10 @@ class OdooEnv:
         if not self.debug:
             command += "--logfile=/var/log/odoo/odoo.log "
         else:
-            command += "--logfile=/dev/stdout "
+            if self.client.numeric_ver >= 19.0:
+                command += "odoo-bin "
+            else:
+                command += "--logfile=/dev/stdout "
 
         if write_config:
             command += "--stop-after-init "
@@ -676,15 +679,15 @@ class OdooEnv:
 
             nginx_dir = self.client.nginx_dir
             command = "sudo docker run -d "
-            command += "-v {}conf:/etc/nginx/conf.d:ro ".format(nginx_dir)
-            command += "-v {}data_dir/letsencrypt:/etc/letsencrypt ".format(
-                self.client.base_dir
+            command += f"-v {nginx_dir}conf:/etc/nginx/conf.d:ro "
+            command += (
+                f"-v {self.client.base_dir}data_dir/letsencrypt:/etc/letsencrypt "
             )
-            command += "-v {}log:/var/log/nginx/ ".format(nginx_dir)
+            command += f"-v {nginx_dir}log:/var/log/nginx/ "
             command += "-p 80:80 "
             command += "-p 443:443 "
-            command += "--name={} ".format(image.short_name)
-            command += "--link {}:odoo ".format(client_name)
+            command += f"--name={image.short_name} "
+            command += f"--link {client_name}:odoo "
             command += "--restart=always "
 
             command += image.name

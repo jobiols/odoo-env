@@ -14,7 +14,7 @@ Environment to manage Odoo. Two environments are provided debug and prod.
 Directory structure
 
     /odoo_ar
-    └── odoo-16.0
+    └── odoo-18.0
         ├── client_one
         │    ├── config             odoo.conf
         │    ├── data_dir           filestore
@@ -34,7 +34,7 @@ Functionality
             [--restore] [-f BACKUP_FILE] [-H] [-V] [--create-test-db] [--force-create]
             [--base-dir BASE_DIR]
 
-    Odoo Environment Manager v0.15.2 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.16.0 - by jeo Software <jorge.obiols@gmail.com>
 
     options:
     -h, --help           show this help message and exit
@@ -107,6 +107,7 @@ Installation
 
 Changelog
 ---------
+- 0.16.0  - Added support for postgres 18.0
 - 0.15.2  - Added support for WDB 3.3.1 for Odoo versions >= 16, and remove repository
             creation when pulling images with -p to speed up the process, since the repository
             has little use.

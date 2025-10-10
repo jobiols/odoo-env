@@ -56,3 +56,8 @@ class Image2:
     @property
     def name(self):
         return self._url
+
+    @property
+    def numeric_ver(self):
+        s = self._url
+        return int(float(s.split(":")[1].split("-")[0]))

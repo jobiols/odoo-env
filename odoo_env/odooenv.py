@@ -680,7 +680,9 @@ class OdooEnv:
             nginx_dir = self.client.nginx_dir
             command = "sudo docker run -d "
             command += f"-v {nginx_dir}conf:/etc/nginx/conf.d:ro "
-            command += f"-v {self.client.base_dir}data_dir/letsencrypt:/etc/letsencrypt "
+            command += (
+                f"-v {self.client.base_dir}data_dir/letsencrypt:/etc/letsencrypt "
+            )
             command += f"-v {nginx_dir}log:/var/log/nginx/ "
             command += "-p 80:80 "
             command += "-p 443:443 "

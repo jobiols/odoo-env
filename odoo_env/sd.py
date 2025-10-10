@@ -5,6 +5,7 @@
 import subprocess
 import sys
 
+
 def get_container_ids():
     """Obtiene una lista de todos los IDs de contenedores."""
     cmd = ["sudo", "docker", "ps", "-a", "-q"]
@@ -14,6 +15,7 @@ def get_container_ids():
         return []
     return result.stdout.split()
 
+
 def get_image_ids():
     """Obtiene una lista de todos los IDs de imágenes."""
     cmd = ["sudo", "docker", "images", "-q"]
@@ -22,6 +24,7 @@ def get_image_ids():
         print("Error getting image IDs:", result.stderr)
         return []
     return result.stdout.split()
+
 
 def process_input(params):
     # El primer elemento es el nombre de este archivo, lo saco
@@ -44,7 +47,7 @@ def process_input(params):
         print("sd rmdiskall     - remove all images from disk (forced)")
         print("sd attach <name> - attach to a running container by name")
         print(" ")
-        return None # No hay comando que ejecutar
+        return None  # No hay comando que ejecutar
 
     if subcommand == "inside" and len(params) > 1:
         image_name = params[1]
@@ -75,6 +78,7 @@ def process_input(params):
     # Si no es ninguno de los comandos especiales, simplemente pasamos todo a docker
     return base_cmd + params
 
+
 def main():
     try:
         # process_input ahora devuelve una lista de argumentos (o None)
@@ -86,6 +90,7 @@ def main():
 
     except Exception as ex:
         print(f"An unexpected error occurred: {ex}")
+
 
 if __name__ == "__main__":
     main()

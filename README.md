@@ -1,5 +1,7 @@
 ![workflow](https://github.com/jobiols/odoo-env/actions/workflows/pre-commit.yml/badge.svg)
 [![CodeFactor](https://www.codefactor.io/repository/github/jobiols/odoo-env/badge)](https://www.codefactor.io/repository/github/jobiols/odoo-env)
+[![DeepSource](https://app.deepsource.com/gh/jobiols/odoo-env.svg/?label=active+issues&show_trend=true&token=Gf1Ol31CdxhKgt6lXHB6BSRI)](https://app.deepsource.com/gh/jobiols/odoo-env/)
+[![DeepSource](https://app.deepsource.com/gh/jobiols/odoo-env.svg/?label=resolved+issues&show_trend=true&token=Gf1Ol31CdxhKgt6lXHB6BSRI)](https://app.deepsource.com/gh/jobiols/odoo-env/)
 
 [Project documentation](https://jobiols.github.io/odoo-env/)
 

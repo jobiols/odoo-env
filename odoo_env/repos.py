@@ -48,7 +48,7 @@ class Repo:
 
 
 class Repo2:
-    def __init__(self, value, branch, options):
+    def __init__(self, value, branch, options=None):
         """Sintaxis <repo> [<directory>[/<directory>] [-b <branch>] [optios]
         El branch debe estar despues del repo, si no esta se toma el branch
         que viene como parametro, si no viene nada es una excepcion.
@@ -78,7 +78,7 @@ class Repo2:
         self._url = parsed[0]
 
         # agregarle a la url el prefijo de ssh si es requerido solo si estamos en produccion
-        if self.protocol == "ssh" and not options["debug"]:
+        if self.protocol == "ssh" and not (options and options.get("debug")):
             self._url = re.sub(r"@(github)", f"@{self.code_name}.\\1", self._url)
 
         # si me quedan dos parametros tengo un directorio
@@ -138,4 +138,4 @@ class Repo2:
         if match:
             return match.group("name")
 
-        Msg.err(f"invalid repository URL {self._url}")
+        Msg().err(f"invalid repository URL {self._url}")

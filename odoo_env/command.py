@@ -188,7 +188,7 @@ class WriteConfigFile(Command):
         odoo_conf.add_list_data(client.config)
 
         # siempre sobreescribimos estas tres cosas.
-        odoo_conf.add_line("addons_path = %s" % repos)
+        odoo_conf.add_line(f"addons_path = {repos}")
         odoo_conf.add_line("unaccent = True")
         odoo_conf.add_line("data_dir = /opt/odoo/data")
 

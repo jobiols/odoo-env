@@ -72,10 +72,10 @@ class Client:
     def check_v1(self, manifest):
         # Chequar que el manifiesto tenga bien las cosas
         if not manifest.get("docker"):
-            msg.err("No images in manifest %s" % self.name)
+            msg.err(f"No images in manifest {self.name}")
 
         if not manifest.get("repos"):
-            msg.err("No repos in manifest %s" % self.name)
+            msg.err(f"No repos in manifest {self.name}")
 
         # Crear imagenes y repos
         self._repos = []
@@ -143,7 +143,7 @@ class Client:
         for root, _, files in os.walk(path):
             set_files = {"__openerp__.py", "__manifest__.py"}.intersection(files)
             for file in list(set_files):
-                manifest_file = "%s/%s" % (root, file)
+                manifest_file = f"{root}/{file}"
                 manifest = self.load_manifest(manifest_file)
                 name = manifest.get("name", False)
                 if name and name.lower() == self._name:
@@ -245,7 +245,7 @@ class Client:
         /odoo_ar/odoo-13.0e/
         """
         lic = "e" if self._license == "EE" else ""
-        return "%sodoo-%s%s/" % (BASE_DIR, self._version, lic)
+        return f"{BASE_DIR}odoo-{self._version}{lic}/"
 
     @property
     def server_version_dir(self):
@@ -299,7 +299,7 @@ class Client:
     @property
     def nginx_dir(self):
         """/odoo_ar/nginx/"""
-        return "%snginx/" % BASE_DIR
+        return f"{BASE_DIR}nginx/"
 
     @property
     def debug(self):

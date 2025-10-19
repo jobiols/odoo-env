@@ -103,16 +103,14 @@ class Repo2:
     def url(self):
         if self._extra_dir:
             return f"{self._url} {self._dir}"
-        else:
-            return self._url
+        return self._url
 
     @property
     def formatted(self):
         recurse = "recursive" if self._recurse_submodules else ""
         if self._extra_dir:
             return f"b {self.branch} {recurse}    {self._url} >> {self._dir}"
-        else:
-            return f"b {self.branch} {recurse}    {self.url}"
+        return f"b {self.branch} {recurse}    {self.url}"
 
     @property
     def clone(self):

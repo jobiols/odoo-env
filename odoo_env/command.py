@@ -70,8 +70,7 @@ class Command:
             if ret:
                 if "hmod o+w" in cmd:
                     return msg.warn(f"The command {cmd} returned with {str(ret)}")
-                else:
-                    return msg.err(f"The command {cmd} returned with {str(ret)}")
+                return msg.err(f"The command {cmd} returned with {str(ret)}")
 
     @property
     def args(self):

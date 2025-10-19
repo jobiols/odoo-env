@@ -50,8 +50,7 @@ class Image2:
         ver = a.split(":")
         if len(ver) == 2:
             return ver[1]
-        else:
-            return ""
+        return ""
 
     @property
     def name(self):

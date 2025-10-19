@@ -161,14 +161,14 @@ class Client:
         if client_path:
             manifest, _ = self.get_manifest_from_struct(client_path)
             return manifest
-        else:
-            # no lo encuentro, busco en toda la estructura de directorios
-            manifest, path = self.get_manifest_from_struct(path)
-            if manifest:
-                # si lo encuentro lo guardo en el archivo para la proxima
-                OeConfig().save_client_path(self._name, path)
-            # devuelvo el manifiesto o false si no esta
-            return manifest
+
+        # no lo encuentro, busco en toda la estructura de directorios
+        manifest, path = self.get_manifest_from_struct(path)
+        if manifest:
+            # si lo encuentro lo guardo en el archivo para la proxima
+            OeConfig().save_client_path(self._name, path)
+        # devuelvo el manifiesto o false si no esta
+        return manifest
 
     @staticmethod
     def load_manifest(filename):

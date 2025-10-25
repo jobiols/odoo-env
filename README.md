@@ -109,6 +109,7 @@ Installation
 
 Changelog
 ---------
+- 0.16.2  - When a test is run with -Q, it forces the use of the [project]_test database.
 - 0.16.1  - change dbtools version to 1.3.1 - support for postgres 18.0
 - 0.16.0  - Added support for postgres 18.0
 - 0.15.2  - Added support for WDB 3.3.1 for Odoo versions >= 16, and remove repository

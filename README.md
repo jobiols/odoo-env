@@ -30,77 +30,56 @@ Directory structure
 Functionality
 -------------
 
-    usage: oe [-h] [-i] [-p] [-w] [-R] [-r] [-S] [-s] [-u] [-c CLIENT] [-v]
-            [--no-deactivate] [--deploy-keys] [--debug] [--prod] [--from-prod]
-            [--no-repos] [-d DATABASE] [-m MODULE] [--nginx] [-Q repo] [--backup-list]
-            [--restore] [-f BACKUP_FILE] [-H] [-V] [--create-test-db] [--force-create]
-            [--base-dir BASE_DIR]
+    usage: oe [-h] [-i] [-p] [-w] [-R] [-r] [-S] [-s] [-u] [-c CLIENT] [-v] [-d DATABASE] [--no-deactivate] [--deploy-keys] [--debug]
+            [--prod] [--from-prod] [--no-repos] [-m MODULE] [-Q repo] [-f BACKUP_FILE] [-H] [-V] [--nginx] [--backup-list] [--restore]
+            [--create-test-db] [--force-create] [--base-dir BASE_DIR]
 
-    Odoo Environment Manager v0.16.0 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.16.2 - by jeo Software <jorge.obiols@gmail.com>
 
     options:
     -h, --help           show this help message and exit
-    -i, --install        The first time it runs, it creates the directory structure and
-                        clones all repositories declared in the project. If run again,
-                        it updates the repositories. Use together with --extract-sources
-                        to copy the sources from the Odoo image to the host, which is
-                        essential for working in debug mode.
+    -i, --install        The first time it runs, it creates the directory structure and clones all repositories declared in the
+                        project. If run again, it updates the repositories. Use together with --extract-sources to copy the sources
+                        from the Odoo image to the host, which is essential for working in debug mode.
     -p, --pull-images    Pull Images. Download all images declared in client manifest.
     -w, --write-config   Create / Overwrite config file.
-    -R, --run-env        Run postgres, wdb and aeroo images (aeroo only for old odoo
-                        versions).
+    -R, --run-env        Run postgres, wdb and aeroo images (aeroo only for old odoo versions).
     -r, --run-cli        Run odoo image
     -S, --stop-env       Stop postgres, wdb and aeroo images.
     -s, --stop-cli       Stop odoo image.
-    -u, --update         Updates modules in the database. With no parameters, all modules
-                        are updated. Use -m modulename to update only the specified
-                        module; you can also pass a list of modules separated by commas
-                        (without spaces). Use -d databasename to update a database other
-                        than the default database.
+    -u, --update         Updates modules in the database. With no parameters, all modules are updated. Use -m modulename to update only
+                        the specified module; you can also pass a list of modules separated by commas (without spaces). Use -d
+                        databasename to update a database other than the default database.
     -c CLIENT            Set default client name. This option is persistent
     -v, --verbose        Go verbose mode. Prints every command
-    --no-deactivate      No Deactivate database before restore. WARNING this command is
-                        deprecated
-    --deploy-keys        Available only in production mode. It creates a pair of deploy
-                        keys for each private repository found in the manifest, lists
-                        the public keys for adding to the repositories.
+    -d DATABASE          Set default Database name. This option is persistent
+    --no-deactivate      No Deactivate database before restore. WARNING this command is deprecated
+    --deploy-keys        Available only in production mode. It creates a pair of deploy keys for each private repository found in the
+                        manifest, lists the public keys for adding to the repositories.
     --debug              Set default environment mode to debug
     --prod               Set default environment mode to production
-    --from-prod          Restore backup from production server. Use with --restore. it
-                        needs the option 'prod_server': 'user@vps-alias' in the
-                        manifestWARNING: This options may download an exact backup
-                        please deactivatebefore use.You can deactivate a database
-                        running odoo with those parametersodoo deactivate -d database
+    --from-prod          Restore backup from production server. Use with --restore. it needs the option 'prod_server': 'user@vps-alias'
+                        in the manifestWARNING: This options may download an exact backup please deactivatebefore use.You can
+                        deactivate a database running odoo with those parametersodoo deactivate -d database
     --no-repos           Does not clone or pull repos when doing -i (install)
-    -d DATABASE          Set default Database name.This option is persistent
-    -m MODULE            Module to update. Used with -u (update) i.e. -m sale for
-                        updating sale module -m all for updating all modules. NOTE: if
-                        you perform -u without -m it asumes all modules
-    --nginx              Add nginx to installation: Used with -i creates nginx dir with
-                        config file. Used with -r starts an nginx container linked to
-                        odoo.Used with -s stops nginx container. If you want to add
-                        certificates review nginx.conf file located in
-                        /odoo_ar/nginx/conf NOTE: This option will be deprecated in
-                        thenear future
-    -Q repo              Run the tests. Required parameters: -m <module name>. Optional
-                        parameters: -d <database>; if omitted, the default database will
-                        be used, which is the project name + _test. NOTE: The database
-                        used for testing must be created with demo data and should have
-                        admin/admin credentials.
-    --backup-list        List all backup files available for restore
-    --restore            Restores a backup. it uses last backup and restores to default
-                        database. You can change the backup file to restore with -f
-                        option and change database name -d option
-    -f BACKUP_FILE       Filename to restore. Used with --restore. To get the name of
-                        this file issue a --backup-list command.If ommited the newest
-                        file will be restored
-    -H, --server-help    Show odoo server help, it shows the help from the odoo
-                        imagedeclared in the cliente manifest
+    -m MODULE            Module to update. Used with -u (update) i.e. -m sale for updating sale module -m all for updating all modules.
+                        NOTE: if you perform -u without -m it asumes all modules
+    -Q repo              Run the tests. Required parameters: -m <module name>. Optional parameters: -d <database>; if omitted, the
+                        default test database will be used, which is [client]_test. NOTE: The database used for testing must be
+                        created with demo data and must have admin/admin credentials.
+    -f BACKUP_FILE       Filename to restore. Used with --restore. To get the name of this file issue a --backup-list command.If
+                        ommited the newest file will be restored
+    -H, --server-help    Show odoo server help, it shows the help from the odoo imagedeclared in the cliente manifest
     -V, --version        Show version number and exit.
+    --nginx              Add nginx to installation: Used with -i creates nginx dir with config file. Used with -r starts an nginx
+                        container linked to odoo.Used with -s stops nginx container. If you want to add certificates review nginx.conf
+                        file located in /odoo_ar/nginx/conf NOTE: This option will be deprecated in thenear future
+    --backup-list        List all backup files available for restore
+    --restore            Restores a backup. it uses last backup and restores to default database. You can change the backup file to
+                        restore with -f option and change database name -d option
     --create-test-db     Create database with demo data.
     --force-create       Force database creation.
     --base-dir BASE_DIR  Set default base-dir This option is persistent.
-
 
 Installation
 ------------
@@ -109,6 +88,7 @@ Installation
 
 Changelog
 ---------
+- 0.16.2  - When a test is run with -Q, it forces the use of the [project]_test database.
 - 0.16.1  - change dbtools version to 1.3.1 - support for postgres 18.0
 - 0.16.0  - Added support for postgres 18.0
 - 0.15.2  - Added support for WDB 3.3.1 for Odoo versions >= 16, and remove repository

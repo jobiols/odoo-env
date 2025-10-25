@@ -152,11 +152,10 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         metavar="repo",
         nargs=1,
         dest="quality_assurance",
-        help="Run the tests. Required parameters: -m <module name>. Optional "
-        "parameters: -d <database>; if omitted, the default database will be "
-        "used, which is the project name + _test. NOTE: The database used for "
-        "testing must be created with demo data and should have admin/admin "
-        "credentials.",
+        help="Run the tests. Required parameters: -m <module name>. "
+        "Optional parameters: -d <database>; if omitted, the default test database will be used, "
+        "which is [client]_test. NOTE: The database used for testing must be created with demo "
+        "data and must have admin/admin credentials.",
     )
 
     parser.add_argument(
@@ -288,10 +287,11 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         commands += OdooEnv(options).update(client_name, database, modules)
 
     if args.quality_assurance:
-        database = get_param(args, "database")
+        database = f"{get_param(args, "client")}_test"
         commands += OdooEnv(options).qa(
             client_name, database, args.quality_assurance[0]
         )
+
     if args.version:
         Msg().inf(f"oe version {__version__}")
         sys.exit()

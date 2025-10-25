@@ -9,7 +9,7 @@ import sys
 def get_container_ids():
     """Obtiene una lista de todos los IDs de contenedores."""
     cmd = ["sudo", "docker", "ps", "-a", "-q"]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd, capture_output=True, text=True, check=False)
     if result.returncode != 0:
         print("Error getting container IDs:", result.stderr)
         return []
@@ -19,7 +19,7 @@ def get_container_ids():
 def get_image_ids():
     """Obtiene una lista de todos los IDs de imágenes."""
     cmd = ["sudo", "docker", "images", "-q"]
-    result = subprocess.run(cmd, capture_output=True, text=True)
+    result = subprocess.run(cmd, capture_output=True, text=True, check=False)
     if result.returncode != 0:
         print("Error getting image IDs:", result.stderr)
         return []
@@ -41,11 +41,11 @@ def process_input(params):
 
     if subcommand == "-h":
         print("Help for sd v2.0")
-        print("sd               - short for sudo docker")
+        print("sd                - short for sudo docker")
         print("sd inside <image> - open console inside an image")
-        print("sd rmall         - remove all containers")
-        print("sd rmdiskall     - remove all images from disk (forced)")
-        print("sd attach <name> - attach to a running container by name")
+        print("sd rmall          - remove all containers")
+        print("sd rmdiskall      - remove all images from disk (forced)")
+        print("sd attach <name>  - attach to a running container by name")
         print(" ")
         return None  # No hay comando que ejecutar
 
@@ -85,7 +85,7 @@ def main():
         final_cmd_list = process_input(sys.argv)
 
         if final_cmd_list:
-            result = subprocess.run(final_cmd_list)
+            result = subprocess.run(final_cmd_list, check=False)
             sys.exit(result.returncode)
 
     except Exception as ex:

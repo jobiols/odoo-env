@@ -390,11 +390,10 @@ class OdooEnv:
             idlp = IN_DIST_LOCAL_PACKAGES.format("3.12")
 
         cvd = self.client.version_dir
-        if version in {8, 9, 10, 11, 12, 13}:
-            ret = f"-v {cvd}extra-addons:{iea} "
-
-        ret += f"-v {cvd}dist-packages:{idp} "
+        ret = f"-v {cvd}dist-packages:{idp} "
         ret += f"-v {cvd}dist-local-packages:{idlp} "
+        if version in {8, 9, 10, 11, 12, 13}:
+            ret += f"-v {cvd}extra-addons:{iea} "
         return ret
 
     def _add_normal_mountings(self):

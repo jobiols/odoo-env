@@ -382,12 +382,14 @@ class OdooEnv:
 
         cvd = self.client.version_dir
         if version in {18}:
-            ret =  f"-v {cvd}dist-packages:/usr/lib/python3/dist-packages "
-            ret += f"-v {cvd}dist-local-packages:/usr/local/lib/python3.12/dist-packages/ "
+            ret = f"-v {cvd}dist-packages:/usr/lib/python3/dist-packages "
+            ret += (
+                f"-v {cvd}dist-local-packages:/usr/local/lib/python3.12/dist-packages/ "
+            )
             return ret
 
         if version in {19}:
-            ret =  f"-v {cvd}dist-packages:/usr/lib/python3/dist-packages "
+            ret = f"-v {cvd}dist-packages:/usr/lib/python3/dist-packages "
             ret += f"-v {cvd}site-packages:/opt/venv/lib/python3.12/site-packages "
             return ret
 

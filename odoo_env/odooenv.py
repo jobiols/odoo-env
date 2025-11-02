@@ -379,21 +379,21 @@ class OdooEnv:
         elif version in {17}:
             idp = IN_DIST_PACKAGES.format("3")
             idlp = IN_DIST_LOCAL_PACKAGES.format("3.10")
-        elif version in {18}:
-            idp = IN_DIST_PACKAGES.format("3")
-            idlp = IN_DIST_LOCAL_PACKAGES.format("3.12")
-        elif version in {19}:
-            idp = IN_DIST_PACKAGES.format("3")
-            idlp = IN_DIST_LOCAL_PACKAGES.format("3.12")
-        else:
-            idp = IN_DIST_PACKAGES.format("3")
-            idlp = IN_DIST_LOCAL_PACKAGES.format("3.12")
 
         cvd = self.client.version_dir
+        if version in {18}:
+            ret =  f"-v {cvd}dist-packages:/usr/lib/python3/dist-packages "
+            ret += f"-v {cvd}dist-local-packages:/usr/local/lib/python3.12/dist-packages/ "
+            return ret
+
+        if version in {19}:
+            ret =  f"-v {cvd}dist-packages:/usr/lib/python3/dist-packages "
+            ret += f"-v {cvd}site-packages:/opt/venv/lib/python3.12/site-packages "
+            return ret
+
         ret = f"-v {cvd}dist-packages:{idp} "
         ret += f"-v {cvd}dist-local-packages:{idlp} "
-        if version in {8, 9, 10, 11, 12, 13}:
-            ret += f"-v {cvd}extra-addons:{iea} "
+        ret += f"-v {cvd}extra-addons:{iea} "
         return ret
 
     def _add_normal_mountings(self):

@@ -31,10 +31,17 @@ class OdooEnv:
     def _get_packs(self):
         """Packs a montar en modo debug segun la version de odoo"""
         ver = self.client.numeric_ver
-        packs = ["dist-packages", "dist-local-packages"]
         if ver < 11:
-            packs += ["extra-addons"]
-        return packs
+            packs = ["dist-packages", "dist-local-packages", "extra-addons"]
+            return packs
+
+        if ver <= 18:
+            packs = ["dist-packages", "dist-local-packages"]
+            return packs
+
+        if ver > 18:
+            packs = ["dist-packages", "site-packages"]
+            return packs
 
     def _process_repos(self):
         """Clone or update repos as needed"""

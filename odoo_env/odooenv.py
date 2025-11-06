@@ -652,7 +652,7 @@ class OdooEnv:
         if not self.debug:
             command += "--logfile=/var/log/odoo/odoo.log "
         else:
-            if self.client.numeric_ver >= 19.1:         # para que no ponga odoo-bin
+            if self.client.numeric_ver >= 19.1:  # para que no ponga odoo-bin
                 command += "odoo-bin "
             else:
                 command += "--logfile=/dev/stdout "

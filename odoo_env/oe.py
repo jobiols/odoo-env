@@ -287,7 +287,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         commands += OdooEnv(options).update(client_name, database, modules)
 
     if args.quality_assurance:
-        database = f"{get_param(args, "client")}_test"
+        database = f"{get_param(args, 'client')}_test"
         commands += OdooEnv(options).qa(
             client_name, database, args.quality_assurance[0]
         )

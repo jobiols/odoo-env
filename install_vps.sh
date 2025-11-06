@@ -20,8 +20,8 @@ lsb_release -a
 #sudo apt install python3-distutils -y en el ultimo ubuntu no tiene candidato
 
 # install pip
-curl -fsSL https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-sudo python3 get-pip.py
+# curl -fsSL https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+# sudo python3 get-pip.py
 #rm get-pip.py
 
 # install pipx

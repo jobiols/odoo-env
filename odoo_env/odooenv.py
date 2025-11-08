@@ -658,6 +658,7 @@ class OdooEnv:
         # si estamos en modo debug agregarlo el WDB
         if self.debug:
             command += "-e WDB_SOCKET_SERVER=wdb "
+            command += "-e WDB_NO_BROWSER_AUTO_OPEN=True "
 
         command += f"{self.client.get_image('odoo').name} "
 
@@ -759,6 +760,7 @@ class OdooEnv:
             command += self._add_debug_mountings(self.client.numeric_ver)
         command += "--link wdb "
         command += "-e WDB_SOCKET_SERVER=wdb "
+        command += "-e WDB_NO_BROWSER_AUTO_OPEN=True "
         command += "-e ODOO_CONF=/dev/null "
         command += f"--link pg-{self.client.name}:db "
         command += f"{self.client.get_image('odoo').name} -- "

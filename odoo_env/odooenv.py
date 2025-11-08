@@ -373,24 +373,27 @@ class OdooEnv:
         elif version in {13}:
             idp = IN_DIST_PACKAGES.format("3")
             idlp = IN_DIST_LOCAL_PACKAGES.format("3.7")
-        elif version in {14, 15, 16}:
-            idp = IN_DIST_PACKAGES.format("3")
-            idlp = IN_DIST_LOCAL_PACKAGES.format("3.9")
-        elif version in {17}:
-            idp = IN_DIST_PACKAGES.format("3")
-            idlp = IN_DIST_LOCAL_PACKAGES.format("3.10")
 
         cvd = self.client.version_dir
-        if version in {18}:
+        if version in {14, 15, 16}:
+            ret = f"-v {cvd}dist-packages:/usr/lib/python3/dist-packages "
+            ret += (
+                f"-v {cvd}dist-local-packages:/usr/local/lib/python3.9/dist-packages/ "
+            )
+            return ret
+
+        if version in {17}:
+            ret = f"-v {cvd}dist-packages:/usr/lib/python3/dist-packages "
+            ret += (
+                f"-v {cvd}dist-local-packages:/usr/local/lib/python3.10/dist-packages/ "
+            )
+            return ret
+
+        if version in {18, 19}:
             ret = f"-v {cvd}dist-packages:/usr/lib/python3/dist-packages "
             ret += (
                 f"-v {cvd}dist-local-packages:/usr/local/lib/python3.12/dist-packages/ "
             )
-            return ret
-
-        if version in {19}:
-            ret = f"-v {cvd}dist-packages:/usr/lib/python3/dist-packages "
-            ret += f"-v {cvd}site-packages:/opt/venv/lib/python3.12/site-packages "
             return ret
 
         ret = f"-v {cvd}dist-packages:{idp} "
@@ -427,16 +430,16 @@ class OdooEnv:
         for image in images:
             cmd = Command(
                 self,
-                command="sudo docker rm {}".format(image),
-                usr_msg="Removing image {}".format(image),
+                command=f"sudo docker rm {image}",
+                usr_msg=f"Removing image {image}",
             )
             ret.append(cmd)
 
         if self.debug:
             cmd = Command(
                 self,
-                command="sudo docker rm -f {}".format("wdb"),
-                usr_msg="Removing image {}".format("wdb"),
+                command="sudo docker rm -f wdb",
+                usr_msg="Removing image wdb",
             )
             ret.append(cmd)
 
@@ -507,8 +510,10 @@ class OdooEnv:
             command += "--restart=always "
             if self.client.numeric_ver < 16.0:
                 command += "kozea/wdb"
-            else:
+            elif self.client.numeric_ver == 16.0:
                 command += "jobiols/wdb:3.3.1"
+            else:
+                command += "jobiols/wdb:3.3.2"
 
             cmd = Command(
                 self,

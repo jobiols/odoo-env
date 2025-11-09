@@ -447,6 +447,7 @@ class OdooEnv:
 
     def run_environment(self, client_name):
         """
+        Crea los comandos para lanzar la BD y el wdb
         :return: devuelve los comandos en una lista
         """
         self._client = Client(self, client_name)
@@ -457,21 +458,26 @@ class OdooEnv:
         ##################################################################
 
         image = self.client.get_image("postgres")
-        if image:
-            msg = f"Starting postgres image v{image.version}"
+        if not image:
+            Msg().err("There is no postgres image on this proyect")
 
+        msg = f"Starting postgres image {image.version}"
+
+        # Armar el comando para lanzar postgres
         command = "sudo docker run -d "
         if self.debug:
             command += "-p 5432:5432 "
         command += "-e POSTGRES_USER=odoo "
         command += "-e POSTGRES_PASSWORD=odoo "
-        command += "-e POSTGRES_DB=postgres "
+#        command += "-e POSTGRES_DB=postgres "
         if image.numeric_ver >= 18:
             command += f"-v {self.client.psql_dir}:/var/lib/postgresql/{image.numeric_ver}/docker "
         else:
             command += f"-v {self.client.psql_dir}:/var/lib/postgresql/data "
-        command += "--restart=always "
+        command += "--restart=unless-stopped "
         command += f"--name pg-{self.client.name} "
+        command += "--network odoo-net "
+        command += "--network-alias db "
         command += image.name
 
         cmd = Command(
@@ -507,7 +513,9 @@ class OdooEnv:
             command = "sudo docker run -d "
             command += "-p 1984:1984 "
             command += "--name=wdb "
-            command += "--restart=always "
+            command += "--restart=unless-stopped "
+            command += "--network odoo-net "
+
             if self.client.numeric_ver < 16.0:
                 command += "kozea/wdb"
             elif self.client.numeric_ver == 16.0:
@@ -616,12 +624,9 @@ class OdooEnv:
 
         if write_config:
             msg = f"Writing config file for client {client_name}"
-        else:
-            msg = f"Starting Odoo image for client {client_name} on port {self.client.port}"
-
-        if write_config:
             command = "sudo docker run --rm "
         else:
+            msg = f"Starting Odoo image for client {client_name} on port {self.client.port}"
             if self.debug:
                 command = "sudo docker run --rm -it "
             else:
@@ -630,9 +635,10 @@ class OdooEnv:
         if self.client.get_image("aeroo"):
             command += "--link aeroo:aeroo "
 
-        # open link to wdb image
-        if self.debug:
-            command += "--link wdb "
+        command += "--network odoo-net "
+
+        # if self.debug:
+        #     command += "--link wdb "
 
         # si tenemos nginx o si estamos escribiendo la configuracion no hay
         # que exponer los puertos.
@@ -644,11 +650,11 @@ class OdooEnv:
         if self.debug:
             command += self._add_debug_mountings(self.client.numeric_ver)
 
-        if self.client.get_image("postgres"):
-            command += f"--link pg-{self.client.name}:db "
+        # if self.client.get_image("postgres"):
+        #     command += f"--link pg-{self.client.name}:db "
 
         if not (self.debug or write_config):
-            command += "--restart=always "
+            command += "--restart=unless-stopped "
 
         # si estamos escribiendo el config no le ponemos el nombre para que
         # pueda correr aunque este levantado el cliente
@@ -670,6 +676,7 @@ class OdooEnv:
         if not self.debug:
             command += "--logfile=/var/log/odoo/odoo.log "
         else:
+            # TODO Arreglar esto con la forma de crear las imagenes
             if self.client.numeric_ver >= 19.1:  # para que no ponga odoo-bin
                 command += "odoo-bin "
             else:
@@ -726,7 +733,8 @@ class OdooEnv:
         command += self._add_normal_mountings()
         if self.debug:
             command += self._add_debug_mountings(self.client.numeric_ver)
-        command += f"--link pg-{self.client.name}:db "
+        command += "--network odoo-net "
+#        command += f"--link pg-{self.client.name}:db "
         command += "-e ODOO_CONF=/dev/null "
         command += f"{self.client.get_image('odoo').name} -- "
         command += "--stop-after-init "
@@ -763,7 +771,7 @@ class OdooEnv:
         command += self._add_normal_mountings()
         if self.debug:
             command += self._add_debug_mountings(self.client.numeric_ver)
-        command += "--link wdb "
+        command += "--network odoo-net "
         command += "-e WDB_SOCKET_SERVER=wdb "
         command += "-e WDB_NO_BROWSER_AUTO_OPEN=True "
         command += "-e ODOO_CONF=/dev/null "

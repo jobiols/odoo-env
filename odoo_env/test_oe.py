@@ -373,6 +373,7 @@ class TestRepository(unittest.TestCase):
             "-v /odoo_ar/odoo-9.0/test_client/backup_dir:/var/odoo/backups/ "
             "--link wdb "
             "-e WDB_SOCKET_SERVER=wdb "
+            "-e WDB_NO_BROWSER_AUTO_OPEN=True "
             "-e ODOO_CONF=/dev/null "
             "--link pg-test_client:db jobiols/odoo-jeo:9.0.debug -- "
             "-d cliente_test "
@@ -454,6 +455,7 @@ class TestRepository(unittest.TestCase):
             "--name test_client "
             "-e ODOO_CONF=/dev/null "
             "-e WDB_SOCKET_SERVER=wdb jobiols/odoo-jeo:9.0.debug "
+            "-e WDB_NO_BROWSER_AUTO_OPEN=True "
             "--logfile=/dev/stdout "
         )
 

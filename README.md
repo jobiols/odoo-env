@@ -34,7 +34,7 @@ Functionality
             [--prod] [--from-prod] [--no-repos] [-m MODULE] [-Q repo] [-f BACKUP_FILE] [-H] [-V] [--nginx] [--backup-list] [--restore]
             [--create-test-db] [--force-create] [--base-dir BASE_DIR]
 
-    Odoo Environment Manager v0.16.3 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.16.4 - by jeo Software <jorge.obiols@gmail.com>
 
     options:
     -h, --help           show this help message and exit
@@ -88,7 +88,8 @@ Installation
 
 Changelog
 ---------
-- 0.16.3  - When a test is run with -Q, it forces the use of the [project]_test database.
+- 0.16.4  - FIX oe -p extract-sources in version 19.0
+- 0.16.2  - When a test is run with -Q, it forces the use of the [project]_test database.
 - 0.16.1  - change dbtools version to 1.3.1 - support for postgres 18.0
 - 0.16.0  - Added support for postgres 18.0
 - 0.15.2  - Added support for WDB 3.3.1 for Odoo versions >= 16, and remove repository

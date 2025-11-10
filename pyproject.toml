@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "odoo-env"
-version = "0.16.3"
+version = "0.16.4"
 
 authors = [
   { name="Jorge Obiols", email="jorge.obiols@gmail.com" },
@@ -13,7 +13,6 @@ description = "A Dockerized environment for Odoo"
 readme = "README.md"
 requires-python = ">=3.9"
 classifiers = [
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",

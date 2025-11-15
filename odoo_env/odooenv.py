@@ -469,7 +469,6 @@ class OdooEnv:
             command += "-p 5432:5432 "
         command += "-e POSTGRES_USER=odoo "
         command += "-e POSTGRES_PASSWORD=odoo "
-        #        command += "-e POSTGRES_DB=postgres "
         if image.numeric_ver >= 18:
             command += f"-v {self.client.psql_dir}:/var/lib/postgresql/{image.numeric_ver}/docker "
         else:
@@ -637,8 +636,6 @@ class OdooEnv:
 
         command += "--network odoo-net "
 
-        # if self.debug:
-        #     command += "--link wdb "
 
         # si tenemos nginx o si estamos escribiendo la configuracion no hay
         # que exponer los puertos.
@@ -650,8 +647,6 @@ class OdooEnv:
         if self.debug:
             command += self._add_debug_mountings(self.client.numeric_ver)
 
-        # if self.client.get_image("postgres"):
-        #     command += f"--link pg-{self.client.name}:db "
 
         if not (self.debug or write_config):
             command += "--restart=unless-stopped "
@@ -734,7 +729,6 @@ class OdooEnv:
         if self.debug:
             command += self._add_debug_mountings(self.client.numeric_ver)
         command += "--network odoo-net "
-        #        command += f"--link pg-{self.client.name}:db "
         command += "-e ODOO_CONF=/dev/null "
         command += f"{self.client.get_image('odoo').name} -- "
         command += "--stop-after-init "

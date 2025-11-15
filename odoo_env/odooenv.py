@@ -422,8 +422,8 @@ class OdooEnv:
         for image in images:
             cmd = Command(
                 self,
-                command="sudo docker stop {}".format(image),
-                usr_msg="Stopping image {} please wait...".format(image),
+                command=f"sudo docker stop {image} ",
+                usr_msg=f"Stopping image {image} please wait...",
             )
             ret.append(cmd)
 
@@ -470,11 +470,11 @@ class OdooEnv:
         # Launching postgres Image
         ##################################################################
 
-        image = self.client.get_image("postgres")
-        if not image:
-            Msg().err("There is no postgres image on this proyect")
+        img = self.client.get_image("postgres")
+        if not img:
+            Msg().err(f"There is no {img.name} image on this proyect")
 
-        msg = f"Starting postgres image {image.version}"
+        msg = f"Starting postgres image {img.version}"
 
         # Armar el comando para lanzar postgres
         command = "sudo docker run -d "

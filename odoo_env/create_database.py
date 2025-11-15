@@ -11,7 +11,7 @@ def restore_database(cli):
     """Restaurar backup de la base"""
 
     command = "docker run --rm "
-    command += f"--network odoo-net "
+    command += "--network odoo-net "
     command += f"-v {cli.backup_dir}test_bkp:/backup "
     command += f"-v {cli.base_dir}data_dir/filestore:/filestore "
     command += f"--env NEW_DBNAME={cli.name}_test "

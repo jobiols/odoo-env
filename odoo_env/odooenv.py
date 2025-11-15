@@ -470,11 +470,11 @@ class OdooEnv:
         # Launching postgres Image
         ##################################################################
 
-        img = self.client.get_image("postgres")
-        if not img:
-            Msg().err(f"There is no {img.name} image on this proyect")
+        image = self.client.get_image("postgres")
+        if not image:
+            Msg().err(f"There is no {image.name} image on this proyect")
 
-        msg = f"Starting postgres image {img.version}"
+        msg = f"Starting postgres image {image.version}"
 
         # Armar el comando para lanzar postgres
         command = "sudo docker run -d "

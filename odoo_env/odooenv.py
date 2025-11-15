@@ -636,7 +636,6 @@ class OdooEnv:
 
         command += "--network odoo-net "
 
-
         # si tenemos nginx o si estamos escribiendo la configuracion no hay
         # que exponer los puertos.
         if not (self.nginx or write_config):
@@ -646,7 +645,6 @@ class OdooEnv:
         command += self._add_normal_mountings()
         if self.debug:
             command += self._add_debug_mountings(self.client.numeric_ver)
-
 
         if not (self.debug or write_config):
             command += "--restart=unless-stopped "

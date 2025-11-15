@@ -10,8 +10,8 @@ from odoo_env.messages import Msg
 def restore_database(cli):
     """Restaurar backup de la base"""
 
-    command = "sudo docker run --rm -i "
-    command += f"--link pg-{cli.name}:db "
+    command = "docker run --rm "
+    command += f"--network odoo-net "
     command += f"-v {cli.backup_dir}test_bkp:/backup "
     command += f"-v {cli.base_dir}data_dir/filestore:/filestore "
     command += f"--env NEW_DBNAME={cli.name}_test "
@@ -23,7 +23,6 @@ def restore_database(cli):
 def create_backup_db(cli):
     """Crear una base de datos vacia con datos de test"""
     Msg().err("Test database does not exist, create it manually")
-
 
 def create_database(_oe, client_name):
     """Crear una BD con datos demo"""

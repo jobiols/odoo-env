@@ -35,41 +35,43 @@ pipx --version
 pipx install ensurepath
 pipx install odoo-env
 
-# install docker en desarrollo
-echo
-echo "installing docker"
-curl -fsSL get.docker.com -o get-docker.sh
-sh get-docker.sh
-rm get-docker.sh
+set -e
 
-# install docker en produccion Ubuntu
-# https://docs.docker.com/engine/install/ubuntu/
-
-# Add Docker's official GPG key: EN DEBIAN / UBUNTU
+# Actualizo e instalo dependencias
 sudo apt-get update
-sudo apt-get install ca-certificates curl gnupg
+sudo apt-get install -y ca-certificates curl gnupg
+
+# Creo carpeta de keyrings
 sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+
+# Cargo variables del sistema
+source /etc/os-release
+
+# Determinar URL según distro
+if [[ "$ID" == "debian" ]]; then
+    REPO_URL="https://download.docker.com/linux/debian"
+elif [[ "$ID" == "ubuntu" ]]; then
+    REPO_URL="https://download.docker.com/linux/ubuntu"
+else
+    echo "Distribución no soportada: $ID"
+    exit 1
+fi
+
+# Importar la GPG key
+curl -fsSL "$REPO_URL/gpg" | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 sudo chmod a+r /etc/apt/keyrings/docker.gpg
 
-# Add the repository to Apt sources: EN DEBIAN
-echo \
-  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
-  "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+# Crear archivo del repo
+ARCH=$(dpkg --print-architecture)
+
+echo "deb [arch=$ARCH signed-by=/etc/apt/keyrings/docker.gpg] $REPO_URL $VERSION_CODENAME stable" \
+  | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+# Actualizar índices
 sudo apt-get update
 
-# Add the repository to Apt sources: EN UBUNTU
-echo \
-  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt-get update
+# Instalar Docker
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-
-
-# install latest versin
-sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-# Verificar docker
+# Testear instalación
 sudo docker run hello-world

@@ -158,8 +158,8 @@ class OdooEnv:
             cmd = Command(self, command=command, usr_msg="Downloading server backup")
             ret.append(cmd)
 
-        command = "sudo docker run --rm -i "
-        command += "--link pg-%s:db " % client_name
+        command = "docker run --rm "
+        command += "--network odoo-net "
         command += "-v %s:/backup " % self.client.backup_dir
         command += "-v %sdata_dir/filestore:/filestore " % self.client.base_dir
         command += "--env NEW_DBNAME=%s " % database
@@ -422,8 +422,8 @@ class OdooEnv:
         for image in images:
             cmd = Command(
                 self,
-                command="sudo docker stop {}".format(image),
-                usr_msg="Stopping image {} please wait...".format(image),
+                command=f"sudo docker stop {image} ",
+                usr_msg=f"Stopping image {image} please wait...",
             )
             ret.append(cmd)
 
@@ -454,12 +454,25 @@ class OdooEnv:
         ret = []
 
         ##################################################################
+        # Verifiyng network
+        ##################################################################
+
+        # Armar el comando para verificar la red odoo-net
+        command = "docker network create odoo-net 2>/dev/null || true"
+        cmd = Command(
+            self,
+            command=command,
+            usr_msg="Starting odoo-net network if needed",
+        )
+        ret.append(cmd)
+
+        ##################################################################
         # Launching postgres Image
         ##################################################################
 
         image = self.client.get_image("postgres")
         if not image:
-            Msg().err("There is no postgres image on this proyect")
+            Msg().err(f"There is no {image.name} image on this proyect")
 
         msg = f"Starting postgres image {image.version}"
 
@@ -469,7 +482,8 @@ class OdooEnv:
             command += "-p 5432:5432 "
         command += "-e POSTGRES_USER=odoo "
         command += "-e POSTGRES_PASSWORD=odoo "
-        #        command += "-e POSTGRES_DB=postgres "
+
+        # En postgres 18 cambio la ubicacione de la BD
         if image.numeric_ver >= 18:
             command += f"-v {self.client.psql_dir}:/var/lib/postgresql/{image.numeric_ver}/docker "
         else:

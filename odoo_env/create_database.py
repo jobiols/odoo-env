@@ -24,6 +24,7 @@ def create_backup_db(cli):
     """Crear una base de datos vacia con datos de test"""
     Msg().err("Test database does not exist, create it manually")
 
+
 def create_database(_oe, client_name):
     """Crear una BD con datos demo"""
 

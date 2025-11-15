@@ -11,6 +11,3 @@ dependency_file_paths = [
 [analyzers.meta]
 runtime_version = "3.x.x"
 
-[[transformers]]
-name = "black"
-enabled = true

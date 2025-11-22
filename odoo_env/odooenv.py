@@ -40,7 +40,7 @@ class OdooEnv:
             return packs
 
         if ver > 18:
-            packs = ["dist-packages", "site-packages"]
+            packs = ["src", "site-packages"]
             return packs
 
     def _process_repos(self):
@@ -389,10 +389,17 @@ class OdooEnv:
             )
             return ret
 
-        if version in {18, 19}:
+        if version in {18}:
             ret = f"-v {cvd}dist-packages:/usr/lib/python3/dist-packages "
             ret += (
                 f"-v {cvd}dist-local-packages:/usr/local/lib/python3.12/dist-packages/ "
+            )
+            return ret
+
+        if version in {19}:
+            ret = f"-v {cvd}src:/odoo/odoo-src "
+            ret += (
+                f"-v {cvd}site-packages:/odoo/venv/lib/python3.10/site-packages "
             )
             return ret
 
@@ -651,9 +658,6 @@ class OdooEnv:
 
         command += "--network odoo-net "
 
-        # if self.debug:
-        #     command += "--link wdb "
-
         # si tenemos nginx o si estamos escribiendo la configuracion no hay
         # que exponer los puertos.
         if not (self.nginx or write_config):
@@ -663,9 +667,6 @@ class OdooEnv:
         command += self._add_normal_mountings()
         if self.debug:
             command += self._add_debug_mountings(self.client.numeric_ver)
-
-        # if self.client.get_image("postgres"):
-        #     command += f"--link pg-{self.client.name}:db "
 
         if not (self.debug or write_config):
             command += "--restart=unless-stopped "

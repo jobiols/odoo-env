@@ -398,9 +398,7 @@ class OdooEnv:
 
         if version in {19}:
             ret = f"-v {cvd}src:/odoo/odoo-src "
-            ret += (
-                f"-v {cvd}site-packages:/odoo/venv/lib/python3.10/site-packages "
-            )
+            ret += f"-v {cvd}site-packages:/odoo/venv/lib/python3.10/site-packages "
             return ret
 
         ret = f"-v {cvd}dist-packages:{idp} "

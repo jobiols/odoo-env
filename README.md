@@ -16,16 +16,18 @@ Environment to manage Odoo. Two environments are provided debug and prod.
 Directory structure
 
     /odoo_ar
-    └── odoo-18.0
+    └── odoo-19.0
         ├── client_one
-        │    ├── config             odoo.conf
-        │    ├── data_dir           filestore
-        │    ├── backup_dir         zip files with backups
-        │    ├── log                odoo.log
-        │    ├── postgresql         postgres database
-        │    └── sources            custom sources
-        ├── dist-local-packages     packages from image for debug
-        └── dist-packages           pagkages from image for debug
+        │   ├── config              odoo.conf
+        │   ├── data_dir            filestore
+        │   ├── backup_dir          zip files with backups
+        │   ├── log                 odoo.log
+        │   ├── postgresql          postgres database
+        │   └── sources
+        │       ├── cl-client_one   repository with project module
+        │       └── client-one      repository with custom modules
+        ├── site-packages           python packages installed on the image
+        └── src                     odoo core modules
 
 Functionality
 -------------
@@ -34,7 +36,7 @@ Functionality
             [--prod] [--from-prod] [--no-repos] [-m MODULE] [-Q repo] [-f BACKUP_FILE] [-H] [-V] [--nginx] [--backup-list] [--restore]
             [--create-test-db] [--force-create] [--base-dir BASE_DIR]
 
-    Odoo Environment Manager v0.16.6= - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.16.6 - by jeo Software <jorge.obiols@gmail.com>
 
     options:
     -h, --help           show this help message and exit

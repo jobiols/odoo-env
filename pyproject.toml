@@ -28,6 +28,7 @@ classifiers = [
 dependencies = [
   "PyYAML >= 6.0.2",
   "tornado >= 6.4.2",
+  "docker >= 7.0.0",
 ]
 
 [project.scripts]

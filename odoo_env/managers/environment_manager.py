@@ -1,10 +1,30 @@
 import os
 import pwd
+
 from odoo_env.client import Client
-from odoo_env.command import Command, MakedirCommand, CreateNginxTemplate, WriteConfigFile, MessageOnly
+from odoo_env.command import (
+    Command,
+    CreateNginxTemplate,
+    MakedirCommand,
+)
+from odoo_env.constants import (
+    BASE_DIR,
+    IN_BACKUP_DIR,
+    IN_CONFIG,
+    IN_CUSTOM_ADDONS,
+    IN_DATA,
+    IN_DIST_LOCAL_PACKAGES,
+    IN_DIST_PACKAGES,
+    IN_EXTRA_ADDONS,
+    IN_LOG,
+    WDB_IMAGE_16,
+    WDB_IMAGE_DEFAULT,
+    WDB_IMAGE_NEW,
+    Msg,
+)
 from odoo_env.services.docker_client import DockerClient
 from odoo_env.services.system import SystemClient
-from odoo_env.constants import *
+
 
 class EnvironmentManager:
     def __init__(self, parent, client_name):
@@ -19,7 +39,9 @@ class EnvironmentManager:
 
         # Base dir
         cmd_list = self.system_client.get_mkdir_command(BASE_DIR)
-        ret.append(Command(self.parent, command=cmd_list, usr_msg=msg)) # MakedirCommand checks existence, but generic Command doesn't.
+        ret.append(
+            Command(self.parent, command=cmd_list, usr_msg=msg)
+        )  # MakedirCommand checks existence, but generic Command doesn't.
         # I should probably use MakedirCommand if I want the check.
         # But MakedirCommand takes a string command.
         # I'll stick to MakedirCommand for now where logic is complex, or refactor MakedirCommand.
@@ -37,7 +59,14 @@ class EnvironmentManager:
         ret.append(Command(self.parent, command=cmd_list))
 
         # Client hierarchy
-        for w_dir in ["postgresql", "config", "data_dir", "backup_dir", "log", "sources"]:
+        for w_dir in [
+            "postgresql",
+            "config",
+            "data_dir",
+            "backup_dir",
+            "log",
+            "sources",
+        ]:
             r_dir = f"{self.client.base_dir}{w_dir}"
             cmd_list = self.system_client.get_mkdir_command(r_dir)
             ret.append(MakedirCommand(self.parent, command=cmd_list, args=r_dir))
@@ -56,13 +85,15 @@ class EnvironmentManager:
                 ret.append(MakedirCommand(self.parent, command=cmd_list, args=r_dir))
 
             r_dir = f"{BASE_DIR}nginx/conf/"
-            ret.append(CreateNginxTemplate(
-                self.parent,
-                command=f"{r_dir}nginx.conf",
-                args=f"{r_dir}nginx.conf",
-                usr_msg="Generating nginx.conf template",
-                client_name=self.client.name
-            ))
+            ret.append(
+                CreateNginxTemplate(
+                    self.parent,
+                    command=f"{r_dir}nginx.conf",
+                    args=f"{r_dir}nginx.conf",
+                    usr_msg="Generating nginx.conf template",
+                    client_name=self.client.name,
+                )
+            )
 
         # Repos
         ret.extend(self.parent._process_repos())
@@ -77,7 +108,13 @@ class EnvironmentManager:
 
         # Network
         cmd_str = self.docker_client.get_network_create_command("odoo-net")
-        ret.append(Command(self.parent, command=cmd_str, usr_msg="Starting odoo-net network if needed"))
+        ret.append(
+            Command(
+                self.parent,
+                command=cmd_str,
+                usr_msg="Starting odoo-net network if needed",
+            )
+        )
 
         # Postgres
         image = self.client.get_image("postgres")
@@ -88,7 +125,9 @@ class EnvironmentManager:
 
         volumes = {}
         if image.numeric_ver >= 18:
-            volumes[self.client.psql_dir] = {"bind": f"/var/lib/postgresql/{image.numeric_ver}/docker"}
+            volumes[self.client.psql_dir] = {
+                "bind": f"/var/lib/postgresql/{image.numeric_ver}/docker"
+            }
         else:
             volumes[self.client.psql_dir] = {"bind": "/var/lib/postgresql/data"}
 
@@ -104,7 +143,7 @@ class EnvironmentManager:
             network="odoo-net",
             # network-alias db? DockerClient doesn't support aliases yet.
             # I need to add alias support to DockerClient or use extra_args.
-            extra_args=["--network-alias", "db"]
+            extra_args=["--network-alias", "db"],
         )
         ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))
 
@@ -113,10 +152,7 @@ class EnvironmentManager:
         if image:
             msg = "Starting aeroo image"
             cmd_list = self.docker_client.get_run_command(
-                image.name,
-                detach=True,
-                name=image.short_name,
-                restart="always"
+                image.name, detach=True, name=image.short_name, restart="always"
             )
             ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))
 
@@ -135,7 +171,7 @@ class EnvironmentManager:
                 ports={1984: 1984},
                 name="wdb",
                 restart="unless-stopped",
-                network="odoo-net"
+                network="odoo-net",
             )
             ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))
 
@@ -149,15 +185,27 @@ class EnvironmentManager:
 
         for image in images:
             cmd_list = self.docker_client.get_stop_command(image)
-            ret.append(Command(self.parent, command=cmd_list, usr_msg=f"Stopping image {image} please wait..."))
+            ret.append(
+                Command(
+                    self.parent,
+                    command=cmd_list,
+                    usr_msg=f"Stopping image {image} please wait...",
+                )
+            )
 
         for image in images:
             cmd_list = self.docker_client.get_rm_command(image)
-            ret.append(Command(self.parent, command=cmd_list, usr_msg=f"Removing image {image}"))
+            ret.append(
+                Command(
+                    self.parent, command=cmd_list, usr_msg=f"Removing image {image}"
+                )
+            )
 
         if self.parent.debug:
             cmd_list = self.docker_client.get_rm_command("wdb", force=True)
-            ret.append(Command(self.parent, command=cmd_list, usr_msg="Removing image wdb"))
+            ret.append(
+                Command(self.parent, command=cmd_list, usr_msg="Removing image wdb")
+            )
 
         return ret
 
@@ -205,14 +253,14 @@ class EnvironmentManager:
             env["WDB_SOCKET_SERVER"] = "wdb"
             env["WDB_NO_BROWSER_AUTO_OPEN"] = "True"
 
-        image = self.client.get_image('odoo').name
+        image = self.client.get_image("odoo").name
 
         logfile = None
         if not self.parent.debug:
             logfile = "/var/log/odoo/odoo.log"
         else:
-             if self.client.numeric_ver < 19.1:
-                 logfile = "/dev/stdout"
+            if self.client.numeric_ver < 19.1:
+                logfile = "/dev/stdout"
 
         cmd_list = self.docker_client.get_run_command(
             image,
@@ -229,7 +277,11 @@ class EnvironmentManager:
             stop_after_init=write_config,
             logfile=logfile,
             # odoo-bin arg for 19.1+ debug?
-            cmd=["odoo-bin"] if self.parent.debug and self.client.numeric_ver >= 19.1 else None
+            cmd=(
+                ["odoo-bin"]
+                if self.parent.debug and self.client.numeric_ver >= 19.1
+                else None
+            ),
         )
 
         ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))
@@ -243,11 +295,19 @@ class EnvironmentManager:
     def stop_client(self):
         ret = []
         cmd_list = self.docker_client.get_stop_command(self.client.name)
-        ret.append(Command(self.parent, command=cmd_list, usr_msg=f"Stopping image {self.client.name} please wait..."))
+        ret.append(
+            Command(
+                self.parent,
+                command=cmd_list,
+                usr_msg=f"Stopping image {self.client.name} please wait...",
+            )
+        )
 
         if self.parent.nginx:
             cmd_list = self.docker_client.get_rm_command("nginx", force=True)
-            ret.append(Command(self.parent, command=cmd_list, usr_msg="Killing image nginx"))
+            ret.append(
+                Command(self.parent, command=cmd_list, usr_msg="Killing image nginx")
+            )
         return ret
 
     def update(self, database, modules):
@@ -257,7 +317,7 @@ class EnvironmentManager:
             volumes.update(self._get_debug_mountings())
 
         cmd_list = self.docker_client.get_run_command(
-            self.client.get_image('odoo').name,
+            self.client.get_image("odoo").name,
             interactive=True,
             remove=True,
             network="odoo-net",
@@ -266,15 +326,21 @@ class EnvironmentManager:
             env={"ODOO_CONF": "/dev/null"},
             stop_after_init=True,
             logfile="false",
-            extra_args=["-d", database, "-u", ", ".join(modules)]
+            extra_args=["-d", database, "-u", ", ".join(modules)],
         )
 
-        ret.append(Command(self.parent, command=cmd_list, usr_msg=f"Performing update of {', '.join(modules)} on database {database}"))
+        ret.append(
+            Command(
+                self.parent,
+                command=cmd_list,
+                usr_msg=f"Performing update of {', '.join(modules)} on database {database}",
+            )
+        )
         return ret
 
     def qa(self, database, module_name, client_test=False):
         if client_test:
-            self.client = client_test # This is a bit hacky, adapting to existing logic
+            self.client = client_test  # This is a bit hacky, adapting to existing logic
 
         ret = []
         volumes = self._get_normal_mountings()
@@ -282,7 +348,7 @@ class EnvironmentManager:
             volumes.update(self._get_debug_mountings())
 
         cmd_list = self.docker_client.get_run_command(
-            self.client.get_image('odoo').name,
+            self.client.get_image("odoo").name,
             interactive=True,
             remove=True,
             network="odoo-net",
@@ -291,15 +357,18 @@ class EnvironmentManager:
             env={
                 "WDB_SOCKET_SERVER": "wdb",
                 "WDB_NO_BROWSER_AUTO_OPEN": "True",
-                "ODOO_CONF": "/dev/null"
+                "ODOO_CONF": "/dev/null",
             },
             stop_after_init=True,
             log_level="test",
             test_enable=True,
-            extra_args=["-d", database, "-u", module_name]
+            extra_args=["-d", database, "-u", module_name],
         )
 
-        msg = f"Performing tests on module {module_name} for client {self.client.name} and database {database}"
+        msg = (
+            f"Performing tests on module {module_name} for client "
+            f"{self.client.name} and database {database}"
+        )
         ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))
         return ret
 
@@ -320,22 +389,30 @@ class EnvironmentManager:
         if version in {14, 15, 16}:
             return {
                 f"{cvd}dist-packages": {"bind": "/usr/lib/python3/dist-packages"},
-                f"{cvd}dist-local-packages": {"bind": "/usr/local/lib/python3.9/dist-packages/"}
+                f"{cvd}dist-local-packages": {
+                    "bind": "/usr/local/lib/python3.9/dist-packages/"
+                },
             }
         if version in {17}:
             return {
                 f"{cvd}dist-packages": {"bind": "/usr/lib/python3/dist-packages"},
-                f"{cvd}dist-local-packages": {"bind": "/usr/local/lib/python3.10/dist-packages/"}
+                f"{cvd}dist-local-packages": {
+                    "bind": "/usr/local/lib/python3.10/dist-packages/"
+                },
             }
         if version in {18}:
             return {
                 f"{cvd}dist-packages": {"bind": "/usr/lib/python3/dist-packages"},
-                f"{cvd}dist-local-packages": {"bind": "/usr/local/lib/python3.12/dist-packages/"}
+                f"{cvd}dist-local-packages": {
+                    "bind": "/usr/local/lib/python3.12/dist-packages/"
+                },
             }
         if version in {19}:
-             return {
+            return {
                 f"{cvd}src": {"bind": "/odoo/odoo-src"},
-                f"{cvd}site-packages": {"bind": "/odoo/venv/lib/python3.10/site-packages"}
+                f"{cvd}site-packages": {
+                    "bind": "/odoo/venv/lib/python3.10/site-packages"
+                },
             }
 
         # Older versions
@@ -352,7 +429,7 @@ class EnvironmentManager:
         return {
             f"{cvd}dist-packages": {"bind": idp},
             f"{cvd}dist-local-packages": {"bind": idlp},
-            f"{cvd}extra-addons": {"bind": iea}
+            f"{cvd}extra-addons": {"bind": iea},
         }
 
     def _get_config_environment(self):
@@ -361,7 +438,7 @@ class EnvironmentManager:
             "SERVER_WIDE_MODULES": "web,web_kanban,server_mode,database_tools",
             "MAX_CRON_THREADS": "1",
             "LIMIT_TIME_CPU": "600",
-            "LIMIT_TIME_REAL": "120"
+            "LIMIT_TIME_REAL": "120",
         }
         if self.parent.debug:
             env["WORKERS"] = "0"
@@ -381,7 +458,7 @@ class EnvironmentManager:
         volumes = {
             f"{nginx_dir}conf": {"bind": "/etc/nginx/conf.d", "mode": "ro"},
             f"{self.client.base_dir}data_dir/letsencrypt": {"bind": "/etc/letsencrypt"},
-            f"{nginx_dir}log": {"bind": "/var/log/nginx/"}
+            f"{nginx_dir}log": {"bind": "/var/log/nginx/"},
         }
 
         cmd_list = self.docker_client.get_run_command(
@@ -391,7 +468,7 @@ class EnvironmentManager:
             name=image.short_name,
             links={self.client.name: "odoo"},
             restart="always",
-            volumes=volumes
+            volumes=volumes,
         )
         ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))
         return ret

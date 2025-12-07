@@ -3,6 +3,7 @@ from odoo_env.command import Command
 from odoo_env.services.docker_client import DockerClient
 from odoo_env.services.system import SystemClient
 
+
 class ImageManager:
     def __init__(self, parent, client_name):
         self.parent = parent
@@ -14,7 +15,11 @@ class ImageManager:
         ret = []
         for image in self.client._images:
             cmd_list = self.docker_client.get_pull_command(image.name)
-            cmd = Command(self.parent, command=cmd_list, usr_msg=f"Pulling Image {image.short_name}")
+            cmd = Command(
+                self.parent,
+                command=cmd_list,
+                usr_msg=f"Pulling Image {image.short_name}",
+            )
             ret.append(cmd)
 
         if self.parent.debug:
@@ -53,7 +58,9 @@ class ImageManager:
 
         # extract
         for module in self.parent._get_packs():
-            msg = f"Extracting {module} from image {self.client.get_image('odoo').name} "
+            msg = (
+                f"Extracting {module} from image {self.client.get_image('odoo').name} "
+            )
 
             # This is a complex docker run command.
             # sudo docker run -it --rm --entrypoint=/extract_{module}.sh -v ...
@@ -63,11 +70,11 @@ class ImageManager:
             }
 
             cmd_list = self.docker_client.get_run_command(
-                self.client.get_image('odoo').name,
+                self.client.get_image("odoo").name,
                 interactive=True,
                 remove=True,
                 entrypoint=f"/extract_{module}.sh",
-                volumes=volumes
+                volumes=volumes,
             )
 
             cmd = Command(self.parent, command=cmd_list, usr_msg=msg)
@@ -76,8 +83,12 @@ class ImageManager:
         # chmod recursive
         for module in self.parent._get_packs():
             r_dir = f"{self.client.version_dir}{module}"
-            cmd_list = self.system_client.get_chmod_command(f"{r_dir}/", "og+w", recursive=True)
-            cmd = Command(self.parent, command=cmd_list, usr_msg=f"Making writable {r_dir}")
+            cmd_list = self.system_client.get_chmod_command(
+                f"{r_dir}/", "og+w", recursive=True
+            )
+            cmd = Command(
+                self.parent, command=cmd_list, usr_msg=f"Making writable {r_dir}"
+            )
             ret.append(cmd)
 
         return ret

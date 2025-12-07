@@ -1,8 +1,10 @@
 import os
+
 from odoo_env.client import Client
 from odoo_env.command import Command, MessageOnly
-from odoo_env.services.docker_client import DockerClient
 from odoo_env.constants import DBTOOLS_IMAGE
+from odoo_env.services.docker_client import DockerClient
+
 
 class BackupManager:
     def __init__(self, parent, client_name):
@@ -31,7 +33,9 @@ class BackupManager:
         ret.append(cmd)
         return ret
 
-    def restore(self, database=False, backup_file=False, no_deactivate=False, from_server=False):
+    def restore(
+        self, database=False, backup_file=False, no_deactivate=False, from_server=False
+    ):
         ret = []
         msg = f"Restoring database {database} "
         if backup_file:
@@ -48,18 +52,18 @@ class BackupManager:
             # I'll keep the logic here but wrap it in Command.
             # Ideally SystemClient handles scp.
             command = self._make_scp_command(backup_file)
-            cmd = Command(self.parent, command=command, usr_msg="Downloading server backup")
+            cmd = Command(
+                self.parent, command=command, usr_msg="Downloading server backup"
+            )
             ret.append(cmd)
 
         # Docker run for restore
         volumes = {
             self.client.backup_dir: {"bind": "/backup"},
-            f"{self.client.base_dir}data_dir/filestore": {"bind": "/filestore"}
+            f"{self.client.base_dir}data_dir/filestore": {"bind": "/filestore"},
         }
 
-        env = {
-            "NEW_DBNAME": database
-        }
+        env = {"NEW_DBNAME": database}
 
         if backup_file and not from_server:
             env["ZIPFILE"] = backup_file
@@ -69,11 +73,7 @@ class BackupManager:
             env["DEACTIVATE"] = "True"
 
         cmd_list = self.docker_client.get_run_command(
-            DBTOOLS_IMAGE,
-            remove=True,
-            network="odoo-net",
-            volumes=volumes,
-            env=env
+            DBTOOLS_IMAGE, remove=True, network="odoo-net", volumes=volumes, env=env
         )
 
         cmd = Command(self.parent, command=cmd_list, usr_msg=msg)
@@ -88,14 +88,13 @@ class BackupManager:
                 backup_file,
                 self.client.backup_dir,
             )
-        else:
-            _file = "ssh %s ls -t %s | head -1" % (
-                self.client.prod_server,
-                self.client.server_backup_dir,
-            )
-            return "scp %s:%s$(%s) %sserver_bkp.zip" % (
-                self.client.prod_server,
-                self.client.server_backup_dir,
-                _file,
-                self.client.backup_dir,
-            )
+        _file = "ssh %s ls -t %s | head -1" % (
+            self.client.prod_server,
+            self.client.server_backup_dir,
+        )
+        return "scp %s:%s$(%s) %sserver_bkp.zip" % (
+            self.client.prod_server,
+            self.client.server_backup_dir,
+            _file,
+            self.client.backup_dir,
+        )

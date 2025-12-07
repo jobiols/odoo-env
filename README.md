@@ -36,7 +36,7 @@ Functionality
             [--prod] [--from-prod] [--no-repos] [-m MODULE] [-Q repo] [-f BACKUP_FILE] [-H] [-V] [--nginx] [--backup-list] [--restore]
             [--create-test-db] [--force-create] [--base-dir BASE_DIR]
 
-    Odoo Environment Manager v0.16.6 - by jeo Software <jorge.obiols@gmail.com>
+    Odoo Environment Manager v0.16.7 - by jeo Software <jorge.obiols@gmail.com>
 
     options:
     -h, --help           show this help message and exit
@@ -90,6 +90,7 @@ Installation
 
 Changelog
 ---------
+- 0.16.7  - Refactoring of the code, no changes to functionality
 - 0.16.6  - FIX oe -p extract-sources in version 19.0
 - 0.16.5  - FIX oe -p extract-sources in version 19.0
 - 0.16.4  - FIX oe -p extract-sources in version 19.0

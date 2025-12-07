@@ -1,13 +1,9 @@
-import os
-import pwd
-
 from odoo_env.client import Client
 from odoo_env.command import *
 from odoo_env.constants import *
-from odoo_env.messages import Msg
+from odoo_env.managers.backup_manager import BackupManager
 from odoo_env.managers.environment_manager import EnvironmentManager
 from odoo_env.managers.image_manager import ImageManager
-from odoo_env.managers.backup_manager import BackupManager
 
 
 class OdooEnv:
@@ -157,14 +153,15 @@ class OdooEnv:
         # command += "--help "
 
         from odoo_env.services.docker_client import DockerClient
+
         dc = DockerClient(sudo=True)
         cmd_list = dc.get_run_command(
-            self.client.get_image('odoo').name,
+            self.client.get_image("odoo").name,
             interactive=True,
             remove=True,
             links={f"pg-{self.client.name}": "db"},
             name="help",
-            cmd=["--", "--help"]
+            cmd=["--", "--help"],
         )
         return [Command(self, command=cmd_list, usr_msg="Getting odoo help")]
 
@@ -193,7 +190,9 @@ class OdooEnv:
             self._client = client_test
         else:
             self._client = Client(self, client_name)
-        return EnvironmentManager(self, client_name).qa(database, module_name, client_test)
+        return EnvironmentManager(self, client_name).qa(
+            database, module_name, client_test
+        )
 
     @property
     def client(self):

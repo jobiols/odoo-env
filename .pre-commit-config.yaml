@@ -18,32 +18,24 @@ repos:
         args: ["--fix=lf"]
 
   - repo: https://github.com/psf/black
-    rev: 25.9.0
+    rev: 25.11.0
     hooks:
      - id: black
        language_version: python3
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.20.0
+    rev: v3.21.2
     hooks:
       - id: pyupgrade
         args: ["--keep-percent-format"]
 
   - repo: https://github.com/PyCQA/isort
-    rev: 6.0.1
+    rev: 7.0.0
     hooks:
       - id: isort
         name: isort except __init__.py
         args: ["--profile", "black", "--filter-files", "--skip-gitignore"]
         exclude: /__init__\.py$
-
-  # - repo: https://github.com/quilsoft-org/gen-readme.git
-  #   rev: v1.4.0
-  #   hooks:
-  #     - id: pylint
-  #       name: ejecutar pylint
-  #       verbose: true
-  #       exclude: data
 
   - repo: https://github.com/myint/autoflake
     rev: v2.3.1
@@ -58,7 +50,7 @@ repos:
           - --remove-unused-variables
 
   - repo: https://github.com/PyCQA/pylint
-    rev: v3.3.8
+    rev: v4.0.4
     hooks:
       - id: pylint
         name: pylint

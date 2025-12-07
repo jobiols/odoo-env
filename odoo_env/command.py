@@ -11,7 +11,7 @@ msg = Msg()
 
 class Command:
     def __init__(
-        self, parent, command=False, usr_msg=False, args=False, client_name=False
+        self, parent, command=False, usr_msg=False, args=False, client_name=False,shell=False,
     ):
         """
         :param parent: El objeto OdooEnv que lo contiene por los parametros
@@ -25,6 +25,7 @@ class Command:
         self._usr_msg = usr_msg
         self._args = args
         self._client_name = client_name
+        self._shell = shell
 
     def check(self):
         # si no tiene argumentos para chequear no requiere chequeo,
@@ -39,38 +40,65 @@ class Command:
         raise NotImplementedError
 
     def execute(self):
-        cmd = self.command
-        self.subrpocess_call(cmd)
+        self.subprocess_call(self.command, shell=self._shell)
 
-    def subrpocess_call(self, params, shell=True):
-        """Run command or command list with arguments.  Wait for commands to
-            complete
-            If args.verbose is true, prints command
-            If any errors stop list execution and returns error
-            if shell=True go shell mode (only for --cron-jobs)
 
-        :param params: command or command list
-        :return: error return
+    def subprocess_call(self, cmd, shell=False, check=True, capture=False):
         """
-        # if not a list convert to a one element list
-        params = params if isinstance(params, list) else [params]
+        Ejecuta un único comando.
 
-        # traverse list executing shell commands
-        for _cmd in params:
-            # if shell = True we do no split
-            cmd = _cmd if shell else _cmd.split()
-            if self._parent.verbose:
-                msg.run(" ")
-                if shell:
-                    msg.run(cmd)
-                else:
-                    msg.run(" ".join(cmd))
-                msg.run(" ")
-            ret = subprocess.call(cmd, shell=shell)
-            if ret:
-                if "hmod o+w" in cmd:
-                    return msg.warn(f"The command {cmd} returned with {str(ret)}")
-                return msg.err(f"The command {cmd} returned with {str(ret)}")
+        :param cmd: str ("git status") o list[str] (["git", "status"])
+        :param shell: usar shell solo si se necesitan pipes/redirecciones
+        :param check: si True, lanza error si exit code != 0
+        :param capture: si True, devuelve (stdout, stderr)
+        """
+        # --- Preparar el comando ---
+        if shell:
+            # Con shell=True, el comando DEBE ser string
+            if not isinstance(cmd, str):
+                raise ValueError("When shell=True, command must be a string.")
+            cmd_run = cmd
+        else:
+            # shell=False, si es string lo spliteamos
+            if isinstance(cmd, str):
+                cmd_run = cmd.split()
+            elif isinstance(cmd, list):
+                cmd_run = cmd           # ya está correctamente dividido
+            else:
+                raise ValueError(f"Invalid command type: {cmd}")
+
+        # --- Verbose ---
+        if self._parent.verbose:
+            msg.run(" ")
+            msg.run(cmd if isinstance(cmd, str) else " ".join(cmd))
+            msg.run(" ")
+
+        # --- Ejecutar ---
+        try:
+            completed = subprocess.run(
+                cmd_run,
+                shell=shell,
+                check=check,
+                capture_output=capture,
+                text=True,
+            )
+
+            if capture:
+                return completed.stdout, completed.stderr
+            return True
+
+        except subprocess.CalledProcessError as e:
+            msg.err(f"Command failed: {e.cmd}\nExit code: {e.returncode}\n{e.stderr}")
+            return False
+
+        except FileNotFoundError:
+            msg.err(f"Command not found: {cmd_run}")
+            return False
+
+        except Exception as e:
+            msg.err(f"Unexpected subprocess error running {cmd_run}: {e}")
+            return False
+
 
     @property
     def args(self):

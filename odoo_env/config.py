@@ -1,3 +1,4 @@
+from pathlib import Path
 import json
 import os
 from datetime import datetime
@@ -27,16 +28,25 @@ class Singleton:
 
 
 class OeConfig(Singleton):
+
     @staticmethod
     def get_config_data():
         template = {"clients": []}
-        # obtener el archivo con los datos de clientes
+
         try:
-            with open(USER_CONFIG_FILE) as config:
-                ret = yaml.safe_load(config)
-        except Exception:
+            with open(USER_CONFIG_FILE, "r") as config:
+                data = yaml.safe_load(config)
+        except FileNotFoundError:
+            # No existe el archivo → devolvemos template
             return template
-        return ret if ret else template
+        except yaml.YAMLError as e:
+            # YAML inválido → loguealo si querés
+            Msg.err(f"Invalid YAML in {USER_CONFIG_FILE}: {e}")
+            return template
+
+        # Si está vacío, safe_load devuelve None
+        return data or template
+
 
     def save_config_data(self, config):
         """ Salvar el conjunto de paths a los clientes
@@ -56,12 +66,14 @@ class OeConfig(Singleton):
         """Traer el path de un cliente"""
         config = self.get_config_data()
 
-        clients = config.get("clients", False)
+        # Traer la lista de clientes del archivo de configuracion
+        clients = config.get("clients")
 
         for client in clients:
-            if client.get(client_name):
-                return client.get(client_name)
-        return False
+            if client_name in client:
+                return Path(client[client_name])
+
+        return None
 
     def save_client_path(self, client_name, path):
         """Salvar el path al cliente, una sola vez"""

@@ -1,6 +1,7 @@
+from pathlib import Path
 import ast
 import os
-
+from pathlib import Path
 from odoo_env.config import OeConfig
 from odoo_env.constants import BASE_DIR
 from odoo_env.images import Image, Image2
@@ -13,36 +14,33 @@ msg = Msg()
 class Client:
     """Clase cliente"""
 
-    def __init__(self, odooenv, name):
-        """Busca el cliente en la estructura de directorios, pero si no lo
-        encuentra pide un directorio donde esta el repo que lo contiene
-        """
-        # parent es siempre un objeto OdooEnv
+    def __init__(self, odooenv, name: str):
         self._parent = odooenv
         self._name = name
-        self._license = False
+        self._license = None
         self._images = []
         self._repos = []
-        self._port = False
-        self._version = ""
+        self._port = None
+        self._version = None
 
-        # si estamos en test accedo a data
-        if name[0:5] in ["test_", "test2"]:
-            path = os.path.dirname(os.path.abspath(__file__))
-            path = path.replace("odoo_env", "odoo_env/data")
+        # Caso especial para test
+        if name.startswith(("test_", "test2")):
+            root = Path(__file__).resolve().parent
+            path = root / "data"
             manifest = self.get_manifest(path)
-            OeConfig().save_client_path(name, path)
+            OeConfig().save_client_path(name, str(path))
         else:
-            manifest = self.get_manifest(BASE_DIR)
+            manifest = self.get_manifest(Path(BASE_DIR))
+
+        # Si no lo encontró, buscar en el directorio actual
         if not manifest:
             msg.inf(
                 f"Can not find client {self._name} in this host installation.\n"
                 "We will try in current dir"
             )
 
-            # mantener compatibilidad con python2
-            input("Hit Enter to continue or CTRL C to exit")
-            manifest, _ = self.get_manifest_from_struct(os.getcwd())
+            manifest, root = self.get_manifest_from_struct(Path.cwd())
+
             if not manifest:
                 msg.err("Can not find client %s in current dir" % name)
 
@@ -54,37 +52,17 @@ class Client:
 
         self.check_common(manifest)
 
-        # verificar version del manifiesto
-        ver = manifest.get("env-ver", "1")
-        if ver == "1":
-            self.check_v1(manifest)
-            msg.warn("The manifest syntax is deprecated, please upgrade to env-ver 2")
-            msg.warn("see documentation at https://jobiols.github.io/odoo-env/")
-            msg.warn(" ")
-        elif ver == "2":
-            self.check_v2(manifest)
-        else:
+        # Validar sintaxis env-ver (solo versión 2)
+        ver = manifest.get("env-ver", "2")
+
+        if ver != "2":
             msg.err(
-                "Not supported syntax version in manifest, please set env-ver to "
-                "1 or 2"
+                f"Manifest syntax '{ver}' is not supported.\n"
+                f"Only env-ver=2 is allowed."
             )
 
-    def check_v1(self, manifest):
-        # Chequar que el manifiesto tenga bien las cosas
-        if not manifest.get("docker"):
-            msg.err("No images in manifest %s" % self.name)
-
-        if not manifest.get("repos"):
-            msg.err("No repos in manifest %s" % self.name)
-
-        # Crear imagenes y repos
-        self._repos = []
-        for rep in manifest.get("repos"):
-            self._repos.append(Repo(rep))
-
-        self._images = []
-        for img in manifest.get("docker"):
-            self._images.append(Image(img))
+        # Procesar sintaxis v2
+        self.check_v2(manifest)
 
     def check_v2(self, manifest):
         # Chequar que el manifiesto tenga bien las cosas
@@ -110,45 +88,100 @@ class Client:
         # levantar el nombre del user server
         self._prod_server = manifest.get("prod_server", "ubuntu")
 
-    def check_common(self, manifest):
-        self._port = manifest.get("port", 8069)
-        self._longpolling_port = manifest.get("longpolling_port", 8072)
-        self._external_dependencies = manifest.get("external_dependencies", {})
-        ver = manifest.get("version")
-        if not ver:
-            msg.err(f"No version tag in manifest {self.name}")
 
-        _x = ver.find(".") + 1
-        _y = ver[_x:].find(".") + _x
-        self._version = ver[0:_y]
+    @staticmethod
+    def parse_odoo_version(ver: str) -> str:
+        """
+        Recibe algo como '17.0.1.0.0'
+        Devuelve '17.0' validando el formato.
+        """
+        parts = ver.split(".")
 
-        name = manifest.get("name").lower()
-        if not self._name == name.split()[0]:
+        # Odoo standard version expects 5 numeric segments
+        if len(parts) != 5:
             msg.err(
-                f"You intend to install client {self._name} but in manifest, "
-                f"the name is {manifest.get('name')}"
+                f"Invalid version format '{ver}'. "
+                "Expected: MAJOR.MINOR.X.Y.Z  (example: 17.0.1.0.0)"
             )
 
-        # Tomar los datos para odoo.conf
+        major, minor, x, y, z = parts
+
+        # All segments must be numeric
+        if not all(p.isdigit() for p in parts):
+            msg.err(f"Invalid version '{ver}', all segments must be numeric")
+
+        # Odoo core rule: MINOR must always be '0'
+        if minor != "0":
+            msg.err(f"Odoo minor version must be '0', got '{minor}' in '{ver}'")
+
+        return f"{major}.{minor}"
+
+
+
+    def check_common(self, manifest):
+        # Puertos
+        self._port = manifest.get("port", 8069)
+        self._longpolling_port = manifest.get("longpolling_port", 8072)
+
+        # Dependencias externas
+        self._external_dependencies = manifest.get("external_dependencies", {})
+
+        # Versión (obligatoria)
+        ver = manifest.get("version")
+        if not ver:
+            msg.err(f"No version tag in manifest '{self.name}'")
+
+        # Validar y extraer versión Odoo estándar
+        self._version = self.parse_odoo_version(ver)
+
+        # Validar nombre del cliente
+        name = manifest.get("name", "").lower()
+        if not name:
+            msg.err(f"No name in manifest for client '{self._name}'")
+
+        manifest_name = name.split()[0]
+        if self._name != manifest_name:
+            msg.err(
+                f"You intend to install client '{self._name}' but manifest "
+                f"name is '{manifest.get('name')}'"
+            )
+
+        # Cargar configuración para odoo.conf
         if self._parent.debug:
             self.config = manifest.get("config-local", [])
         else:
             self.config = manifest.get("config", [])
 
-    def get_manifest_from_struct(self, path):
-        """leer un manifest que esta dentro de una estructura de directorios
-        revisar toda la estructura hasta encontrar un manifest.
-        devolver el manifest y el path
+
+
+
+    def get_manifest_from_struct(self, path: Path) -> tuple[dict[str, object] | None, str | None]:
         """
+        Recorrer recursivamente un directorio buscando un __manifest__.py.
+        Devuelve (manifest_dict, path) o (None, None)
+        """
+
+        if not path.exists():
+            return None, None
+
         for root, _, files in os.walk(path):
-            set_files = {"__openerp__.py", "__manifest__.py"}.intersection(files)
-            for file in list(set_files):
-                manifest_file = "%s/%s" % (root, file)
-                manifest = self.load_manifest(manifest_file)
-                name = manifest.get("name", False)
-                if name and name.lower() == self._name:
-                    return manifest, root
-        return False, False
+            if "__manifest__.py" not in files:
+                continue
+
+            manifest_file = Path(root) / "__manifest__.py"
+            manifest = self.load_manifest(manifest_file)
+
+            # Verificar que sea un dict válido
+            if not isinstance(manifest, dict):
+                continue
+
+            name = manifest.get("name")
+
+            # Validar nombre
+            if isinstance(name, str) and name.lower() == self._name:
+                return manifest, root  # root = str desde os.walk
+
+        return None, None
 
     def get_manifest(self, path):
         """
@@ -171,22 +204,29 @@ class Client:
         return manifest
 
     @staticmethod
-    def load_manifest(filename):
+    def load_manifest(filename: str) -> dict[str, object]:
         """
         Loads a manifest
         :param filename: absolute filename to manifest
         :return: manifest in dictionary format
         """
-        manifest = ""
-        with open(filename) as _f:
-            for line in _f:
-                if line.strip() and line.strip()[0] != "#":
-                    manifest += line
-            try:
-                ret = ast.literal_eval(manifest)
-            except Exception:
-                return {"name": "none"}
-            return ret
+        path = Path(filename)
+        if not path.is_file():
+            return {"name": "none"}
+
+        try:
+            # Leer todas las líneas no vacías ni comentadas
+            text = "\n".join(
+                line for line in path.read_text().splitlines()
+                if line.strip() and not line.strip().startswith("#")
+            )
+
+            # Convertir a dict seguro
+            return ast.literal_eval(text)
+
+        except Exception:
+           return {"name": "none"}
+
 
     def image(self, image_name):
         for img_dict in self._images:

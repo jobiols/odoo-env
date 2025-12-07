@@ -90,7 +90,7 @@ Installation
 
 Changelog
 ---------
-- 0.16.7  - Refactoring of the code, no changes to functionality
+- 0.16.7  - Refactoring of the code, no changes to functionality, remove old manifest filename "__openerp__.py",
 - 0.16.6  - FIX oe -p extract-sources in version 19.0
 - 0.16.5  - FIX oe -p extract-sources in version 19.0
 - 0.16.4  - FIX oe -p extract-sources in version 19.0

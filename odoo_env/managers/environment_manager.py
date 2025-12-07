@@ -2,6 +2,7 @@ import os
 import pwd
 
 from odoo_env.client import Client
+from odoo_env.messages import Msg
 from odoo_env.command import (
     Command,
     CreateNginxTemplate,
@@ -20,7 +21,7 @@ from odoo_env.constants import (
     WDB_IMAGE_16,
     WDB_IMAGE_DEFAULT,
     WDB_IMAGE_NEW,
-    Msg,
+
 )
 from odoo_env.services.docker_client import DockerClient
 from odoo_env.services.system import SystemClient
@@ -30,8 +31,8 @@ class EnvironmentManager:
     def __init__(self, parent, client_name):
         self.parent = parent
         self.client = Client(parent, client_name)
-        self.docker_client = DockerClient(sudo=True)
-        self.system_client = SystemClient(sudo=True)
+        self.docker_client = DockerClient(sudo=False)
+        self.system_client = SystemClient(sudo=False)
 
     def install(self):
         ret = []
@@ -113,6 +114,7 @@ class EnvironmentManager:
                 self.parent,
                 command=cmd_str,
                 usr_msg="Starting odoo-net network if needed",
+                shell=True,
             )
         )
 

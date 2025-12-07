@@ -25,11 +25,17 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "-i",
         "--install",
         action="store_true",
-        help="The first time it runs, it creates the directory structure and "
-        "clones all repositories declared in the project. If run again, it "
-        "updates the repositories. Use together with --extract-sources to copy "
-        "the sources from the Odoo image to the host, which is essential for "
-        "working in debug mode.",
+        help="On the first run, it creates the directory structure and clones all repositories "
+        "defined in the project. On subsequent runs, it updates those repositories. "
+        "Use this option together with --extract-sources to copy the Odoo image sources "
+        "to the host, which is required for working in debug mode."
+    )
+
+    parser.add_argument(
+        "-R",
+        "--run-env",
+        action="store_true",
+        help="Run postgres, wdb and aeroo images (aeroo only for old odoo versions).",
     )
 
     parser.add_argument(
@@ -44,13 +50,6 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "--write-config",
         action="store_true",
         help="Create / Overwrite config file.",
-    )
-
-    parser.add_argument(
-        "-R",
-        "--run-env",
-        action="store_true",
-        help="Run postgres, wdb and aeroo images (aeroo only for old odoo versions).",
     )
 
     parser.add_argument("-r", "--run-cli", action="store_true", help="Run odoo image")

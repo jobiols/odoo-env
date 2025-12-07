@@ -143,9 +143,7 @@ class EnvironmentManager:
             restart="unless-stopped",
             name=f"pg-{self.client.name}",
             network="odoo-net",
-            # network-alias db? DockerClient doesn't support aliases yet.
-            # I need to add alias support to DockerClient or use extra_args.
-            extra_args=["--network-alias", "db"],
+#            extra_args=["--network-alias=db"],
         )
         ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))
 

@@ -15,18 +15,14 @@ class SystemClient:
         cmd.append(path)
         return cmd
 
-    def get_chmod_command(
-        self, path: str, mode: str, recursive: bool = False
-    ) -> list[str]:
+    def get_chmod_command(self, path: str, mode: str, recursive: bool = False) -> list[str]:
         cmd = self._base_cmd() + ["chmod"]
         if recursive:
             cmd.append("-R")
         cmd.extend([mode, path])
         return cmd
 
-    def get_chown_command(
-        self, path: str, user: str, group: str = None, recursive: bool = False
-    ) -> list[str]:
+    def get_chown_command(self, path: str, user: str, group: str = None, recursive: bool = False) -> list[str]:
         cmd = self._base_cmd() + ["chown"]
         if recursive:
             cmd.append("-R")
@@ -34,9 +30,7 @@ class SystemClient:
         cmd.extend([owner, path])
         return cmd
 
-    def get_rm_command(
-        self, path: str, recursive: bool = False, force: bool = False
-    ) -> list[str]:
+    def get_rm_command(self, path: str, recursive: bool = False, force: bool = False) -> list[str]:
         cmd = self._base_cmd() + ["rm"]
         if recursive:
             cmd.append("-r")

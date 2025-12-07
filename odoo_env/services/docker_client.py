@@ -30,6 +30,7 @@ class DockerClient:
         log_level: str = None,
         test_enable: bool = False,
         extra_args: list[str] = None,
+        network_alias: str = None,
     ) -> list[str]:
 
         command = self._base_cmd() + ["run"]
@@ -51,6 +52,8 @@ class DockerClient:
             command.extend(["--entrypoint", entrypoint])
         if workdir:
             command.extend(["-w", workdir])
+        if network_alias:
+            command.extend(["--network-alias", network_alias])
 
         if ports:
             for host, container in ports.items():
@@ -58,9 +61,6 @@ class DockerClient:
 
         if volumes:
             for host_path, vol_data in volumes.items():
-                # vol_data can be just a string (bind) or a dict?
-                # The caller should normalize.
-                # Assuming vol_data is dict with 'bind' and optional 'mode'
                 if isinstance(vol_data, str):
                     bind = vol_data
                     mode = "rw"

@@ -105,6 +105,30 @@ class EnvironmentManager:
         return ret
 
     def run_environment(self):
+        """
+        Docstring for run_environment
+
+            docker run -d -p 5432:5432 -e POSTGRES_USER=odoo -e POSTGRES_PASSWORD=odoo
+            -v /odoo/ar/odoo-16.0e/bukito/postgresql/:/var/lib/postgresql/data
+            --restart=unless-stopped --name pg-bukito --network odoo-net
+            --network-alias db postgres:17.5-alpine
+
+
+
+            docker run -d
+            -p 5432:5432
+            -e POSTGRES_USER=odoo
+            -e POSTGRES_PASSWORD=odoo
+            --restart unless-stopped
+            --name pg-bukito
+
+            --network odoo-net
+            -v /odoo/ar/odoo-16.0e/bukito/postgresql/:/var/lib/postgresql/data:rw
+            postgres:17.5-alpine
+
+        """
+
+
         ret = []
 
         # Network
@@ -125,13 +149,14 @@ class EnvironmentManager:
 
         msg = f"Starting postgres image {image.version}"
 
-        volumes = {}
         if image.numeric_ver >= 18:
-            volumes[self.client.psql_dir] = {
-                "bind": f"/var/lib/postgresql/{image.numeric_ver}/docker"
+            volumes = {
+                self.client.psql_dir: {
+                    "bind": f"/var/lib/postgresql/{image.numeric_ver}/docker"
+                }
             }
         else:
-            volumes[self.client.psql_dir] = {"bind": "/var/lib/postgresql/data"}
+            volumes = {self.client.psql_dir: {"bind": "/var/lib/postgresql/data"}}
 
         ports = {5432: 5432} if self.parent.debug else None
 
@@ -143,7 +168,9 @@ class EnvironmentManager:
             restart="unless-stopped",
             name=f"pg-{self.client.name}",
             network="odoo-net",
-#            extra_args=["--network-alias=db"],
+            volumes=volumes,
+            network_alias="db",
+#            extra_args=["--network-alias","db"],
         )
         ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))
 

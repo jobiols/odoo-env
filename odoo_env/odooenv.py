@@ -18,7 +18,7 @@ class OdooEnv:
 
     def __init__(self, options):
         self._options = options
-        self._client = False
+        self._client = None
 
     def _get_packs(self):
         """Packs a montar en modo debug segun la version de odoo"""
@@ -38,8 +38,8 @@ class OdooEnv:
     def _process_repos(self):
         """Clone or update repos as needed"""
         ret = []
-        # do nothing if no-repos option is true
 
+        # do nothing if no-repos option is true
         if self.no_repos:
             return ret
 
@@ -115,7 +115,7 @@ class OdooEnv:
     def install(self, client_name):
         """Instalacion de cliente,"""
         self._client = Client(self, client_name)
-        return EnvironmentManager(self, client_name).install()
+        return EnvironmentManager(self).install()
 
     def stop_environment(self, client_name):
         self._client = Client(self, client_name)

@@ -1,8 +1,3 @@
-import os
-import pwd
-
-from odoo_env.client import Client
-from odoo_env.messages import Msg
 from odoo_env.command import (
     Command,
     CreateNginxTemplate,
@@ -21,28 +16,29 @@ from odoo_env.constants import (
     WDB_IMAGE_16,
     WDB_IMAGE_DEFAULT,
     WDB_IMAGE_NEW,
-
 )
+from odoo_env.messages import Msg
 from odoo_env.services.docker_client import DockerClient
 from odoo_env.services.system import SystemClient
 
 
 class EnvironmentManager:
-    def __init__(self, parent, client_name):
+    def __init__(self, parent):
         self.parent = parent
-        self.client = Client(parent, client_name)
-        self.docker_client = DockerClient(sudo=False)
-        self.system_client = SystemClient(sudo=False)
+        self.docker_client = DockerClient()
+        self.system_client = SystemClient()
 
     def install(self):
         ret = []
-        msg = f"Installing client {self.client.name}"
+        msg = f"Installing client {self.parent._client.name}"
 
         # Base dir
         cmd_list = self.system_client.get_mkdir_command(BASE_DIR)
+        # TODO Aca habria que usar MakedirCommand en vez de Command
         ret.append(
-            Command(self.parent, command=cmd_list, usr_msg=msg)
-        )  # MakedirCommand checks existence, but generic Command doesn't.
+            MakedirCommand(self.parent, command=cmd_list, usr_msg=msg, args=BASE_DIR)
+        )
+        # MakedirCommand checks existence, but generic Command doesn't.
         # I should probably use MakedirCommand if I want the check.
         # But MakedirCommand takes a string command.
         # I'll stick to MakedirCommand for now where logic is complex, or refactor MakedirCommand.
@@ -54,10 +50,10 @@ class EnvironmentManager:
         # Command.subprocess_call handles lists.
         # So I can pass a list to MakedirCommand.
 
-        # Chown
-        username = pwd.getpwuid(os.getuid()).pw_name
-        cmd_list = self.system_client.get_chown_command(BASE_DIR, username, username)
-        ret.append(Command(self.parent, command=cmd_list))
+        # Chown TODO Habria que quitar esto, porque el mkdir ya lo crea con el usuario correcto
+        # username = pwd.getpwuid(os.getuid()).pw_name
+        # cmd_list = self.system_client.get_chown_command(BASE_DIR, username, username)
+        # ret.append(Command(self.parent, command=cmd_list))
 
         # Client hierarchy
         for w_dir in [
@@ -68,14 +64,31 @@ class EnvironmentManager:
             "log",
             "sources",
         ]:
-            r_dir = f"{self.client.base_dir}{w_dir}"
+            r_dir = f"{self.parent._client.base_dir}{w_dir}"
             cmd_list = self.system_client.get_mkdir_command(r_dir)
             ret.append(MakedirCommand(self.parent, command=cmd_list, args=r_dir))
 
+        # Chown
+        for w_dir in [
+            "config",
+            "data_dir",
+            "log",
+        ]:
+            r_dir = f"{self.parent._client.base_dir}{w_dir}"
+            cmd_list = self.system_client.get_chown_command(
+                r_dir, recursive=True, user="1100", group="1100"
+            )
+            ret.append(Command(self.parent, command=cmd_list))
+
         # Chmod
-        for w_dir in ["config", "data_dir", "log", "backup_dir"]:
-            r_dir = f"{self.client.base_dir}{w_dir}"
-            cmd_list = self.system_client.get_chmod_command(r_dir, "o+w")
+        for w_dir in [
+            "config",
+            "data_dir",
+            "log",
+            "backup_dir",
+        ]:
+            r_dir = f"{self.parent._client.base_dir}{w_dir}"
+            cmd_list = self.system_client.get_chmod_command(r_dir, "o+w", sudo=True)
             ret.append(Command(self.parent, command=cmd_list))
 
         # Nginx
@@ -100,7 +113,7 @@ class EnvironmentManager:
         ret.extend(self.parent._process_repos())
 
         if self.parent.debug:
-            ret.extend(self.parent.do_extract_sources(self.client.name))
+            ret.extend(self.parent.do_extract_sources(self.parent._client.name))
 
         return ret
 
@@ -127,7 +140,6 @@ class EnvironmentManager:
             postgres:17.5-alpine
 
         """
-
 
         ret = []
 
@@ -169,8 +181,6 @@ class EnvironmentManager:
             name=f"pg-{self.client.name}",
             network="odoo-net",
             volumes=volumes,
-            network_alias="db",
-#            extra_args=["--network-alias","db"],
         )
         ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))
 

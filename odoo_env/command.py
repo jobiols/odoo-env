@@ -11,7 +11,13 @@ msg = Msg()
 
 class Command:
     def __init__(
-        self, parent, command=False, usr_msg=False, args=False, client_name=False,shell=False,
+        self,
+        parent,
+        command=None,
+        usr_msg=None,
+        args=None,
+        client_name=None,
+        shell=False,
     ):
         """
         :param parent: El objeto OdooEnv que lo contiene por los parametros
@@ -42,7 +48,6 @@ class Command:
     def execute(self):
         self.subprocess_call(self.command, shell=self._shell)
 
-
     def subprocess_call(self, cmd, shell=False, check=True, capture=False):
         """
         Ejecuta un único comando.
@@ -63,7 +68,7 @@ class Command:
             if isinstance(cmd, str):
                 cmd_run = cmd.split()
             elif isinstance(cmd, list):
-                cmd_run = cmd           # ya está correctamente dividido
+                cmd_run = cmd  # ya está correctamente dividido
             else:
                 raise ValueError(f"Invalid command type: {cmd}")
 
@@ -98,7 +103,6 @@ class Command:
         except Exception as e:
             msg.err(f"Unexpected subprocess error running {cmd_run}: {e}")
             return False
-
 
     @property
     def args(self):

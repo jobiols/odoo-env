@@ -1,7 +1,7 @@
-from pathlib import Path
 import json
 import os
 from datetime import datetime
+from pathlib import Path
 
 import tornado
 import tornado.httpclient
@@ -34,7 +34,7 @@ class OeConfig(Singleton):
         template = {"clients": []}
 
         try:
-            with open(USER_CONFIG_FILE, "r") as config:
+            with open(USER_CONFIG_FILE) as config:
                 data = yaml.safe_load(config)
         except FileNotFoundError:
             # No existe el archivo → devolvemos template
@@ -46,7 +46,6 @@ class OeConfig(Singleton):
 
         # Si está vacío, safe_load devuelve None
         return data or template
-
 
     def save_config_data(self, config):
         """ Salvar el conjunto de paths a los clientes

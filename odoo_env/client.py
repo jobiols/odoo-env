@@ -1,12 +1,12 @@
-from pathlib import Path
 import ast
 import os
 from pathlib import Path
+
 from odoo_env.config import OeConfig
 from odoo_env.constants import BASE_DIR
-from odoo_env.images import Image, Image2
+from odoo_env.images import Image2
 from odoo_env.messages import Msg
-from odoo_env.repos import Repo, Repo2
+from odoo_env.repos import Repo2
 
 msg = Msg()
 
@@ -88,7 +88,6 @@ class Client:
         # levantar el nombre del user server
         self._prod_server = manifest.get("prod_server", "ubuntu")
 
-
     @staticmethod
     def parse_odoo_version(ver: str) -> str:
         """
@@ -104,7 +103,7 @@ class Client:
                 "Expected: MAJOR.MINOR.X.Y.Z  (example: 17.0.1.0.0)"
             )
 
-        major, minor, x, y, z = parts
+        major, minor, _, _, _ = parts
 
         # All segments must be numeric
         if not all(p.isdigit() for p in parts):
@@ -115,8 +114,6 @@ class Client:
             msg.err(f"Odoo minor version must be '0', got '{minor}' in '{ver}'")
 
         return f"{major}.{minor}"
-
-
 
     def check_common(self, manifest):
         # Puertos
@@ -152,10 +149,9 @@ class Client:
         else:
             self.config = manifest.get("config", [])
 
-
-
-
-    def get_manifest_from_struct(self, path: Path) -> tuple[dict[str, object] | None, str | None]:
+    def get_manifest_from_struct(
+        self, path: Path
+    ) -> tuple[dict[str, object] | None, str | None]:
         """
         Recorrer recursivamente un directorio buscando un __manifest__.py.
         Devuelve (manifest_dict, path) o (None, None)
@@ -217,7 +213,8 @@ class Client:
         try:
             # Leer todas las líneas no vacías ni comentadas
             text = "\n".join(
-                line for line in path.read_text().splitlines()
+                line
+                for line in path.read_text().splitlines()
                 if line.strip() and not line.strip().startswith("#")
             )
 
@@ -225,8 +222,7 @@ class Client:
             return ast.literal_eval(text)
 
         except Exception:
-           return {"name": "none"}
-
+            return {"name": "none"}
 
     def image(self, image_name):
         for img_dict in self._images:
@@ -281,11 +277,12 @@ class Client:
 
     @property
     def version_dir(self):
-        """/odoo_ar/odoo-13.0/
-        /odoo_ar/odoo-13.0e/
+        """
+        /odoo_ar/odoo-18.0/
+        /odoo_ar/odoo-18.0e/
         """
         lic = "e" if self._license == "EE" else ""
-        return "%sodoo-%s%s/" % (BASE_DIR, self._version, lic)
+        return f"{BASE_DIR}odoo-{self._version}{lic}/"
 
     @property
     def server_version_dir(self):
@@ -299,8 +296,9 @@ class Client:
 
     @property
     def base_dir(self):
-        """/odoo_ar/odoo-13.0/clientname/
-        /odoo_ar/odoo-13.0e/clientname/
+        """
+        /odoo_ar/odoo-18.0/clientname/
+        /odoo_ar/odoo-18.0e/clientname/
         """
         return f"{self.version_dir}{self._name}/"
 

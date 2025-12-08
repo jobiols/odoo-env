@@ -2,11 +2,11 @@ from typing import Optional, Union
 
 
 class DockerClient:
-    def __init__(self, sudo: bool = True):
-        self.sudo = sudo
+    def __init__(self):
+        pass
 
-    def _base_cmd(self) -> list[str]:
-        return ["sudo", "docker"] if self.sudo else ["docker"]
+    def _base_cmd(self, sudo: bool = False) -> list[str]:
+        return ["sudo", "docker"] if sudo else ["docker"]
 
     def get_run_command(
         self,
@@ -52,9 +52,6 @@ class DockerClient:
             command.extend(["--entrypoint", entrypoint])
         if workdir:
             command.extend(["-w", workdir])
-        if network_alias:
-            command.extend(["--network-alias", network_alias])
-
         if ports:
             for host, container in ports.items():
                 command.extend(["-p", f"{host}:{container}"])
@@ -120,10 +117,4 @@ class DockerClient:
         return self._base_cmd() + ["pull", image]
 
     def get_network_create_command(self, network: str) -> str:
-        # Network create often has || true, which is shell syntax.
-        # If we return a list, we can't use || true easily unless we wrap in sh -c
-        # Or we handle the error in execution.
-        # For now, return the string version if it's complex, or handle it in execution.
-        # The original code uses: "docker network create odoo-net 2>/dev/null || true"
-        # This is definitely shell.
         return f"docker network create {network} 2>/dev/null || true"

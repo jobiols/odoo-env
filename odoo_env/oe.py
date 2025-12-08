@@ -28,7 +28,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         help="On the first run, it creates the directory structure and clones all repositories "
         "defined in the project. On subsequent runs, it updates those repositories. "
         "Use this option together with --extract-sources to copy the Odoo image sources "
-        "to the host, which is required for working in debug mode."
+        "to the host, which is required for working in debug mode.",
     )
 
     parser.add_argument(

@@ -8,8 +8,8 @@ class ImageManager:
     def __init__(self, parent, client_name):
         self.parent = parent
         self.client = Client(parent, client_name)
-        self.docker_client = DockerClient(sudo=True)
-        self.system_client = SystemClient(sudo=True)
+        self.docker_client = DockerClient()
+        self.system_client = SystemClient()
 
     def pull_images(self):
         ret = []
@@ -32,13 +32,6 @@ class ImageManager:
         for w_dir in self.parent._get_packs():
             r_dir = f"{self.client.version_dir}{w_dir}"
             cmd_list = self.system_client.get_rm_command(r_dir, recursive=True)
-            # We use Command but we need to handle check_args logic if we want to preserve it.
-            # RemovedirCommand checks if dir exists.
-            # If we use generic Command, it executes blindly.
-            # But rm -f is safe.
-            # However, the original code used RemovedirCommand.
-            # I'll use generic Command with rm -r (and maybe -f if I want to be safe).
-            # The original command was "sudo rm -r {r_dir}".
             cmd = Command(self.parent, command=cmd_list, usr_msg=f"Removing {r_dir}")
             ret.append(cmd)
 
@@ -52,7 +45,7 @@ class ImageManager:
         # chmod
         for w_dir in self.parent._get_packs():
             r_dir = f"{self.client.version_dir}{w_dir}"
-            cmd_list = self.system_client.get_chmod_command(r_dir, "og+w")
+            cmd_list = self.system_client.get_chmod_command(r_dir, "og+w", sudo=True)
             cmd = Command(self.parent, command=cmd_list)
             ret.append(cmd)
 
@@ -84,7 +77,7 @@ class ImageManager:
         for module in self.parent._get_packs():
             r_dir = f"{self.client.version_dir}{module}"
             cmd_list = self.system_client.get_chmod_command(
-                f"{r_dir}/", "og+w", recursive=True
+                f"{r_dir}/", "o+w", recursive=True, sudo=True
             )
             cmd = Command(
                 self.parent, command=cmd_list, usr_msg=f"Making writable {r_dir}"

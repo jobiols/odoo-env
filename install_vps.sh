@@ -11,31 +11,13 @@ python3 -V
 # Verificar version de linux
 lsb_release -a
 
-# si no esta instalado instalar python 3
-# echo
-#echo "installing python"
-#sudo apt install python3 -y
-
-# instalar distutils
-#sudo apt install python3-distutils -y en el ultimo ubuntu no tiene candidato
-
-# install pip
-# curl -fsSL https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-# sudo python3 get-pip.py
-#rm get-pip.py
-
 # install pipx
 sudo apt install pipx
 pipx --version
 
-# test pip
-#pip -V
-
 # install sd and oe
 pipx install ensurepath
 pipx install odoo-env
-
-set -e
 
 # Actualizo e instalo dependencias
 sudo apt-get update

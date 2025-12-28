@@ -30,7 +30,7 @@ class ImageManager:
         ret = []
         # removing dirs
         for w_dir in self.parent._get_packs():
-            r_dir = f"{self.client.version_dir}{w_dir}"
+            r_dir = f"{self.parent._client.version_dir}{w_dir}"
             cmd_list = self.system_client.get_rm_command(r_dir, recursive=True)
             cmd = Command(self.parent, command=cmd_list, usr_msg=f"Removing {r_dir}")
             ret.append(cmd)

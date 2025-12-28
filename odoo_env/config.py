@@ -30,24 +30,22 @@ class Singleton:
 class OeConfig(Singleton):
 
     @staticmethod
-    def get_config_data():
+    def _get_config_data():
         template = {"clients": []}
 
         try:
             with open(USER_CONFIG_FILE) as config:
                 data = yaml.safe_load(config)
         except FileNotFoundError:
-            # No existe el archivo → devolvemos template
             return template
         except yaml.YAMLError as e:
-            # YAML inválido → loguealo si querés
             Msg.err(f"Invalid YAML in {USER_CONFIG_FILE}: {e}")
             return template
 
         # Si está vacío, safe_load devuelve None
         return data or template
 
-    def save_config_data(self, config):
+    def _save_config_data(self, config):
         """ Salvar el conjunto de paths a los clientes
         """ ""
         # chequear si esta el archivo y sino crear el path
@@ -58,12 +56,12 @@ class OeConfig(Singleton):
             yaml.dump(config, config_file, default_flow_style=False, allow_unicode=True)
 
     def get_base_dir(self):
-        config = self.get_config_data()
+        config = self._get_config_data()
         return config.get("base_dir", "/odoo_ar/")
 
     def get_client_path(self, client_name):
         """Traer el path de un cliente"""
-        config = self.get_config_data()
+        config = self._get_config_data()
 
         # Traer la lista de clientes del archivo de configuracion
         clients = config.get("clients")
@@ -78,46 +76,55 @@ class OeConfig(Singleton):
         """Salvar el path al cliente, una sola vez"""
         if not self.get_client_path(client_name):
             # me traigo la configuracion
-            config = self.get_config_data()
+            config = self._get_config_data()
             # obtengo lista de clientes
             client_list = config["clients"]
             # agrego el cliente
             client_list.append({client_name: path})
             # salvo la configuracion
-            self.save_config_data(config)
+            self._save_config_data(config)
 
     def get_client(self):
-        config = self.get_config_data()
-        return config.get("client", False)
+        config = self._get_config_data()
+        client_name = config.get("client")
+        if client_name is None:
+            Msg.err("No default client set. Please specify a client using --client.")
+        if not isinstance (client_name, str):
+            Msg.err("Invalid client name in configuration. must be a string.")
+        client_name = client_name.strip().lower()
+        if " " in client_name or "/" in client_name:
+            Msg.err("Invalid client name in configuration. must be a simple name.")
+        return client_name
+
 
     def save_client(self, client):
-        config = self.get_config_data()
+        config = self._get_config_data()
         config["client"] = client
-        self.save_config_data(config)
+        self._save_config_data(config)
 
     def get_environment(self):
         """Traer el ambiente con prod por defecto"""
-        config = self.get_config_data()
+        config = self._get_config_data()
         return config.get("environment", "prod")
 
     def save_environment(self, environment):
         """Salvar el ambiente"""
-        config = self.get_config_data()
+        config = self._get_config_data()
         config["environment"] = environment
-        self.save_config_data(config)
+        self._save_config_data(config)
 
     def save_base_dir(self, value):
         """Salvar el base dir"""
-        config = self.get_config_data()
+        config = self._get_config_data()
         # Asegurar que termina con /
         value = os.path.join(value, "")
         config["base_dir"] = value
-        self.save_config_data(config)
+        self._save_config_data(config)
 
     def check_version(self):
         """Chequea si la version de odoo-env es la última"""
 
-        config = self.get_config_data()
+        config = self._get_config_data()
         dt_today = datetime.today()
 
         # veo las fechas, si no tiene fecha es que esta recien instalado
@@ -125,7 +132,7 @@ class OeConfig(Singleton):
         last_check = config.get("last_version_check", False)
         if not last_check:
             config["last_version_check"] = dt_today.strftime("%Y-%m-%d")
-            self.save_config_data(config)
+            self._save_config_data(config)
             return True
 
         # tiene fecha, la paso a datetime
@@ -135,7 +142,7 @@ class OeConfig(Singleton):
         if abs((dt_today - dt_last).days) > 10:
             # guardo la fecha del chequeo
             config["last_version_check"] = dt_today.strftime("%Y-%m-%d")
-            self.save_config_data(config)
+            self._save_config_data(config)
 
             http = tornado.httpclient.HTTPClient()
             try:

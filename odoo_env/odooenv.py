@@ -119,7 +119,7 @@ class OdooEnv:
 
     def stop_environment(self, client_name):
         self._client = Client(self, client_name)
-        return EnvironmentManager(self, client_name).stop_environment()
+        return EnvironmentManager(self).stop_environment()
 
     def run_environment(self, client_name):
         """
@@ -127,41 +127,24 @@ class OdooEnv:
         :return: devuelve los comandos en una lista
         """
         self._client = Client(self, client_name)
-        return EnvironmentManager(self, client_name).run_environment()
+        return EnvironmentManager(self).run_environment()
 
     def stop_client(self, client_name):
         self._client = Client(self, client_name)
-        return EnvironmentManager(self, client_name).stop_client()
+        return EnvironmentManager(self).stop_client()
 
     def server_help(self, client_name):
         self._client = Client(self, client_name)
-        # Implement server_help in EnvironmentManager?
-        # I missed adding it to EnvironmentManager in previous step.
-        # I'll implement it here using DockerClient directly or add it to EnvironmentManager later.
-        # For now, I'll implement it here using DockerClient to be consistent with refactor.
-        # Or I should add it to EnvironmentManager.
-        # I'll add it to EnvironmentManager in a separate edit, or just inline it here using DockerClient.
-        # Inline here using DockerClient is fine for now, but better in Manager.
-        # I'll leave it as TODO or implement it here.
-
-        # Original logic:
-        # command = "sudo docker run --rm -it "
-        # command += f"--link pg-{self.client.name}:db "
-        # command += "--name help "
-        # command += f"{self.client.get_image('odoo').name} "
-        # command += "-- "
-        # command += "--help "
 
         from odoo_env.services.docker_client import DockerClient
 
-        dc = DockerClient(sudo=True)
+        dc = DockerClient()
         cmd_list = dc.get_run_command(
             self.client.get_image("odoo").name,
-            interactive=True,
+            entrypoint="odoo",
             remove=True,
-            links={f"pg-{self.client.name}": "db"},
             name="help",
-            cmd=["--", "--help"],
+            cmd=["--help"],
         )
         return [Command(self, command=cmd_list, usr_msg="Getting odoo help")]
 
@@ -170,11 +153,11 @@ class OdooEnv:
         versiones definidas en WRITE_CONFIG_OLD_MODE
         """
         self._client = Client(self, client_name)
-        return EnvironmentManager(self, client_name).run_client(write_config)
+        return EnvironmentManager(self).run_client(write_config)
 
     def update(self, client_name, database, modules):
         self._client = Client(self, client_name)
-        return EnvironmentManager(self, client_name).update(database, modules)
+        return EnvironmentManager(self).update(database, modules)
 
     def qa(self, client_name, database, module_name, client_test=False):
         """

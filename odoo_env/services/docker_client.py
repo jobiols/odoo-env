@@ -5,8 +5,8 @@ class DockerClient:
     def __init__(self):
         pass
 
-    def _base_cmd(self, sudo: bool = False) -> list[str]:
-        return ["sudo", "docker"] if sudo else ["docker"]
+    def _base_cmd(self) -> list[str]:
+        return ["docker"]
 
     def get_run_command(
         self,

@@ -4,15 +4,29 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-
         {
             "name": "Debug oe myproject",
             "type": "debugpy",
             "request": "launch",
             "python": "/odoo/vs_env/bin/python3.12",
-            "args": ["-i","-c","velute","-v"],
+            "args": [
+                "--restore",
+                "-v"
+            ],
             "justMyCode": true,
             "module": "odoo_env.oe"
+        },
+        {
+            "name": "Debug Tests",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "unittest",
+            "python": "${workspaceFolder}/venv/bin/python",
+            "args": [
+                "odoo_env/test_oe.py"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true
         }
     ]
 }

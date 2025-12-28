@@ -105,7 +105,7 @@ class EnvironmentManager:
                     command=f"{r_dir}nginx.conf",
                     args=f"{r_dir}nginx.conf",
                     usr_msg="Generating nginx.conf template",
-                    client_name=self.client.name,
+                    client_name=self.parent._client.name,
                 )
             )
 
@@ -155,7 +155,7 @@ class EnvironmentManager:
         )
 
         # Postgres
-        image = self.client.get_image("postgres")
+        image = self.parent._client.get_image("postgres")
         if not image:
             Msg().err(f"There is no {image.name} image on this proyect")
 
@@ -168,7 +168,7 @@ class EnvironmentManager:
                 }
             }
         else:
-            volumes = {self.client.psql_dir: {"bind": "/var/lib/postgresql/data"}}
+            volumes = {self.parent._client.psql_dir: {"bind": "/var/lib/postgresql/data"}}
 
         ports = {5432: 5432} if self.parent.debug else None
 
@@ -178,14 +178,14 @@ class EnvironmentManager:
             ports=ports,
             env={"POSTGRES_USER": "odoo", "POSTGRES_PASSWORD": "odoo"},
             restart="unless-stopped",
-            name=f"pg-{self.client.name}",
+            name=f"pg-{self.parent._client.name}",
             network="odoo-net",
             volumes=volumes,
         )
         ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))
 
         # Aeroo
-        image = self.client.get_image("aeroo")
+        image = self.parent._client.get_image("aeroo")
         if image:
             msg = "Starting aeroo image"
             cmd_list = self.docker_client.get_run_command(
@@ -197,9 +197,9 @@ class EnvironmentManager:
         if self.parent.debug:
             msg = "Starting wdb image"
             wdb_image = WDB_IMAGE_DEFAULT
-            if self.client.numeric_ver == 16.0:
+            if self.parent._client.numeric_ver == 16.0:
                 wdb_image = WDB_IMAGE_16
-            elif self.client.numeric_ver > 16.0:
+            elif self.parent._client.numeric_ver > 16.0:
                 wdb_image = WDB_IMAGE_NEW
 
             cmd_list = self.docker_client.get_run_command(
@@ -216,8 +216,8 @@ class EnvironmentManager:
 
     def stop_environment(self):
         ret = []
-        images = [f"pg-{self.client.name}"]
-        if self.client.get_image("aeroo"):
+        images = [f"pg-{self.parent._client.name}"]
+        if self.parent._client.get_image("aeroo"):
             images.append("aeroo")
 
         for image in images:
@@ -250,26 +250,26 @@ class EnvironmentManager:
         ret = []
 
         if write_config:
-            msg = f"Writing config file for client {self.client.name}"
+            msg = f"Writing config file for client {self.parent._client.name}"
             detach = False
             interactive = False
             remove = True
         else:
-            msg = f"Starting Odoo image for client {self.client.name} on port {self.client.port}"
+            msg = f"Starting Odoo image for client {self.parent._client.name} on port {self.parent._client.port}"
             detach = not self.parent.debug
             interactive = self.parent.debug
             remove = self.parent.debug
 
         links = {}
-        if self.client.get_image("aeroo"):
+        if self.parent._client.get_image("aeroo"):
             links["aeroo"] = "aeroo"
 
-        links[f"pg-{self.client.name}"] = "db"
+        links[f"pg-{self.parent._client.name}"] = "db"
 
         ports = {}
         if not (self.parent.nginx or write_config):
-            ports[self.client.port] = 8069
-            ports[self.client.longpolling_port] = 8072
+            ports[self.parent._client.port] = 8069
+            ports[self.parent._client.longpolling_port] = 8072
 
         # Mountings
         volumes = self._get_normal_mountings()
@@ -277,7 +277,7 @@ class EnvironmentManager:
             volumes.update(self._get_debug_mountings())
 
         restart = "unless-stopped" if not (self.parent.debug or write_config) else None
-        name = self.client.name if not write_config else None
+        name = self.parent._client.name if not write_config else None
 
         env = {}
         if write_config:
@@ -290,13 +290,13 @@ class EnvironmentManager:
             env["WDB_SOCKET_SERVER"] = "wdb"
             env["WDB_NO_BROWSER_AUTO_OPEN"] = "True"
 
-        image = self.client.get_image("odoo").name
+        image = self.parent._client.get_image("odoo").name
 
         logfile = None
         if not self.parent.debug:
             logfile = "/var/log/odoo/odoo.log"
         else:
-            if self.client.numeric_ver < 19.1:
+            if self.parent._client.numeric_ver < 19.1:
                 logfile = "/dev/stdout"
 
         cmd_list = self.docker_client.get_run_command(
@@ -316,7 +316,7 @@ class EnvironmentManager:
             # odoo-bin arg for 19.1+ debug?
             cmd=(
                 ["odoo-bin"]
-                if self.parent.debug and self.client.numeric_ver >= 19.1
+                if self.parent.debug and self.parent._client.numeric_ver >= 19.1
                 else None
             ),
         )
@@ -331,12 +331,12 @@ class EnvironmentManager:
 
     def stop_client(self):
         ret = []
-        cmd_list = self.docker_client.get_stop_command(self.client.name)
+        cmd_list = self.docker_client.get_stop_command(self.parent._client.name)
         ret.append(
             Command(
                 self.parent,
                 command=cmd_list,
-                usr_msg=f"Stopping image {self.client.name} please wait...",
+                usr_msg=f"Stopping image {self.parent._client.name} please wait...",
             )
         )
 
@@ -354,12 +354,12 @@ class EnvironmentManager:
             volumes.update(self._get_debug_mountings())
 
         cmd_list = self.docker_client.get_run_command(
-            self.client.get_image("odoo").name,
+            self.parent._client.get_image("odoo").name,
             interactive=True,
             remove=True,
             network="odoo-net",
             volumes=volumes,
-            links={f"pg-{self.client.name}": "db"},
+            links={f"pg-{self.parent._client.name}": "db"},
             env={"ODOO_CONF": "/dev/null"},
             stop_after_init=True,
             logfile="false",
@@ -390,7 +390,7 @@ class EnvironmentManager:
             remove=True,
             network="odoo-net",
             volumes=volumes,
-            links={f"pg-{self.client.name}": "db"},
+            links={f"pg-{self.parent._client.name}": "db"},
             env={
                 "WDB_SOCKET_SERVER": "wdb",
                 "WDB_NO_BROWSER_AUTO_OPEN": "True",
@@ -404,24 +404,24 @@ class EnvironmentManager:
 
         msg = (
             f"Performing tests on module {module_name} for client "
-            f"{self.client.name} and database {database}"
+            f"{self.parent._client.name} and database {database}"
         )
         ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))
         return ret
 
     def _get_normal_mountings(self):
         return {
-            f"{self.client.base_dir}config": {"bind": IN_CONFIG},
-            f"{self.client.base_dir}data_dir": {"bind": IN_DATA},
-            f"{self.client.base_dir}log": {"bind": IN_LOG},
-            f"{self.client.base_dir}sources": {"bind": IN_CUSTOM_ADDONS},
-            f"{self.client.base_dir}backup_dir": {"bind": IN_BACKUP_DIR},
+            f"{self.parent._client.base_dir}config": {"bind": IN_CONFIG},
+            f"{self.parent._client.base_dir}data_dir": {"bind": IN_DATA},
+            f"{self.parent._client.base_dir}log": {"bind": IN_LOG},
+            f"{self.parent._client.base_dir}sources": {"bind": IN_CUSTOM_ADDONS},
+            f"{self.parent._client.base_dir}backup_dir": {"bind": IN_BACKUP_DIR},
         }
 
     def _get_debug_mountings(self):
         # Logic from _add_debug_mountings
-        version = self.client.numeric_ver
-        cvd = self.client.version_dir
+        version = self.parent._client.numeric_ver
+        cvd = self.parent._client.version_dir
 
         if version in {14, 15, 16}:
             return {
@@ -503,7 +503,7 @@ class EnvironmentManager:
             detach=True,
             ports={80: 80, 443: 443},
             name=image.short_name,
-            links={self.client.name: "odoo"},
+            links={self.parent._client.name: "odoo"},
             restart="always",
             volumes=volumes,
         )

@@ -223,6 +223,8 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     )
 
     args = parser.parse_args()
+
+    # Salvar en config las opciones de entorno persistentes
     if args.debug:
         OeConfig().save_environment("debug")
 
@@ -232,17 +234,16 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     if args.base_dir:
         OeConfig().save_base_dir(args.base_dir[0])
 
-    debug_option = OeConfig().get_environment() == "debug"
     options = {
         "verbose": args.verbose,
-        "debug": debug_option,
+        "debug": OeConfig().get_environment() == "debug",
         "no-repos": args.no_repos,
         "nginx": args.nginx,
         "backup_file": args.backup_file,
         "force-create": args.force_create,
     }
     commands = []
-    client_name = get_param(args, "client").strip()
+    client_name = get_param(args, "client")
 
     if args.server_help:
         commands += OdooEnv(options).server_help(client_name)

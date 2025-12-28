@@ -253,10 +253,11 @@ class WriteConfigFile(Command):
         odoo_conf.write_config()
 
         # Corregir los permisos de odoo.conf
-        os.chmod(
-            client.config_file,
-            stat.S_IREAD + stat.S_IWRITE + stat.S_IWOTH + stat.S_IROTH,
-        )
+        # TODO y esto porque era?
+        # os.chmod(
+        #     client.config_file,
+        #     stat.S_IREAD + stat.S_IWRITE + stat.S_IWOTH + stat.S_IROTH,
+        # )
 
 
 class MessageOnly(Command):

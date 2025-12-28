@@ -10,7 +10,7 @@ class BackupManager:
     def __init__(self, parent, client_name):
         self.parent = parent
         self.client = Client(parent, client_name)
-        self.docker_client = DockerClient(sudo=True)
+        self.docker_client = DockerClient()
 
     def backup_list(self):
         ret = []
@@ -23,7 +23,7 @@ class BackupManager:
 
         if len(filenames) > 0:
             filenames.sort()
-            msg = f"List of available backups for client {self.client.name}\n\n"
+            msg = f"List of available backups for client {self.parent._client.name}\n\n"
             for filedesc in filenames:
                 msg += filedesc + "\n"
         else:

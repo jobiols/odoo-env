@@ -47,7 +47,8 @@ class OeConfig(Singleton):
         # Si está vacío, safe_load devuelve None
         return data or template
 
-    def _save_config_data(self, config):
+    @staticmethod
+    def _save_config_data(config):
         """ Salvar el conjunto de paths a los clientes
         """ ""
         # chequear si esta el archivo y sino crear el path

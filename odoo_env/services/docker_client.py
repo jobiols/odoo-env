@@ -1,6 +1,7 @@
 class DockerClient:
 
-    def _base_cmd(self) -> list[str]:
+    @staticmethod
+    def _base_cmd() -> list[str]:
         return ["docker"]
 
     def get_run_command(
@@ -111,5 +112,6 @@ class DockerClient:
     def get_pull_command(self, image: str) -> list[str]:
         return self._base_cmd() + ["pull", image]
 
-    def get_network_create_command(self, network: str) -> str:
+    @staticmethod
+    def get_network_create_command(network: str) -> str:
         return f"docker network create {network} 2>/dev/null || true"

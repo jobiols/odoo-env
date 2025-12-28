@@ -41,7 +41,8 @@ class Command:
         # le pasamos el chequeo al objeto especifico
         return self.check_args()
 
-    def check_args(self):
+    @staticmethod
+    def check_args():
         raise NotImplementedError
 
     def execute(self):
@@ -182,7 +183,9 @@ class CreateNginxTemplate(Command):
 
 
 class WriteConfigFile(Command):
-    def check_args(self):
+    
+    @staticmethod
+    def check_args():
         return True
 
     def check_item(self, search_item, search_list):

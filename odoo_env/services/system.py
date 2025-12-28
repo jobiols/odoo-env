@@ -1,6 +1,7 @@
 class SystemClient:
 
-    def _base_cmd(self, sudo: bool = False) -> list[str]:
+    @staticmethod
+    def _base_cmd(sudo: bool = False) -> list[str]:
         return ["sudo"] if sudo else []
 
     def get_mkdir_command(self, path: str, parents: bool = True) -> list[str]:

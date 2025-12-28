@@ -173,9 +173,7 @@ class OdooEnv:
             self._client = client_test
         else:
             self._client = Client(self, client_name)
-        return EnvironmentManager(self, client_name).qa(
-            database, module_name, client_test
-        )
+        return EnvironmentManager(self).qa(database, module_name, client_test)
 
     @property
     def client(self):

@@ -390,7 +390,7 @@ class EnvironmentManager:
             volumes.update(self._get_debug_mountings())
 
         cmd_list = self.docker_client.get_run_command(
-            self.client.get_image("odoo").name,
+            self.parent._client.get_image("odoo").name,
             interactive=True,
             remove=True,
             network="odoo-net",

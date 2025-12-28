@@ -45,9 +45,7 @@ class Client:
                 msg.err(f"Can not find client {name} in current dir")
 
             msg.inf("Client found!")
-            msg.inf(
-                f"Name {manifest.get("name")}\nversion {manifest.get("version")}\n"
-            )
+            msg.inf(f"Name {manifest.get("name")}\nversion {manifest.get("version")}\n")
 
         self.check_common(manifest)
 

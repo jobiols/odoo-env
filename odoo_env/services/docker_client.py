@@ -1,6 +1,4 @@
 class DockerClient:
-    def __init__(self):
-        pass
 
     def _base_cmd(self) -> list[str]:
         return ["docker"]

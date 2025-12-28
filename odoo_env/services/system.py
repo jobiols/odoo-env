@@ -1,6 +1,4 @@
 class SystemClient:
-    def __init__(self):
-        pass
 
     def _base_cmd(self, sudo: bool = False) -> list[str]:
         return ["sudo"] if sudo else []

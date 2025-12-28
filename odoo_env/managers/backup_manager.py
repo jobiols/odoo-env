@@ -82,19 +82,14 @@ class BackupManager:
 
     def _make_scp_command(self, backup_file):
         if backup_file:
-            return "scp %s:%s%s %sserver_bkp.zip" % (
-                self.client.prod_server,
-                self.client.server_backup_dir,
-                backup_file,
-                self.client.backup_dir,
+            return (
+                f"scp {self.client.prod_server}:{self.client.server_backup_dir}{backup_file} "
+                f"{self.client.backup_dir}server_bkp.zip"
             )
-        _file = "ssh %s ls -t %s | head -1" % (
-            self.client.prod_server,
-            self.client.server_backup_dir,
-        )
-        return "scp %s:%s$(%s) %sserver_bkp.zip" % (
-            self.client.prod_server,
-            self.client.server_backup_dir,
-            _file,
-            self.client.backup_dir,
+
+        _file = f"ssh {self.client.prod_server} ls -t {self.client.server_backup_dir} | head -1"
+
+        return (
+            f"scp {self.client.prod_server}:{self.client.server_backup_dir}$({_file}) "
+            "{self.client.backup_dir}server_bkp.zip"
         )

@@ -77,7 +77,7 @@ class TestRepository(unittest.TestCase):
                 "sudo",
                 "mkdir",
                 "-p",
-                "{}odoo-9.0/test_client/postgresql".format(BASE_DIR),
+                f"{BASE_DIR}odoo-9.0/test_client/postgresql",
             ],
         )
 
@@ -93,7 +93,7 @@ class TestRepository(unittest.TestCase):
                 "sudo",
                 "mkdir",
                 "-p",
-                "{}odoo-9.0/test2_client/postgresql".format(BASE_DIR),
+                f"{BASE_DIR}odoo-9.0/test2_client/postgresql",
             ],
         )
 
@@ -114,7 +114,7 @@ class TestRepository(unittest.TestCase):
                 "sudo",
                 "mkdir",
                 "-p",
-                "{}odoo-9.0e/test2e_client/postgresql".format(BASE_DIR),
+                f"{BASE_DIR}odoo-9.0e/test2e_client/postgresql",
             ],
         )
 

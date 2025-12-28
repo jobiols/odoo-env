@@ -45,7 +45,7 @@ class Command:
         raise NotImplementedError
 
     def execute(self):
-        self.subprocess_call(self.command, shell=self._shell)
+        self.subprocess_call(self.command)
 
     def subprocess_call(self, cmd, shell=False, check=True, capture=False):
         """

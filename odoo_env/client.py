@@ -42,12 +42,11 @@ class Client:
             manifest, root = self.get_manifest_from_struct(Path.cwd())
 
             if not manifest:
-                msg.err("Can not find client %s in current dir" % name)
+                msg.err(f"Can not find client {name} in current dir")
 
             msg.inf("Client found!")
             msg.inf(
-                "Name %s\nversion %s\n"
-                % (manifest.get("name"), manifest.get("version"))
+                f"Name {manifest.get("name")}\nversion {manifest.get("version")}\n"
             )
 
         self.check_common(manifest)
@@ -337,7 +336,7 @@ class Client:
     @property
     def nginx_dir(self):
         """/odoo_ar/nginx/"""
-        return "%snginx/" % BASE_DIR
+        return f"{BASE_DIR}nginx/"
 
     @property
     def debug(self):

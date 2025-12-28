@@ -7,9 +7,10 @@ import tornado
 import tornado.httpclient
 import yaml
 
-msg = Msg()
 from odoo_env.__init__ import __version__
 from odoo_env.messages import Msg
+
+msg = Msg()
 
 USER_CONFIG_PATH = os.path.expanduser("~") + "/.config/oe/"
 USER_CONFIG_FILE = USER_CONFIG_PATH + "oe_config.yaml"

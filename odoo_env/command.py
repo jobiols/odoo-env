@@ -41,9 +41,8 @@ class Command:
         # le pasamos el chequeo al objeto especifico
         return self.check_args()
 
-    @staticmethod
-    def check_args():
-        raise NotImplementedError
+    def check_args(self) -> bool:
+        return True
 
     def execute(self):
         self.subprocess_call(self.command)
@@ -166,7 +165,7 @@ class PullImage(Command):
 
 
 class CreateNginxTemplate(Command):
-    def check_args(self):
+    def check_args(self) -> bool:
         # si el archivo existe no lo dejamos pasar
         return not os.path.isfile(self._args)
 

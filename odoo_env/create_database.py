@@ -17,7 +17,7 @@ def restore_database(cli):
     command += f"--env NEW_DBNAME={cli.name}_test "
     command += "--env ZIPFILE=test.zip "
     command += "jobiols/dbtools:1.3.1 "
-    subprocess.call(command, shell=True)
+    subprocess.call(command)
 
 
 def create_backup_db(client):

@@ -183,7 +183,7 @@ class CreateNginxTemplate(Command):
 
 
 class WriteConfigFile(Command):
-    
+
     @staticmethod
     def check_args():
         return True

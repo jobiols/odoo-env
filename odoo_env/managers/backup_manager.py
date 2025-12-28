@@ -27,7 +27,7 @@ class BackupManager:
             for filedesc in filenames:
                 msg += filedesc + "\n"
         else:
-            msg = "There are no files to restore"
+            msg = "There are no backups to restore"
 
         cmd = MessageOnly(self.parent, command=False, usr_msg=msg)
         ret.append(cmd)

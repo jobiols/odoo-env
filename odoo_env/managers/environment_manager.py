@@ -1,3 +1,4 @@
+from asyncio import subprocess
 from odoo_env.command import (
     Command,
     CreateNginxTemplate,
@@ -34,26 +35,9 @@ class EnvironmentManager:
 
         # Base dir
         cmd_list = self.system_client.get_mkdir_command(BASE_DIR)
-        # TODO Aca habria que usar MakedirCommand en vez de Command
         ret.append(
             MakedirCommand(self.parent, command=cmd_list, usr_msg=msg, args=BASE_DIR)
         )
-        # MakedirCommand checks existence, but generic Command doesn't.
-        # I should probably use MakedirCommand if I want the check.
-        # But MakedirCommand takes a string command.
-        # I'll stick to MakedirCommand for now where logic is complex, or refactor MakedirCommand.
-        # For this refactor, I'll use the existing Command classes where they add value (checks).
-        # But I want to use SystemClient for the command string/list.
-        # MakedirCommand expects a string command usually?
-        # "sudo mkdir {BASE_DIR}"
-        # If I pass a list to MakedirCommand, does it work?
-        # Command.subprocess_call handles lists.
-        # So I can pass a list to MakedirCommand.
-
-        # Chown TODO Habria que quitar esto, porque el mkdir ya lo crea con el usuario correcto
-        # username = pwd.getpwuid(os.getuid()).pw_name
-        # cmd_list = self.system_client.get_chown_command(BASE_DIR, username, username)
-        # ret.append(Command(self.parent, command=cmd_list))
 
         # Client hierarchy
         for w_dir in [
@@ -68,7 +52,7 @@ class EnvironmentManager:
             cmd_list = self.system_client.get_mkdir_command(r_dir)
             ret.append(MakedirCommand(self.parent, command=cmd_list, args=r_dir))
 
-        # Chown
+        # Chown pone el owner como 1100 que es lo que hay en la imagen de odoo
         for w_dir in [
             "config",
             "data_dir",
@@ -143,7 +127,15 @@ class EnvironmentManager:
 
         ret = []
 
-        # Network
+        # Network TODO
+        # Aqui hay que agregar un comando dedicado que en el chequeo verificque si la red existe
+        # def ensure_network(self, network: str) -> None:
+        #     inspect = subprocess.run(
+        #     ["docker", "network", "inspect", network],
+        #     stdout=subprocess.DEVNULL,
+        #     stderr=subprocess.DEVNULL,
+        # )
+
         cmd_str = self.docker_client.get_network_create_command("odoo-net")
         ret.append(
             Command(

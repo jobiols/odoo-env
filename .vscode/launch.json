@@ -10,7 +10,7 @@
             "request": "launch",
             "python": "/odoo/vs_env/bin/python3.12",
             "args": [
-                "--restore",
+                "-R",
                 "-v"
             ],
             "justMyCode": true,

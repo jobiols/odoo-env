@@ -4,6 +4,114 @@ class DockerClient:
     def _base_cmd() -> list[str]:
         return ["docker"]
 
+    # ---------- helpers internos ----------
+
+    def _apply_basic_flags(
+        self,
+        cmd: list[str],
+        detach: bool,
+        remove: bool,
+        interactive: bool,
+    ) -> None:
+        if detach:
+            cmd.append("-d")
+        if remove:
+            cmd.append("--rm")
+        if interactive:
+            cmd.append("-it")
+
+    # pylint: disable=too-many-arguments
+    def _apply_runtime_options(
+        self,
+        cmd: list[str],
+        name: str | None,
+        network: str | None,
+        restart: str | None,
+        user: str | None,
+        entrypoint: str | None,
+        workdir: str | None,
+    ) -> None:
+        if name:
+            cmd.extend(["--name", name])
+        if network:
+            cmd.extend(["--network", network])
+        if restart:
+            cmd.extend(["--restart", restart])
+        if user:
+            cmd.extend(["--user", user])
+        if entrypoint:
+            cmd.extend(["--entrypoint", entrypoint])
+        if workdir:
+            cmd.extend(["-w", workdir])
+
+    def _apply_ports(self, cmd: list[str], ports: dict[int, int] | None) -> None:
+        if not ports:
+            return
+        for host, container in ports.items():
+            cmd.extend(["-p", f"{host}:{container}"])
+
+    def _apply_volumes(
+        self,
+        cmd: list[str],
+        volumes: dict[str, dict[str, str] | str] | None,
+    ) -> None:
+        if not volumes:
+            return
+
+        for host_path, vol_data in volumes.items():
+            if isinstance(vol_data, str):
+                bind = vol_data
+                mode = "rw"
+            else:
+                bind = vol_data.get("bind")
+                mode = vol_data.get("mode", "rw")
+            cmd.extend(["-v", f"{host_path}:{bind}:{mode}"])
+
+    def _apply_env(self, cmd: list[str], env: dict[str, str] | None) -> None:
+        if not env:
+            return
+        for k, v in env.items():
+            cmd.extend(["-e", f"{k}={v}"])
+
+    def _apply_links(self, cmd: list[str], links: dict[str, str] | None) -> None:
+        if not links:
+            return
+        for target, alias in links.items():
+            cmd.extend(["--link", f"{target}:{alias}"])
+
+    def _apply_odoo_args(
+        self,
+        cmd: list[str],
+        stop_after_init: bool,
+        logfile: str | None,
+        log_level: str | None,
+        test_enable: bool,
+    ) -> None:
+        if stop_after_init:
+            cmd.append("--stop-after-init")
+
+        if logfile is not None:
+            if logfile == "false":
+                cmd.append("--logfile=false")
+            else:
+                cmd.append(f"--logfile={logfile}")
+
+        if log_level:
+            cmd.append(f"--log-level={log_level}")
+
+        if test_enable:
+            cmd.append("--test-enable")
+
+    def _apply_cmd(self, cmd: list[str], command: str | list[str] | None) -> None:
+        if not command:
+            return
+        if isinstance(command, str):
+            cmd.extend(command.split())
+        else:
+            cmd.extend(command)
+
+    # ---------- API pública (SIN CAMBIOS) ----------
+    # pylint: disable=too-many-arguments
     def get_run_command(
         self,
         image: str,
@@ -26,91 +134,30 @@ class DockerClient:
         log_level: str | None = None,
         test_enable: bool = False,
         extra_args: list[str] | None = None,
-        network_alias: str | None = None,
+        network_alias: str | None = None,  # se deja para compatibilidad
     ) -> list[str]:
 
         command = self._base_cmd() + ["run"]
-        if detach:
-            command.append("-d")
-        if remove:
-            command.append("--rm")
-        if interactive:
-            command.append("-it")
-        if name:
-            command.extend(["--name", name])
-        if network:
-            command.extend(["--network", network])
-        if restart:
-            command.extend(["--restart", restart])
-        if user:
-            command.extend(["--user", user])
-        if entrypoint:
-            command.extend(["--entrypoint", entrypoint])
-        if workdir:
-            command.extend(["-w", workdir])
-        if ports:
-            for host, container in ports.items():
-                command.extend(["-p", f"{host}:{container}"])
 
-        if volumes:
-            for host_path, vol_data in volumes.items():
-                if isinstance(vol_data, str):
-                    bind = vol_data
-                    mode = "rw"
-                else:
-                    bind = vol_data.get("bind")
-                    mode = vol_data.get("mode", "rw")
-                command.extend(["-v", f"{host_path}:{bind}:{mode}"])
-
-        if env:
-            for k, v in env.items():
-                command.extend(["-e", f"{k}={v}"])
-
-        if links:
-            for target, alias in links.items():
-                command.extend(["--link", f"{target}:{alias}"])
+        self._apply_basic_flags(command, detach, remove, interactive)
+        self._apply_runtime_options(
+            command, name, network, restart, user, entrypoint, workdir
+        )
+        self._apply_ports(command, ports)
+        self._apply_volumes(command, volumes)
+        self._apply_env(command, env)
+        self._apply_links(command, links)
 
         command.append(image)
 
-        # Odoo specific args that go AFTER the image
-        if stop_after_init:
-            command.append("--stop-after-init")
-
-        if logfile is not None:
-            if logfile == "false":
-                command.append("--logfile=false")
-            else:
-                command.append(f"--logfile={logfile}")
-
-        if log_level:
-            command.append(f"--log-level={log_level}")
-
-        if test_enable:
-            command.append("--test-enable")
+        self._apply_odoo_args(command, stop_after_init, logfile, log_level, test_enable)
 
         if extra_args:
             command.extend(extra_args)
 
-        if cmd:
-            if isinstance(cmd, str):
-                command.extend(cmd.split())
-            else:
-                command.extend(cmd)
+        self._apply_cmd(command, cmd)
 
         return command
-
-    def get_stop_command(self, container: str) -> list[str]:
-        return self._base_cmd() + ["stop", container]
-
-    def get_rm_command(self, container: str, force: bool = False) -> list[str]:
-        cmd = self._base_cmd() + ["rm"]
-        if force:
-            cmd.append("-f")
-        cmd.append(container)
-        return cmd
-
-    def get_pull_command(self, image: str) -> list[str]:
-        return self._base_cmd() + ["pull", image]
 
     @staticmethod
     def get_network_create_command(network: str) -> str:

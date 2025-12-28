@@ -1,4 +1,3 @@
-from asyncio import subprocess
 from odoo_env.command import (
     Command,
     CreateNginxTemplate,

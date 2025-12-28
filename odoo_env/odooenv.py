@@ -20,7 +20,7 @@ class OdooEnv:
         self._options = options
         self._client = None
 
-    def _get_packs(self):
+    def get_packs(self):
         """Packs a montar en modo debug segun la version de odoo"""
         ver = self.client.numeric_ver
         if ver < 11:

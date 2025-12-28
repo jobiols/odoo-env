@@ -29,28 +29,28 @@ class ImageManager:
     def extract_sources(self):
         ret = []
         # removing dirs
-        for w_dir in self.parent._get_packs():
+        for w_dir in self.parent.get_packs():
             r_dir = f"{self.parent._client.version_dir}{w_dir}"
             cmd_list = self.system_client.get_rm_command(r_dir, recursive=True)
             cmd = Command(self.parent, command=cmd_list, usr_msg=f"Removing {r_dir}")
             ret.append(cmd)
 
         # create dirs
-        for w_dir in self.parent._get_packs():
+        for w_dir in self.parent.get_packs():
             r_dir = f"{self.client.version_dir}{w_dir}"
             cmd_list = self.system_client.get_mkdir_command(r_dir)
             cmd = Command(self.parent, command=cmd_list)
             ret.append(cmd)
 
         # chmod
-        for w_dir in self.parent._get_packs():
+        for w_dir in self.parent.get_packs():
             r_dir = f"{self.client.version_dir}{w_dir}"
             cmd_list = self.system_client.get_chmod_command(r_dir, "og+w", sudo=True)
             cmd = Command(self.parent, command=cmd_list)
             ret.append(cmd)
 
         # extract
-        for module in self.parent._get_packs():
+        for module in self.parent.get_packs():
             msg = (
                 f"Extracting {module} from image {self.client.get_image('odoo').name} "
             )
@@ -74,7 +74,7 @@ class ImageManager:
             ret.append(cmd)
 
         # chmod recursive
-        for module in self.parent._get_packs():
+        for module in self.parent.get_packs():
             r_dir = f"{self.client.version_dir}{module}"
             cmd_list = self.system_client.get_chmod_command(
                 f"{r_dir}/", "o+w", recursive=True, sudo=True

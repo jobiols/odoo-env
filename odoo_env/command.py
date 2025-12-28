@@ -81,7 +81,6 @@ class Command:
         try:
             completed = subprocess.run(
                 cmd_run,
-                shell=shell,
                 check=check,
                 capture_output=capture,
                 text=True,

@@ -42,7 +42,7 @@ class Command:
         return self.check_args()
 
     def check_args(self) -> bool:
-        """ Esto no puede ser staticmethod porque al heredarlo usan self._args """
+        """Esto no puede ser staticmethod porque al heredarlo usan self._args"""
         return True
 
     def execute(self):

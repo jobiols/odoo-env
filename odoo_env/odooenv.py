@@ -1,6 +1,7 @@
 from odoo_env.client import Client
-from odoo_env.command import *
-from odoo_env.constants import *
+from odoo_env.command import Command, WriteConfigFile, CloneRepo, PullRepo, ExtractSourcesCommand, PullImage, CreateNginxTemplate, MakedirCommand, RemovedirCommand, CreateGitignore, ExtractCustomAddonsCommand, WriteConfigFile, RunOdooCommand, StopOdooCommand, RunPostgresCommand, StopPostgresCommand, UpdateCommand, QACommand, InstallCommand, StopEnvironmentCommand, RunEnvironmentCommand, RestoreCommand, BackupListCommand, InstallDependenciesCommand, UpdateImageCommand, RunWDBCommand, StopWDBCommand, PullImage, PullImagesCommand, ExtractSourcesCommand, InstallImageCommand, ExtractCustomAddonsCommand, CreateNginxTemplate, CreateGitignore, MessageOnly
+import os
+from odoo_env.constants import IN_LOG, IN_CUSTOM_ADDONS, IN_EXTRA_ADDONS,IN_DIST_PACKAGES,IN_DIST_LOCAL_PACKAGES,IN_BACKUP_DIR,WRITE_CONFIG_OLD_MODE,DBTOOLS_IMAGE,WDB_IMAGE_DEFAULT,WDB_IMAGE_16,WDB_IMAGE_NEW
 from odoo_env.managers.backup_manager import BackupManager
 from odoo_env.managers.environment_manager import EnvironmentManager
 from odoo_env.managers.image_manager import ImageManager

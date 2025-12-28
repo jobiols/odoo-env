@@ -266,4 +266,4 @@ class MessageOnly(Command):
 
     @staticmethod
     def execute():
-        pass
+        """Este metodo debe sobreescribirse en las subclases"""

@@ -42,6 +42,7 @@ class Command:
         return self.check_args()
 
     def check_args(self) -> bool:
+        """ Esto no puede ser staticmethod porque al heredarlo usan self._args """
         return True
 
     def execute(self):
@@ -187,7 +188,8 @@ class WriteConfigFile(Command):
     def check_args():
         return True
 
-    def check_item(self, search_item, search_list):
+    @staticmethod
+    def check_item(search_item, search_list):
         for item in search_list:
             if search_item in item:
                 return item

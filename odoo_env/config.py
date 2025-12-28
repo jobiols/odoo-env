@@ -7,6 +7,7 @@ import tornado
 import tornado.httpclient
 import yaml
 
+msg = Msg()
 from odoo_env.__init__ import __version__
 from odoo_env.messages import Msg
 
@@ -39,7 +40,7 @@ class OeConfig(Singleton):
         except FileNotFoundError:
             return template
         except yaml.YAMLError as e:
-            Msg.err(f"Invalid YAML in {USER_CONFIG_FILE}: {e}")
+            msg.err(f"Invalid YAML in {USER_CONFIG_FILE}: {e}")
             return template
 
         # Si está vacío, safe_load devuelve None
@@ -88,12 +89,12 @@ class OeConfig(Singleton):
         config = self._get_config_data()
         client_name = config.get("client")
         if client_name is None:
-            Msg.err("No default client set. Please specify a client using --client.")
+            msg.err("No default client set. Please specify a client using --client.")
         if not isinstance(client_name, str):
-            Msg.err("Invalid client name in configuration. must be a string.")
+            msg.err("Invalid client name in configuration. must be a string.")
         client_name = client_name.strip().lower()
         if " " in client_name or "/" in client_name:
-            Msg.err("Invalid client name in configuration. must be a simple name.")
+            msg.err("Invalid client name in configuration. must be a simple name.")
         return client_name
 
     def save_client(self, client):

@@ -16,11 +16,10 @@ class Command:
         usr_msg=None,
         args=None,
         client_name=None,
-        shell=False,
     ):
         """
         :param parent: El objeto OdooEnv que lo contiene por los parametros
-        :param command: El comando a ejecutar en el shell
+        :param command: El comando a ejecutar
         :param usr_msg: El mensaje a mostrarle al usuario
         :param args: Argumentos para chequear, define si se ejecuta o no
         :return: El objeto Comando que se ejecutara luego
@@ -30,7 +29,6 @@ class Command:
         self._usr_msg = usr_msg
         self._args = args
         self._client_name = client_name
-        self._shell = shell
 
     def check(self):
         # si no tiene argumentos para chequear no requiere chequeo,
@@ -48,29 +46,21 @@ class Command:
     def execute(self):
         self.subprocess_call(self.command)
 
-    def subprocess_call(self, cmd, shell=False, check=True, capture=False):
+    def subprocess_call(self, cmd, check=True, capture=False):
         """
         Ejecuta un único comando.
 
         :param cmd: str ("git status") o list[str] (["git", "status"])
-        :param shell: usar shell solo si se necesitan pipes/redirecciones
         :param check: si True, lanza error si exit code != 0
         :param capture: si True, devuelve (stdout, stderr)
         """
-        # --- Preparar el comando ---
-        if shell:
-            # Con shell=True, el comando DEBE ser string
-            if not isinstance(cmd, str):
-                raise ValueError("When shell=True, command must be a string.")
-            cmd_run = cmd
+        # es string lo spliteamos
+        if isinstance(cmd, str):
+            cmd_run = cmd.split()
+        elif isinstance(cmd, list):
+            cmd_run = cmd  # ya está correctamente dividido
         else:
-            # shell=False, si es string lo spliteamos
-            if isinstance(cmd, str):
-                cmd_run = cmd.split()
-            elif isinstance(cmd, list):
-                cmd_run = cmd  # ya está correctamente dividido
-            else:
-                raise ValueError(f"Invalid command type: {cmd}")
+            raise ValueError(f"Invalid command type: {cmd}")
 
         # --- Verbose ---
         if self._parent.verbose:

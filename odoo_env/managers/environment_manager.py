@@ -150,7 +150,6 @@ class EnvironmentManager:
                 self.parent,
                 command=cmd_str,
                 usr_msg="Starting odoo-net network if needed",
-                shell=True,
             )
         )
 

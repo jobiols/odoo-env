@@ -114,4 +114,4 @@ class DockerClient:
 
     @staticmethod
     def get_network_create_command(network: str) -> str:
-        return f"docker network create {network} 2>/dev/null || true"
+        return ["docker", "network", "create", network]

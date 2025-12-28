@@ -89,13 +89,12 @@ class OeConfig(Singleton):
         client_name = config.get("client")
         if client_name is None:
             Msg.err("No default client set. Please specify a client using --client.")
-        if not isinstance (client_name, str):
+        if not isinstance(client_name, str):
             Msg.err("Invalid client name in configuration. must be a string.")
         client_name = client_name.strip().lower()
         if " " in client_name or "/" in client_name:
             Msg.err("Invalid client name in configuration. must be a simple name.")
         return client_name
-
 
     def save_client(self, client):
         config = self._get_config_data()

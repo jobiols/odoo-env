@@ -168,7 +168,9 @@ class EnvironmentManager:
                 }
             }
         else:
-            volumes = {self.parent._client.psql_dir: {"bind": "/var/lib/postgresql/data"}}
+            volumes = {
+                self.parent._client.psql_dir: {"bind": "/var/lib/postgresql/data"}
+            }
 
         ports = {5432: 5432} if self.parent.debug else None
 
@@ -255,7 +257,10 @@ class EnvironmentManager:
             interactive = False
             remove = True
         else:
-            msg = f"Starting Odoo image for client {self.parent._client.name} on port {self.parent._client.port}"
+            msg = (
+                f"Starting Odoo image for client {self.parent._client.name} "
+                "on port {self.parent._client.port}"
+            )
             detach = not self.parent.debug
             interactive = self.parent.debug
             remove = self.parent.debug

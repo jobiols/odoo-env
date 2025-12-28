@@ -1,6 +1,3 @@
-from typing import Optional, Union
-
-
 class DockerClient:
     def __init__(self):
         pass
@@ -11,26 +8,26 @@ class DockerClient:
     def get_run_command(
         self,
         image: str,
-        cmd: Optional[Union[str, list[str]]] = None,
+        cmd: str | list[str] | None = None,
         detach: bool = False,
         remove: bool = False,
         interactive: bool = False,
-        name: Optional[str] = None,
-        ports: dict[int, int] = None,
-        volumes: dict[str, dict[str, str]] = None,
-        env: dict[str, str] = None,
-        links: dict[str, str] = None,
-        network: str = None,
-        restart: str = None,
-        user: str = None,
-        entrypoint: str = None,
-        workdir: str = None,
+        name: str | None = None,
+        ports: dict[int, int] | None = None,
+        volumes: dict[str, dict[str, str]] | None = None,
+        env: dict[str, str] | None = None,
+        links: dict[str, str] | None = None,
+        network: str | None = None,
+        restart: str | None = None,
+        user: str | None = None,
+        entrypoint: str | None = None,
+        workdir: str | None = None,
         stop_after_init: bool = False,
-        logfile: str = None,
-        log_level: str = None,
+        logfile: str | None = None,
+        log_level: str | None = None,
         test_enable: bool = False,
-        extra_args: list[str] = None,
-        network_alias: str = None,
+        extra_args: list[str] | None = None,
+        network_alias: str | None = None,
     ) -> list[str]:
 
         command = self._base_cmd() + ["run"]

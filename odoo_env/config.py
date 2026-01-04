@@ -91,7 +91,7 @@ class OeConfig(Singleton):
         # agrego el cliente
         client_list.append({client_name: path})
         # salvo la configuracion
-        self._save_config_data(self._config_data)
+        self._save_config_data()
 
     def get_client(self):
         client_name = self._config_data.get("client")

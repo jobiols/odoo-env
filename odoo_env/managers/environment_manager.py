@@ -153,7 +153,7 @@ class EnvironmentManager:
 
         if image.numeric_ver >= 18:
             volumes = {
-                self.client.psql_dir: {
+                self.parent._client.psql_dir: {
                     "bind": f"/var/lib/postgresql/{image.numeric_ver}/docker"
                 }
             }

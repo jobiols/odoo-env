@@ -224,7 +224,10 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
 
     args = parser.parse_args()
 
+    # ####################################################################
     # Salvar en config las opciones de entorno persistentes
+    # ####################################################################
+
     if args.debug:
         OeConfig().save_environment("debug")
 
@@ -234,16 +237,34 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     if args.base_dir:
         OeConfig().save_base_dir(args.base_dir[0])
 
-    options = {
-        "verbose": args.verbose,
-        "debug": OeConfig().get_environment() == "debug",
-        "no-repos": args.no_repos,
-        "nginx": args.nginx,
-        "backup_file": args.backup_file,
-        "force-create": args.force_create,
-    }
+    if args.client:
+        OeConfig().save_client(args.client)
+
+    # TODO Esto habria que pasarlo a OdooEnv en cada comando y cuando se requiera.
+    # options = {
+    #     "verbose": args.verbose,
+    #     "no-repos": args.no_repos,
+    #     "nginx": args.nginx,
+    #     "backup_file": args.backup_file,
+    #     "force-create": args.force_create,
+    # }
+
     commands = []
-    client_name = get_param(args, "client")
+
+    if args.install:
+        commands += OdooEnv(nginx=args.nginx, no_repos=args.no_repos).install()
+
+    if args.pull_images:
+        commands += OdooEnv().pull_images()
+
+    if args.write_config:
+        commands += OdooEnv().write_config()
+
+    if args.run_env:
+        commands += OdooEnv().run_environment()
+
+    if args.run_cli:
+        commands += OdooEnv().run_client()
 
     if args.server_help:
         commands += OdooEnv(options).server_help(client_name)
@@ -260,26 +281,11 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
             client_name, database, backup_file, no_deactivate, from_server
         )
 
-    if args.install:
-        commands += OdooEnv(options).install(client_name)
-
-    if args.write_config:
-        commands += OdooEnv(options).write_config(client_name)
-
-    if args.pull_images:
-        commands += OdooEnv(options).pull_images(client_name)
-
     if args.stop_env:
         commands += OdooEnv(options).stop_environment(client_name)
 
-    if args.run_env:
-        commands += OdooEnv(options).run_environment(client_name)
-
     if args.stop_cli:
         commands += OdooEnv(options).stop_client(client_name)
-
-    if args.run_cli:
-        commands += OdooEnv(options).run_client(client_name)
 
     if args.update:
         database = get_param(args, "database")

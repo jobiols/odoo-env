@@ -13,7 +13,7 @@ class OdooConf:
         self.config = {}
 
     def read_config(self):
-        """lee el odoo.conf del archivo y lo vuelca a un diccionario"""
+        """lee el odoo.conf del archivo y carga la configuración"""
         config = configparser.ConfigParser()
         config.read(self._filename)
         self.config = config._sections

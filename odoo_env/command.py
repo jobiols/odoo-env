@@ -173,6 +173,7 @@ class CreateNginxTemplate(Command):
 
 
 class WriteConfigFile(Command):
+    """Escribe el archivo odoo.conf segun los parametros del manifiesto"""
 
     @staticmethod
     def check_args():

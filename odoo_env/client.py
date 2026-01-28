@@ -77,10 +77,10 @@ class Client:
 
         # Crear imagenes y repos
         for rep in manifest.get("git-repos"):
-            self._repos.append(Repo2(rep, self._version, self._parent._options))
+            self._repos.append(Repo2(rep, self._version))
 
         for img in manifest.get("docker-images"):
-            self._images.append(Image2(img, self._parent.debug))
+            self._images.append(Image2(img, OeConfig().debug))
 
         # levantar el nombre del user server
         self._prod_server = manifest.get("prod_server", "ubuntu")
@@ -141,7 +141,7 @@ class Client:
             )
 
         # Cargar configuración para odoo.conf
-        if self._parent.debug:
+        if OeConfig().debug:
             self.config = manifest.get("config-local", [])
         else:
             self.config = manifest.get("config", [])

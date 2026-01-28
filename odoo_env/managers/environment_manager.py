@@ -3,6 +3,7 @@ from odoo_env.command import (
     CreateNginxTemplate,
     MakedirCommand,
 )
+from odoo_env.config import OeConfig
 from odoo_env.constants import (
     BASE_DIR,
     IN_BACKUP_DIR,
@@ -95,7 +96,7 @@ class EnvironmentManager:
         # Repos
         ret.extend(self.parent._process_repos())
 
-        if self.parent.debug:
+        if OeConfig().debug:
             ret.extend(self.parent.do_extract_sources(self.parent._client.name))
 
         return ret

@@ -1,5 +1,6 @@
 import re
 
+from odoo_env.config import OeConfig
 from odoo_env.messages import Msg
 
 
@@ -54,6 +55,7 @@ class Repo2:
         que viene como parametro, si no viene nada es una excepcion.
         El directorio va despues del repo y puede no estar
         """
+
         # parsear value en una lista
         parsed = value.split(" ")
         # eliminar los espacios
@@ -77,11 +79,11 @@ class Repo2:
 
         self._url = parsed[0]
 
-        if options is not None:  # Si options es None no hay que agregarla el prefijo
+        #        if options is not None:  # Si options es None no hay que agregarla el prefijo
 
-            # agregarle a la url el prefijo de ssh si es requerido solo si estamos en produccion
-            if self.protocol == "ssh" and not options["debug"]:
-                self._url = re.sub(r"@(github)", f"@{self.code_name}.\\1", self._url)
+        # agregarle a la url el prefijo de ssh si es requerido solo si estamos en produccion
+        if self.protocol == "ssh" and OeConfig().prod:
+            self._url = re.sub(r"@(github)", f"@{self.code_name}.\\1", self._url)
 
         # si me quedan dos parametros tengo un directorio
         if len(parsed) > 1:

@@ -28,7 +28,20 @@ class Singleton:
 class OeConfig(Singleton):
 
     def __init__(self):
+        # en esta variable guardo toda la data del archivo oe_config.yaml
         self._config_data = self._get_config_data()
+
+    @property
+    def config_data(self):
+        return self._config_data
+
+    @property
+    def debug(self):
+        return self._config_data.get("environment") == "debug"
+
+    @property
+    def prod(self):
+        return self._config_data.get("environment") == "prod"
 
     @staticmethod
     def _user_config_path():
@@ -40,6 +53,7 @@ class OeConfig(Singleton):
         return f"{self._user_config_path()}oe_config.yaml"
 
     def _get_config_data(self):
+        """Trae todo el oe_config.yaml como un diccionario"""
         template = {"clients": []}
 
         try:

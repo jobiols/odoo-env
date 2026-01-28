@@ -1,12 +1,14 @@
 from odoo_env.client import Client
 from odoo_env.command import Command
+from odoo_env.config import OeConfig
 from odoo_env.services.docker_client import DockerClient
 from odoo_env.services.system import SystemClient
 
 
 class ImageManager:
-    def __init__(self, parent, client_name):
+    def __init__(self, parent):
         self.parent = parent
+        client_name = OeConfig().get_client()
         self.client = Client(parent, client_name)
         self.docker_client = DockerClient()
         self.system_client = SystemClient()
@@ -14,7 +16,7 @@ class ImageManager:
     def pull_images(self):
         ret = []
         for image in self.client._images:
-            cmd_list = self.docker_client.get_pull_command(image.name)
+            cmd_list = self.docker_client.get_run_command(image.name)
             cmd = Command(
                 self.parent,
                 command=cmd_list,

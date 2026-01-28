@@ -5,6 +5,7 @@ from odoo_env.command import (
     PullRepo,
     WriteConfigFile,
 )
+from odoo_env.config import OeConfig
 from odoo_env.constants import (
     WRITE_CONFIG_OLD_MODE,
 )
@@ -23,9 +24,24 @@ class OdooEnv:
     Si hay mensaje se muestra antes de ejecutar la accion
     """
 
-    def __init__(self, options):
-        self._options = options
-        self._client = None
+    def __init__(self, nginx=False, no_repos=False):
+        client_name = OeConfig().get_client()
+        self._client = Client(self, client_name)
+        self._nginx = nginx
+        self._no_repos = no_repos
+
+    def write_config(self):
+        """Sobreescribe el odoo.conf config con los datos que vienen en el manifiesto"""
+        self._client = Client(self, OeConfig().get_client())
+        ret = []
+        if self._client.numeric_ver not in WRITE_CONFIG_OLD_MODE:
+            cmd = WriteConfigFile(
+                self, args={"client": self._client}, usr_msg="Writing config file"
+            )
+            ret.append(cmd)
+        else:
+            ret += self.run_client(client_name, write_config=True)
+        return ret
 
     def get_packs(self):
         """Packs a montar en modo debug segun la version de odoo"""
@@ -96,44 +112,28 @@ class OdooEnv:
             database, backup_file, no_deactivate, from_server
         )
 
-    def write_config(self, client_name):
-        """Sobreescribe el config con los datos que vienen en el manifiesto"""
-        self._client = Client(self, client_name)
-        ret = []
-        if self._client.numeric_ver not in WRITE_CONFIG_OLD_MODE:
-            cmd = WriteConfigFile(
-                self, args={"client": self._client}, usr_msg="Writing config file"
-            )
-            ret.append(cmd)
-        else:
-            ret += self.run_client(client_name, write_config=True)
-        return ret
-
-    def pull_images(self, client_name):
-        """Forzar la bajada de las imagenes"""
-        self._client = Client(self, client_name)
-        return ImageManager(self, client_name).pull_images()
-
     def do_extract_sources(self, client_name):
         """Extrae los fuentes de la imagen debug"""
         self._client = Client(self, client_name)
         return ImageManager(self, client_name).extract_sources()
 
-    def install(self, client_name):
+    def install(self):
         """Instalacion de cliente,"""
-        self._client = Client(self, client_name)
         return EnvironmentManager(self).install()
+
+    def pull_images(self):
+        """Forzar la bajada de las imagenes"""
+        return ImageManager(self).pull_images()
 
     def stop_environment(self, client_name):
         self._client = Client(self, client_name)
         return EnvironmentManager(self).stop_environment()
 
-    def run_environment(self, client_name):
+    def run_environment(self):
         """
         Crea los comandos para lanzar la BD y el wdb
         :return: devuelve los comandos en una lista
         """
-        self._client = Client(self, client_name)
         return EnvironmentManager(self).run_environment()
 
     def stop_client(self, client_name):
@@ -155,11 +155,11 @@ class OdooEnv:
         )
         return [Command(self, command=cmd_list, usr_msg="Getting odoo help")]
 
-    def run_client(self, client_name, write_config=False):
+    def run_client(self, write_config=False):
         """El run_client se usa tambien para escribir el config file en las
         versiones definidas en WRITE_CONFIG_OLD_MODE
         """
-        self._client = Client(self, client_name)
+        self._client = Client(self, OeConfig().get_client)
         return EnvironmentManager(self).run_client(write_config)
 
     def update(self, client_name, database, modules):
@@ -188,7 +188,7 @@ class OdooEnv:
 
     @property
     def debug(self):
-        return self._options["debug"]
+        return OeConfig().debug
 
     @property
     def verbose(self):
@@ -196,11 +196,11 @@ class OdooEnv:
 
     @property
     def no_repos(self):
-        return self._options["no-repos"]
+        return self._no_repos
 
     @property
     def nginx(self):
-        return self._options["nginx"]
+        return self._nginx
 
     @property
     def force_create(self):

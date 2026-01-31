@@ -83,7 +83,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "-c",
         action="append",
         dest="client",
-        help="Set default client name. This option is persistent",
+        help="Set default client name. This parameter is persistent",
     )
 
     parser.add_argument(
@@ -118,13 +118,13 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     parser.add_argument(
         "--debug",
         action="store_true",
-        help="Set default environment mode to debug ",
+        help="Set default environment mode to debug. This parameter is persistent.",
     )
 
     parser.add_argument(
         "--prod",
         action="store_true",
-        help="Set default environment mode to production ",
+        help="Set default environment mode to production. This parameter is persistent.",
     )
 
     parser.add_argument(
@@ -141,6 +141,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     parser.add_argument(
         "--no-repos",
         action="store_true",
+        default=False,
         help="Does not clone or pull repos when doing -i (install)",
     )
 
@@ -230,13 +231,14 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "--base-dir",
         action="append",
         dest="base_dir",
-        help="Set default base-dir This option is persistent.",
+        help="Set default base-dir. This parameter is persistent.",
     )
 
     return parser.parse_args()
 
 
 def persist_config(args):
+    """Salva en la configuracion los parametros que se declararon como persistentes"""
     conf = OeConfig()
 
     if args.debug:
@@ -285,51 +287,49 @@ def build_commands(args):
     commands = []
 
     if args.install:
-        commands += OdooEnv(nginx=args.nginx, no_repos=args.no_repos).install()
-
-    if args.pull_images:
-        commands += OdooEnv().pull_images()
-
-    if args.write_config:
-        commands += OdooEnv().write_config()
+        commands += OdooEnv(args).install()
 
     if args.run_env:
-        commands += OdooEnv().run_environment()
+        commands += OdooEnv(args).run_environment()
+
+    if args.pull_images:
+        commands += OdooEnv(args).pull_images()
+
+    if args.write_config:
+        commands += OdooEnv(args).write_config()
 
     if args.run_cli:
-        commands += OdooEnv().run_client()
+        commands += OdooEnv(args).run_client()
 
     if args.server_help:
-        commands += OdooEnv(options).server_help(client_name)
+        commands += OdooEnv(args).server_help(client_name)
 
     if args.backup_list:
-        commands += OdooEnv(options).backup_list(client_name)
+        commands += OdooEnv(args).backup_list(client_name)
 
     if args.restore:
         database = get_param(args, "database")
         backup_file = get_param(args, "backup_file")
         no_deactivate = args.no_deactivate
         from_server = args.from_prod
-        commands += OdooEnv(options).restore(
+        commands += OdooEnv(args).restore(
             client_name, database, backup_file, no_deactivate, from_server
         )
 
     if args.stop_env:
-        commands += OdooEnv(options).stop_environment(client_name)
+        commands += OdooEnv(args).stop_environment(client_name)
 
     if args.stop_cli:
-        commands += OdooEnv(options).stop_client(client_name)
+        commands += OdooEnv(args).stop_client(client_name)
 
     if args.update:
         database = get_param(args, "database")
         modules = get_param(args, "module")
-        commands += OdooEnv(options).update(client_name, database, modules)
+        commands += OdooEnv(args).update(client_name, database, modules)
 
     if args.quality_assurance:
         database = f"{get_param(args, 'client')}_test"
-        commands += OdooEnv(options).qa(
-            client_name, database, args.quality_assurance[0]
-        )
+        commands += OdooEnv(args).qa(client_name, database, args.quality_assurance[0])
 
     if args.version:
         Msg().inf(f"oe version {__version__}")
@@ -337,13 +337,13 @@ def build_commands(args):
 
     if args.create_test_db:
         Msg().inf("Creating test database with demo data.")
-        create_database(OdooEnv(options=options), client_name)
+        create_database(OdooEnv(args))
         sys.exit()
 
     if args.deploy_keys:
-        if options["debug"]:
+        if not args.debug:
             Msg().err("Must be in prod mode in order to create deploy keys.")
-        deploy_keys(OdooEnv(options=options), client_name)
+        deploy_keys(OdooEnv(args))
 
     return commands
 

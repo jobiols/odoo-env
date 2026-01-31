@@ -24,11 +24,12 @@ class OdooEnv:
     Si hay mensaje se muestra antes de ejecutar la accion
     """
 
-    def __init__(self, nginx=False, no_repos=False):
+    def __init__(self, args):
+
         client_name = OeConfig().get_client()
         self._client = Client(self, client_name)
-        self._nginx = nginx
-        self._no_repos = no_repos
+        self._nginx = args.nginx
+        self._no_repos = args.no_repos
 
     def write_config(self):
         """Sobreescribe el odoo.conf config con los datos que vienen en el manifiesto"""
@@ -115,7 +116,7 @@ class OdooEnv:
     def do_extract_sources(self, client_name):
         """Extrae los fuentes de la imagen debug"""
         self._client = Client(self, client_name)
-        return ImageManager(self, client_name).extract_sources()
+        return ImageManager(self).extract_sources()
 
     def install(self):
         """Instalacion de cliente,"""

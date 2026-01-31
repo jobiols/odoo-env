@@ -139,7 +139,7 @@ class OeConfig(Singleton):
         self._save_config_data()
 
     def check_version(self):
-        """Chequea si la version de odoo-env es la última"""
+        """Chequea si la version de odoo-env es la última y si no avisa al usuario"""
 
         dt_today = datetime.today()
 
@@ -183,7 +183,7 @@ class OeConfig(Singleton):
 
             except Exception:
                 Msg().inf(
-                    "Oops! It seems my cowboy hat ran out of internet connection. "
-                    "Did you feed coins to the internet ranch, or did the Wi-Fi birds "
-                    "fly away?"
+                    "Oops! Looks like my cowboy hat is out of internet. "
+                    "Did you forget to feed coins to the internet ranch, or did the Wi-Fi birds "
+                    "fly away again?"
                 )

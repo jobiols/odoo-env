@@ -12,7 +12,6 @@ msg = Msg()
 
 
 class Client:
-    """Clase cliente"""
 
     def __init__(self, odooenv, name: str):
         self._parent = odooenv
@@ -343,3 +342,7 @@ class Client:
     @property
     def prod_server(self):
         return self._prod_server
+
+    @property
+    def database_default_name(self):
+        return f"{self.name}_prod"

@@ -316,6 +316,7 @@ class EnvironmentManager:
                 if self.parent.debug and self.parent._client.numeric_ver >= 19.1
                 else None
             ),
+            database=self.parent._client.database_default_name,
         )
 
         ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))

@@ -6,9 +6,6 @@ from odoo_env.command import (
     WriteConfigFile,
 )
 from odoo_env.config import OeConfig
-from odoo_env.constants import (
-    WRITE_CONFIG_OLD_MODE,
-)
 from odoo_env.managers.backup_manager import BackupManager
 from odoo_env.managers.environment_manager import EnvironmentManager
 from odoo_env.managers.image_manager import ImageManager
@@ -30,18 +27,17 @@ class OdooEnv:
         self._client = Client(self, client_name)
         self._nginx = args.nginx
         self._no_repos = args.no_repos
+        self._verbose = args.verbose
+        self._force_create = args.force_create
 
     def write_config(self):
         """Sobreescribe el odoo.conf config con los datos que vienen en el manifiesto"""
         self._client = Client(self, OeConfig().get_client())
         ret = []
-        if self._client.numeric_ver not in WRITE_CONFIG_OLD_MODE:
-            cmd = WriteConfigFile(
-                self, args={"client": self._client}, usr_msg="Writing config file"
-            )
-            ret.append(cmd)
-        else:
-            ret += self.run_client(client_name, write_config=True)
+        cmd = WriteConfigFile(
+            self, args={"client": self._client}, usr_msg="Writing config file"
+        )
+        ret.append(cmd)
         return ret
 
     def get_packs(self):
@@ -157,10 +153,8 @@ class OdooEnv:
         return [Command(self, command=cmd_list, usr_msg="Getting odoo help")]
 
     def run_client(self, write_config=False):
-        """El run_client se usa tambien para escribir el config file en las
-        versiones definidas en WRITE_CONFIG_OLD_MODE
-        """
-        self._client = Client(self, OeConfig().get_client)
+        #        self._client = OeConfig().get_client
+        #        self._client = Client(self, OeConfig().get_client)
         return EnvironmentManager(self).run_client(write_config)
 
     def update(self, client_name, database, modules):
@@ -193,7 +187,7 @@ class OdooEnv:
 
     @property
     def verbose(self):
-        return self._options["verbose"]
+        return self._verbose
 
     @property
     def no_repos(self):
@@ -205,4 +199,4 @@ class OdooEnv:
 
     @property
     def force_create(self):
-        return self._options["force-create"]
+        return self._force_create

@@ -110,6 +110,11 @@ class DockerClient:
         else:
             cmd.extend(command)
 
+    def _apply_database(self, cmd: list[str], database: str | None) -> None:
+        if not database:
+            return
+        cmd.extend(["-d", database])
+
     # ---------- API pública (SIN CAMBIOS) ----------
     # pylint: disable=too-many-arguments
     def get_run_command(
@@ -134,6 +139,7 @@ class DockerClient:
         log_level: str | None = None,
         test_enable: bool = False,
         extra_args: list[str] | None = None,
+        database: str | None = None,
         network_alias: str | None = None,  # se deja para compatibilidad
     ) -> list[str]:
 
@@ -156,6 +162,8 @@ class DockerClient:
             command.extend(extra_args)
 
         self._apply_cmd(command, cmd)
+
+        self._apply_database(command, database)
 
         return command
 

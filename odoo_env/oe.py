@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-"""Este es el modulo principal de odoo-env"""
 
 import argparse
 import sys
@@ -13,14 +12,13 @@ from odoo_env.odooenv import OdooEnv
 from odoo_env.options import get_param
 
 
-def main():
-    """main"""
+def parse_args():
+
     parser = argparse.ArgumentParser(
         description=f"""
 Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.com>
 """
     )
-
     parser.add_argument(
         "-i",
         "--install",
@@ -52,7 +50,12 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         help="Create / Overwrite config file.",
     )
 
-    parser.add_argument("-r", "--run-cli", action="store_true", help="Run odoo image")
+    parser.add_argument(
+        "-r",
+        "--run-cli",
+        action="store_true",
+        help="Run odoo image",
+    )
 
     parser.add_argument(
         "-S",
@@ -113,13 +116,17 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     )
 
     parser.add_argument(
-        "--debug", action="store_true", help="Set default environment mode to debug "
+        "--debug",
+        action="store_true",
+        help="Set default environment mode to debug ",
     )
+
     parser.add_argument(
         "--prod",
         action="store_true",
         help="Set default environment mode to production ",
     )
+
     parser.add_argument(
         "--from-prod",
         action="store_true",
@@ -130,6 +137,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "You can deactivate a database running odoo with those parameters"
         "odoo deactivate -d database",
     )
+
     parser.add_argument(
         "--no-repos",
         action="store_true",
@@ -175,7 +183,10 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     )
 
     parser.add_argument(
-        "-V", "--version", action="store_true", help="Show version number and exit."
+        "-V",
+        "--version",
+        action="store_true",
+        help="Show version number and exit.",
     )
 
     parser.add_argument(
@@ -222,23 +233,23 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         help="Set default base-dir This option is persistent.",
     )
 
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    # ####################################################################
-    # Salvar en config las opciones de entorno persistentes
-    # ####################################################################
+
+def persist_config(args):
+    conf = OeConfig()
 
     if args.debug:
-        OeConfig().save_environment("debug")
+        conf.save_environment("debug")
 
     if args.prod:
-        OeConfig().save_environment("prod")
-
-    if args.base_dir:
-        OeConfig().save_base_dir(args.base_dir[0])
+        conf.save_environment("prod")
 
     if args.client:
-        OeConfig().save_client(args.client)
+        conf.save_client(args.client)
+
+    if args.base_dir:
+        conf.save_base_dir(args.base_dir)
 
     # TODO Esto habria que pasarlo a OdooEnv en cada comando y cuando se requiera.
     # options = {
@@ -248,6 +259,28 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     #     "backup_file": args.backup_file,
     #     "force-create": args.force_create,
     # }
+
+
+def build_options(args):
+    return {
+        "verbose": args.verbose,
+        "no_repos": args.no_repos,
+        "nginx": args.nginx,
+        "backup_file": args.backup_file,
+        "force_create": args.force_create,
+    }
+
+
+def get_client():
+    conf = OeConfig()
+    client = conf.get_client()
+    if not client:
+        Msg().err("No client configured. Use -c <client>.")
+        sys.exit(1)
+    return client
+
+
+def build_commands(args):
 
     commands = []
 
@@ -312,18 +345,25 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
             Msg().err("Must be in prod mode in order to create deploy keys.")
         deploy_keys(OdooEnv(options=options), client_name)
 
-    conf = OeConfig()
+    return commands
 
-    # Verificar la version del script en pypi
-    conf.check_version()
 
-    # #####################################################################
-    # ejecutar comandos
-    # ######################################################################
+def execute(commands):
     for command in commands:
         if command and command.check():
             Msg().inf(command.usr_msg)
             command.execute()
+
+
+def main():
+    args = parse_args()
+    persist_config(args)
+
+    conf = OeConfig()
+    conf.check_version()
+
+    commands = build_commands(args)
+    execute(commands)
 
 
 if __name__ == "__main__":

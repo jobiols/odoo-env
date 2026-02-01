@@ -139,9 +139,6 @@ class OdooEnv:
         return EnvironmentManager(self).stop_client()
 
     def server_help(self):
-
-        self._client = Client(self, OeConfig().get_client())
-
         from odoo_env.services.docker_client import DockerClient
 
         dc = DockerClient()

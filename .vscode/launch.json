@@ -9,7 +9,7 @@
             "type": "debugpy",
             "request": "launch",
             "python": "/odoo/vs_env/bin/python3.12",
-            "args": ["-Q", "l10n_ar", "-v" ],
+            "args": ["-H", "-v" ],
             "justMyCode": true,
             "module": "odoo_env.oe"
         },

@@ -253,16 +253,6 @@ def persist_config(args):
     if args.base_dir:
         conf.save_base_dir(args.base_dir)
 
-    # TODO Esto habria que pasarlo a OdooEnv en cada comando y cuando se requiera.
-    # options = {
-    #     "verbose": args.verbose,
-    #     "no-repos": args.no_repos,
-    #     "nginx": args.nginx,
-    #     "backup_file": args.backup_file,
-    #     "force-create": args.force_create,
-    # }
-
-
 def build_options(args):
     return {
         "verbose": args.verbose,
@@ -318,6 +308,7 @@ def build_commands(args):
         conf = OeConfig()
         if not conf.prod:
             Msg().err("Must be in prod mode in order to create deploy keys.")
+            sys.exit(1)
         deploy_keys(OdooEnv(args))
 
     if args.modules_to_test:
@@ -338,11 +329,8 @@ def build_commands(args):
             database, backup_file, no_deactivate, from_server
         )
 
-    if args.version:
-        Msg().inf(f"oe version {__version__}")
-        sys.exit()
-
     if args.create_test_db:
+        # TODO crear un comando para hacer esto en diferido
         Msg().inf("Creating test database with demo data.")
         create_database(OdooEnv(args))
         sys.exit()
@@ -359,6 +347,12 @@ def execute(commands):
 
 def main():
     args = parse_args()
+
+    if args.version:
+        # TODO crear un comando para esto
+        Msg().inf(f"oe version {__version__}")
+        sys.exit()
+
     persist_config(args)
 
     conf = OeConfig()

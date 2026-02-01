@@ -115,6 +115,18 @@ class DockerClient:
             return
         cmd.extend(["-d", database])
 
+    def get_stop_command(self, container_name: str) -> list[str]:
+        return ["docker", "stop", container_name]
+
+    def get_rm_command(
+        self,
+        container_name: str,
+        recursive: bool = False,
+        force: bool = False,
+        sudo: bool = True,
+    ) -> list[str]:
+        return ["docker", "rm", container_name]
+
     # ---------- API pública (SIN CAMBIOS) ----------
     # pylint: disable=too-many-arguments
     def get_run_command(

@@ -79,8 +79,6 @@ class Repo2:
 
         self._url = parsed[0]
 
-        #        if options is not None:  # Si options es None no hay que agregarla el prefijo
-
         # agregarle a la url el prefijo de ssh si es requerido solo si estamos en produccion
         if self.protocol == "ssh" and OeConfig().prod:
             self._url = re.sub(r"@(github)", f"@{self.code_name}.\\1", self._url)

@@ -80,6 +80,25 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     )
 
     parser.add_argument(
+        "--deploy-keys",
+        action="store_true",
+        help="Available only in production mode. It creates a pair of deploy keys for each private "
+        "repository found in the manifest, lists the public keys for adding to the repositories.",
+    )
+
+    parser.add_argument(
+        "-Q",
+        action="store",
+        metavar="repo",
+        nargs=1,
+        dest="modules_to_test",
+        help="Run the tests. Required parameters: -m <module name>. "
+        "Optional parameters: -d <database>; if omitted, the default test database will be used, "
+        "which is [client]_test. NOTE: The database used for testing must be created with demo "
+        "data and must have admin/admin credentials.",
+    )
+
+    parser.add_argument(
         "-c",
         action="append",
         dest="client",
@@ -106,13 +125,6 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         action="store_true",
         help="No Deactivate database before restore. WARNING this command is "
         "deprecated",
-    )
-
-    parser.add_argument(
-        "--deploy-keys",
-        action="store_true",
-        help="Available only in production mode. It creates a pair of deploy keys for each private "
-        "repository found in the manifest, lists the public keys for adding to the repositories.",
     )
 
     parser.add_argument(
@@ -152,18 +164,6 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         help="Module to update. Used with -u (update) i.e. -m sale for "
         "updating sale module -m all for updating all modules. NOTE: if "
         "you perform -u without -m it asumes all modules",
-    )
-
-    parser.add_argument(
-        "-Q",
-        action="store",
-        metavar="repo",
-        nargs=1,
-        dest="quality_assurance",
-        help="Run the tests. Required parameters: -m <module name>. "
-        "Optional parameters: -d <database>; if omitted, the default test database will be used, "
-        "which is [client]_test. NOTE: The database used for testing must be created with demo "
-        "data and must have admin/admin credentials.",
     )
 
     parser.add_argument(
@@ -301,11 +301,33 @@ def build_commands(args):
     if args.run_cli:
         commands += OdooEnv(args).run_client()
 
+    if args.stop_env:
+        commands += OdooEnv(args).stop_environment()
+
+    if args.stop_cli:
+        commands += OdooEnv(args).stop_client()
+
+    if args.update:
+        # TODO Si no esa definida la base traer el default pero est lo tiene que hacer config o Client
+        database = get_param(args, "database")
+        # trajendo los modulos definidos en linea de comandos o todos si no hay ninguno
+        modules = get_param(args, "module")
+        commands += OdooEnv(args).update(database, modules)
+
+    if args.deploy_keys:
+        conf = OeConfig()
+        if not conf.prod:
+            Msg().err("Must be in prod mode in order to create deploy keys.")
+        deploy_keys(OdooEnv(args))
+
+    if args.modules_to_test:
+        commands += OdooEnv(args).qa(args.modules_to_test[0])
+
     if args.server_help:
-        commands += OdooEnv(args).server_help(client_name)
+        commands += OdooEnv(args).server_help()
 
     if args.backup_list:
-        commands += OdooEnv(args).backup_list(client_name)
+        commands += OdooEnv(args).backup_list()
 
     if args.restore:
         database = get_param(args, "database")
@@ -313,23 +335,8 @@ def build_commands(args):
         no_deactivate = args.no_deactivate
         from_server = args.from_prod
         commands += OdooEnv(args).restore(
-            client_name, database, backup_file, no_deactivate, from_server
+            database, backup_file, no_deactivate, from_server
         )
-
-    if args.stop_env:
-        commands += OdooEnv(args).stop_environment(client_name)
-
-    if args.stop_cli:
-        commands += OdooEnv(args).stop_client(client_name)
-
-    if args.update:
-        database = get_param(args, "database")
-        modules = get_param(args, "module")
-        commands += OdooEnv(args).update(client_name, database, modules)
-
-    if args.quality_assurance:
-        database = f"{get_param(args, 'client')}_test"
-        commands += OdooEnv(args).qa(client_name, database, args.quality_assurance[0])
 
     if args.version:
         Msg().inf(f"oe version {__version__}")
@@ -339,11 +346,6 @@ def build_commands(args):
         Msg().inf("Creating test database with demo data.")
         create_database(OdooEnv(args))
         sys.exit()
-
-    if args.deploy_keys:
-        if not args.debug:
-            Msg().err("Must be in prod mode in order to create deploy keys.")
-        deploy_keys(OdooEnv(args))
 
     return commands
 

@@ -18,7 +18,7 @@ def get_database(args):
 
     client = get_client(args)
     if client:
-        suffix = "_test" if args.quality_assurance else "_prod"
+        suffix = "_test" if args.modules_to_test else "_prod"
         default_database = client + suffix
         Msg().inf(
             f"Using default database: {default_database}, use -d to "

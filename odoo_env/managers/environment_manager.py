@@ -373,7 +373,7 @@ class EnvironmentManager:
         )
         return ret
 
-    def qa(self, database, module_name, client_test=False):
+    def qa(self, database, modules_to_test, client_test=False):
         if client_test:
             self.client = client_test  # This is a bit hacky, adapting to existing logic
 
@@ -397,11 +397,11 @@ class EnvironmentManager:
             stop_after_init=True,
             log_level="test",
             test_enable=True,
-            extra_args=["-d", database, "-u", module_name],
+            extra_args=["-d", database, "-u", modules_to_test],
         )
 
         msg = (
-            f"Performing tests on module {module_name} for client "
+            f"Performing tests on module {modules_to_test} for client "
             f"{self.parent._client.name} and database {database}"
         )
         ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))

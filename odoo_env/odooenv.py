@@ -29,6 +29,7 @@ class OdooEnv:
         self._no_repos = args.no_repos
         self._verbose = args.verbose
         self._force_create = args.force_create
+        self._modules_to_test = args.modules_to_test
 
     def write_config(self):
         """Sobreescribe el odoo.conf config con los datos que vienen en el manifiesto"""
@@ -122,8 +123,8 @@ class OdooEnv:
         """Forzar la bajada de las imagenes"""
         return ImageManager(self).pull_images()
 
-    def stop_environment(self, client_name):
-        self._client = Client(self, client_name)
+    def stop_environment(self):
+        self._client = Client(self, OeConfig().get_client())
         return EnvironmentManager(self).stop_environment()
 
     def run_environment(self):
@@ -133,12 +134,13 @@ class OdooEnv:
         """
         return EnvironmentManager(self).run_environment()
 
-    def stop_client(self, client_name):
-        self._client = Client(self, client_name)
+    def stop_client(self):
+        self._client = Client(self, OeConfig().get_client())
         return EnvironmentManager(self).stop_client()
 
-    def server_help(self, client_name):
-        self._client = Client(self, client_name)
+    def server_help(self):
+
+        self._client = Client(self, OeConfig().get_client())
 
         from odoo_env.services.docker_client import DockerClient
 
@@ -153,15 +155,13 @@ class OdooEnv:
         return [Command(self, command=cmd_list, usr_msg="Getting odoo help")]
 
     def run_client(self, write_config=False):
-        #        self._client = OeConfig().get_client
-        #        self._client = Client(self, OeConfig().get_client)
         return EnvironmentManager(self).run_client(write_config)
 
-    def update(self, client_name, database, modules):
-        self._client = Client(self, client_name)
+    def update(self, database, modules):
+        #        self._client = Client(self, client_name)
         return EnvironmentManager(self).update(database, modules)
 
-    def qa(self, client_name, database, module_name, client_test=False):
+    def qa(self, modules_to_test, client_test=False):
         """
         Corre un test especifico, los parametros necesarios son:
 
@@ -170,12 +170,8 @@ class OdooEnv:
         :param modules: parametro -m (es una lista)
         :return: lista con los comandos para correr
         """
-        # solo para que corran los tests
-        if client_test:
-            self._client = client_test
-        else:
-            self._client = Client(self, client_name)
-        return EnvironmentManager(self).qa(database, module_name, client_test)
+        database = self._client.database_default_name
+        return EnvironmentManager(self).qa(database, modules_to_test, client_test)
 
     @property
     def client(self):

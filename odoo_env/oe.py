@@ -19,14 +19,26 @@ def parse_args():
 Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.com>
 """
     )
+    # parser.add_argument(
+    #     "-i",
+    #     "--install",
+    #     action="store_true",
+    #     help="On the first run, it creates the directory structure and clones all repositories "
+    #     "defined in the project. On subsequent runs, it updates those repositories. "
+    #     "Use this option together with --extract-sources to copy the Odoo image sources "
+    #     "to the host, which is required for working in debug mode.",
+    # )
+
     parser.add_argument(
         "-i",
-        "--install",
-        action="store_true",
-        help="On the first run, it creates the directory structure and clones all repositories "
-        "defined in the project. On subsequent runs, it updates those repositories. "
-        "Use this option together with --extract-sources to copy the Odoo image sources "
-        "to the host, which is required for working in debug mode.",
+        nargs="?",
+        const=True,
+        metavar="REPO_URL",
+        help=(
+            "Install environment / update repositories. If no URL is provided, repositories are "
+            "taken from the manifest. Optionally, a repository URL can be provided for the first "
+            "intallation, e.g. oe -i git@github.com:org/repo.git"
+        ),
     )
 
     parser.add_argument(
@@ -90,7 +102,6 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "-Q",
         action="store",
         metavar="repo",
-        nargs=1,
         dest="modules_to_test",
         help="Run the tests. Required parameters: -m <module name>. "
         "Optional parameters: -d <database>; if omitted, the default test database will be used, "
@@ -115,7 +126,6 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     parser.add_argument(
         "-d",
         action="store",
-        nargs=1,
         dest="database",
         help="Set default Database name. This option is persistent",
     )
@@ -253,23 +263,11 @@ def persist_config(args):
     if args.base_dir:
         conf.save_base_dir(args.base_dir)
 
-
-def build_options(args):
-    return {
-        "verbose": args.verbose,
-        "no_repos": args.no_repos,
-        "nginx": args.nginx,
-        "backup_file": args.backup_file,
-        "force_create": args.force_create,
-    }
-
-
 def get_client():
     conf = OeConfig()
     client = conf.get_client()
     if not client:
         Msg().err("No client configured. Use -c <client>.")
-        sys.exit(1)
     return client
 
 
@@ -309,7 +307,6 @@ def build_commands(args):
         conf = OeConfig()
         if not conf.prod:
             Msg().err("Must be in prod mode in order to create deploy keys.")
-            sys.exit(1)
         deploy_keys(OdooEnv(args))
 
     if args.modules_to_test:
@@ -334,7 +331,7 @@ def build_commands(args):
         # TODO crear un comando para hacer esto en diferido
         Msg().inf("Creating test database with demo data.")
         create_database(OdooEnv(args))
-        sys.exit()
+        Msg().err("Not Implemented.")
 
     return commands
 

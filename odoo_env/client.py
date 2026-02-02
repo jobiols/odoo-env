@@ -1,5 +1,7 @@
 import ast
 import os
+import subprocess
+import tempfile
 from pathlib import Path
 
 from odoo_env.config import OeConfig
@@ -31,20 +33,8 @@ class Client:
         else:
             manifest = self.get_manifest(Path(BASE_DIR))
 
-        # Si no lo encontró, buscar en el directorio actual
         if not manifest:
-            msg.inf(
-                f"Can not find client {self._name} in this host installation.\n"
-                "We will try in current dir"
-            )
-
-            manifest, root = self.get_manifest_from_struct(Path.cwd())
-
-            if not manifest:
-                msg.err(f"Can not find client {name} in current dir")
-
-            msg.inf("Client found!")
-            msg.inf(f"Name {manifest.get("name")}\nversion {manifest.get("version")}\n")
+            manifest = self.get_manifest_from_url(odooenv._install)
 
         self.check_common(manifest)
 
@@ -145,6 +135,14 @@ class Client:
         else:
             self.config = manifest.get("config", [])
 
+    def get_manifest_from_url(self, url: str) -> dict[str, object] | None:
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            subprocess.run(["git", "clone", "--depth", "1", url, tmpdir], check=True)
+
+            manifest, _ = self.get_manifest_from_struct(Path(tmpdir))
+            return manifest
+
     def get_manifest_from_struct(
         self, path: Path
     ) -> tuple[dict[str, object] | None, str | None]:
@@ -170,8 +168,12 @@ class Client:
             name = manifest.get("name")
 
             # Validar nombre
-            if isinstance(name, str) and name.lower() == self._name:
-                return manifest, root  # root = str desde os.walk
+            if isinstance(name, str) and name.lower() != self._name:
+                Msg().err(
+                    f"project name {name} does not match client name {self._name}"
+                )
+
+            return manifest, str(manifest_file.parent)
 
         return None, None
 

@@ -31,6 +31,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
 
     parser.add_argument(
         "-i",
+        "--install",
         nargs="?",
         const=True,
         metavar="REPO_URL",
@@ -262,6 +263,7 @@ def persist_config(args):
 
     if args.base_dir:
         conf.save_base_dir(args.base_dir)
+
 
 def get_client():
     conf = OeConfig()

@@ -9,11 +9,12 @@ from odoo_env.constants import BASE_DIR
 from odoo_env.images import Image2
 from odoo_env.messages import Msg
 from odoo_env.repos import Repo2
+from odoo_env.singleton import Singleton
 
 msg = Msg()
 
 
-class Client:
+class Client(Singleton):
 
     def __init__(self, odooenv, name: str):
         self._parent = odooenv

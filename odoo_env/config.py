@@ -9,20 +9,21 @@ import yaml
 
 from odoo_env.__init__ import __version__
 from odoo_env.messages import Msg
+from odoo_env.singleton import Singleton
 
 msg = Msg()
 
-oe_config = False
+# oe_config = False
 
-_instances = {}
+# _instances = {}
 
 
-class Singleton:
-    def __new__(cls, *args, **kw):
-        if cls not in _instances:
-            instance = super().__new__(cls)
-            _instances[cls] = instance
-        return _instances[cls]
+# class Singleton:
+#     def __new__(cls, *args, **kw):
+#         if cls not in _instances:
+#             instance = super().__new__(cls)
+#             _instances[cls] = instance
+#         return _instances[cls]
 
 
 class OeConfig(Singleton):

@@ -24,13 +24,13 @@ class OdooEnv:
     def __init__(self, args):
 
         client_name = OeConfig().get_client()
+        self._client = Client(self, client_name)
         self._nginx = args.nginx
         self._no_repos = args.no_repos
         self._verbose = args.verbose
         self._force_create = args.force_create
         self._modules_to_test = args.modules_to_test
         self._install = args.install
-        self._client = Client(self, client_name)
 
     def write_config(self):
         """Sobreescribe el odoo.conf config con los datos que vienen en el manifiesto"""

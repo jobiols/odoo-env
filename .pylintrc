@@ -341,7 +341,7 @@ min-public-methods=2
 #   - The figure of 10 had received substantial corroborating evidence,
 #     but that in some circumstances it may be appropriate to relax the restriction
 #     and permit modules with a complexity as high as 15
-max-complexity=22
+max-complexity=2
 
 
 [EXCEPTIONS]

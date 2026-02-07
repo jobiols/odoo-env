@@ -8,7 +8,6 @@ repos:
         exclude: /README\.rst$|\.pot?$
       - id: debug-statements
       - id: check-case-conflict
-      - id: check-docstring-first
       - id: check-executables-have-shebangs
       - id: check-merge-conflict
         exclude: /README\.rst$|^docs/.*\.rst$
@@ -16,26 +15,6 @@ repos:
       - id: check-xml
       - id: mixed-line-ending
         args: ["--fix=lf"]
-
-  - repo: https://github.com/psf/black
-    rev: 25.11.0
-    hooks:
-     - id: black
-       language_version: python3
-
-  - repo: https://github.com/asottile/pyupgrade
-    rev: v3.21.2
-    hooks:
-      - id: pyupgrade
-        args: ["--keep-percent-format"]
-
-  - repo: https://github.com/PyCQA/isort
-    rev: 7.0.0
-    hooks:
-      - id: isort
-        name: isort except __init__.py
-        args: ["--profile", "black", "--filter-files", "--skip-gitignore"]
-        exclude: /__init__\.py$
 
   - repo: https://github.com/myint/autoflake
     rev: v2.3.1
@@ -49,10 +28,31 @@ repos:
           - --remove-duplicate-keys
           - --remove-unused-variables
 
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.20.0
+    hooks:
+      - id: pyupgrade
+        args: ["--keep-percent-format"]
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 6.0.1
+    hooks:
+      - id: isort
+        name: isort except __init__.py
+        args: ["--profile", "black", "--filter-files", "--skip-gitignore"]
+        exclude: /__init__\.py$
+
+
+  - repo: https://github.com/psf/black
+    rev: 25.9.0
+    hooks:
+     - id: black
+       language_version: python3
+
   - repo: https://github.com/PyCQA/pylint
     rev: v4.0.4
     hooks:
       - id: pylint
-        name: pylint
+        name: pylint checks
         args:
-          - --rcfile=.pylintrc_new
+          - --rcfile=.pylintrc

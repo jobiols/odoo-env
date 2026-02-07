@@ -112,7 +112,6 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
 
     parser.add_argument(
         "-c",
-        action="append",
         dest="client",
         help="Set default client name. This parameter is persistent",
     )

@@ -15,7 +15,7 @@ msg = Msg()
 
 
 class Client(Singleton):
-
+    """ Esta clase representa a un cliente, con su manifiesto, sus imagenes y repositorios."""
     def __init__(self, odooenv, name: str):
         self._parent = odooenv
         self._name = name
@@ -296,46 +296,46 @@ class Client(Singleton):
     @property
     def base_dir(self):
         """
-        /odoo_ar/odoo-18.0/clientname/
-        /odoo_ar/odoo-18.0e/clientname/
+        Ejemplo: /odoo_ar/odoo-18.0/clientname/
+
         """
         return f"{self.version_dir}{self._name}/"
 
     @property
     def server_base_dir(self):
-        """/odoo_ar/odoo-13.0/clientname/
-        /odoo_ar/odoo-13.0e/clientname/
+        """Ejemplo: /odoo_ar/odoo-13.0/clientname/
+
         """
         return f"{self.server_version_dir}{self._name}/"
 
     @property
     def backup_dir(self):
-        """/odoo_ar/odoo-13.0/clientname/backup_dir/"""
+        """Ejemplo: /odoo_ar/odoo-13.0/clientname/backup_dir/"""
         return self.base_dir + "backup_dir/"
 
     @property
     def server_backup_dir(self):
-        """/odoo_ar/odoo-13.0/clientname/backup_dir/"""
+        """Ejemplo: /odoo_ar/odoo-13.0/clientname/backup_dir/"""
         return f"{self.server_base_dir}backup_dir/"
 
     @property
     def sources_dir(self):
-        """/odoo_ar/odoo-13.0/clientname/sources/"""
+        """Ejemplo: /odoo_ar/odoo-13.0/clientname/sources/"""
         return self.base_dir + "sources/"
 
     @property
     def psql_dir(self):
-        """/odoo_ar/odoo-13.0/clientname/postgresql/"""
+        """Ejemplo: /odoo_ar/odoo-13.0/clientname/postgresql/"""
         return self.base_dir + "postgresql/"
 
     @property
     def config_file(self):
-        """/odoo_ar/odoo-13.0/clientname/config/odoo.conf"""
+        """Ejemplo: /odoo_ar/odoo-13.0/clientname/config/odoo.conf"""
         return self.base_dir + "config/odoo.conf"
 
     @property
     def nginx_dir(self):
-        """/odoo_ar/nginx/"""
+        """Ejemplo: /odoo_ar/nginx/"""
         return f"{BASE_DIR}nginx/"
 
     @property

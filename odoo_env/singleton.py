@@ -1,9 +1,8 @@
-_instances = {}
+class SingletonMeta(type):
+    _instances = {}
 
-
-class Singleton:
-    def __new__(cls, *args, **kw):
-        if cls not in _instances:
-            instance = super().__new__(cls)
-            _instances[cls] = instance
-        return _instances[cls]
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            instance = super().__call__(*args, **kwargs)
+            cls._instances[cls] = instance
+        return cls._instances[cls]

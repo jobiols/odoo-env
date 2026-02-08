@@ -9,7 +9,7 @@ from odoo_env.config import OeConfig
 from odoo_env.managers.backup_manager import BackupManager
 from odoo_env.managers.environment_manager import EnvironmentManager
 from odoo_env.managers.image_manager import ImageManager
-
+from odoo_env.messages import msg
 
 class OdooEnv:
     """
@@ -22,15 +22,80 @@ class OdooEnv:
     """
 
     def __init__(self, args):
+        self._args = args
+        self._client = Client(args)
 
-        client_name = OeConfig().get_client()
-        self._client = Client(self, client_name)
-        self._nginx = args.nginx
-        self._no_repos = args.no_repos
-        self._verbose = args.verbose
-        self._force_create = args.force_create
-        self._modules_to_test = args.modules_to_test
-        self._install = args.install
+    def build_commands(self):
+
+        commands = []
+
+        if self._args.install:
+            commands += self.install()
+
+        if self._args.run_env:
+            commands += self.run_environment()
+
+        if self._args.pull_images:
+            commands += self.pull_images()
+
+        if self._args.write_config:
+            commands += self.write_config()
+
+        if self._args.run_cli:
+            commands += self.run_client()
+
+        if self._args.stop_env:
+            commands += self.stop_environment()
+
+        if self._args.stop_cli:
+            commands += self.stop_client()
+
+        if self._args.update:
+            # TODO Si no esa definida la base traer el default pero est lo tiene que hacer config o Client
+            database = get_param(self._args, "database")
+            # trajendo los modulos definidos en linea de comandos o todos si no hay ninguno
+            modules = get_param(self._args, "module")
+            commands += self.update(database, modules)
+
+        if self._args.deploy_keys:
+            conf = OeConfig()
+            if not conf.prod:
+                msg().err("Must be in prod mode in order to create deploy keys.")
+            deploy_keys(odoo_env)
+
+        if self._args.modules_to_test:
+            commands += self.qa(self._args.modules_to_test[0])
+
+        if self._args.server_help:
+            commands += self.server_help()
+
+        if self._args.backup_list:
+            commands += self.backup_list()
+
+        if self._args.restore:
+            database = get_param(self._args, "database")
+            backup_file = get_param(self._args, "backup_file")
+            no_deactivate = self._args.no_deactivate
+            from_server = self._args.from_prod
+            commands += self.restore(
+                database, backup_file, no_deactivate, from_server
+            )
+
+        if self._args.create_test_db:
+            # TODO crear un comando para hacer esto en diferido
+            msg().inf("Creating test database with demo data.")
+            create_database(odoo_env)
+            msg().err("Not Implemented.")
+
+        return commands
+
+
+
+    def execute(self, commands):
+        for command in commands:
+            if command and command.check():
+                msg.inf(command.usr_msg)
+                command.execute()
 
     def write_config(self):
         """Sobreescribe el odoo.conf config con los datos que vienen en el manifiesto"""
@@ -118,7 +183,7 @@ class OdooEnv:
 
     def install(self):
         """Instalacion de cliente,"""
-        return EnvironmentManager(self).install()
+        return EnvironmentManager().install()
 
     def pull_images(self):
         """Forzar la bajada de las imagenes"""
@@ -140,7 +205,7 @@ class OdooEnv:
         return EnvironmentManager(self).stop_client()
 
     def server_help(self):
-        from odoo_env.services.docker_client import DockerClient
+        from self.services.docker_client import DockerClient
 
         dc = DockerClient()
         cmd_list = dc.get_run_command(

@@ -247,23 +247,6 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     return parser.parse_args()
 
 
-def persist_config(args):
-    """Salva en la configuracion los parametros que se declararon como persistentes"""
-    conf = OeConfig()
-
-    if args.debug:
-        conf.save_environment("debug")
-
-    if args.prod:
-        conf.save_environment("prod")
-
-    if args.client:
-        conf.save_client(args.client)
-
-    if args.base_dir:
-        conf.save_base_dir(args.base_dir)
-
-
 def get_client():
     conf = OeConfig()
     client = conf.get_client()
@@ -272,76 +255,6 @@ def get_client():
     return client
 
 
-def build_commands(args):
-
-    commands = []
-
-    if args.install:
-        commands += OdooEnv(args).install()
-
-    if args.run_env:
-        commands += OdooEnv(args).run_environment()
-
-    if args.pull_images:
-        commands += OdooEnv(args).pull_images()
-
-    if args.write_config:
-        commands += OdooEnv(args).write_config()
-
-    if args.run_cli:
-        commands += OdooEnv(args).run_client()
-
-    if args.stop_env:
-        commands += OdooEnv(args).stop_environment()
-
-    if args.stop_cli:
-        commands += OdooEnv(args).stop_client()
-
-    if args.update:
-        # TODO Si no esa definida la base traer el default pero est lo tiene que hacer config o Client
-        database = get_param(args, "database")
-        # trajendo los modulos definidos en linea de comandos o todos si no hay ninguno
-        modules = get_param(args, "module")
-        commands += OdooEnv(args).update(database, modules)
-
-    if args.deploy_keys:
-        conf = OeConfig()
-        if not conf.prod:
-            msg().err("Must be in prod mode in order to create deploy keys.")
-        deploy_keys(OdooEnv(args))
-
-    if args.modules_to_test:
-        commands += OdooEnv(args).qa(args.modules_to_test[0])
-
-    if args.server_help:
-        commands += OdooEnv(args).server_help()
-
-    if args.backup_list:
-        commands += OdooEnv(args).backup_list()
-
-    if args.restore:
-        database = get_param(args, "database")
-        backup_file = get_param(args, "backup_file")
-        no_deactivate = args.no_deactivate
-        from_server = args.from_prod
-        commands += OdooEnv(args).restore(
-            database, backup_file, no_deactivate, from_server
-        )
-
-    if args.create_test_db:
-        # TODO crear un comando para hacer esto en diferido
-        msg().inf("Creating test database with demo data.")
-        create_database(OdooEnv(args))
-        msg().err("Not Implemented.")
-
-    return commands
-
-
-def execute(commands):
-    for command in commands:
-        if command and command.check():
-            msg().inf(command.usr_msg)
-            command.execute()
 
 
 def main():
@@ -352,13 +265,12 @@ def main():
         msg().inf(f"oe version {__version__}")
         sys.exit()
 
-    persist_config(args)
-
-    conf = OeConfig()
+    conf = OeConfig(args)
+    conf.persist_config()
     conf.check_version()
 
-    commands = build_commands(args)
-    execute(commands)
+    commands = OdooEnv(args).build_commands()
+    commands.execute()
 
 
 if __name__ == "__main__":

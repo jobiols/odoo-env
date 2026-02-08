@@ -40,7 +40,7 @@ class ImageManager:
         # create dirs
         for w_dir in self.parent.get_packs():
             r_dir = f"{self.client.version_dir}{w_dir}"
-            cmd_list = self.system_client.get_mkdir_command(r_dir)
+            cmd_list = self.system_client.make_mkdir_command(r_dir)
             cmd = Command(self.parent, command=cmd_list)
             ret.append(cmd)
 

@@ -3,9 +3,10 @@ from odoo_env.command import (
     CreateNginxTemplate,
     MakedirCommand,
 )
+from odoo_env.client import Client
+
 from odoo_env.config import OeConfig
 from odoo_env.constants import (
-    BASE_DIR,
     IN_BACKUP_DIR,
     IN_CONFIG,
     IN_CUSTOM_ADDONS,
@@ -24,19 +25,18 @@ from odoo_env.services.system import SystemClient
 
 
 class EnvironmentManager:
-    def __init__(self, parent):
-        self.parent = parent
+    def __init__(self):
+#        self.parent = parent
         self.docker_client = DockerClient()
         self.system_client = SystemClient()
 
     def install(self):
         ret = []
-        msg = f"Installing client {self.parent._client.name}"
+        msg = f"Installing client {OeConfig().client}"
+        cmd_list = self.system_client.make_mkdir_command()
 
-        # Base dir
-        cmd_list = self.system_client.get_mkdir_command(BASE_DIR)
         ret.append(
-            MakedirCommand(self.parent, command=cmd_list, usr_msg=msg, args=BASE_DIR)
+            MakedirCommand(command=cmd_list, usr_msg=msg, args=OeConfig().base_dir)
         )
 
         # Client hierarchy
@@ -48,8 +48,8 @@ class EnvironmentManager:
             "log",
             "sources",
         ]:
-            r_dir = f"{self.parent._client.base_dir}{w_dir}"
-            cmd_list = self.system_client.get_mkdir_command(r_dir)
+            r_dir = f"{OeConfig().base_dir}{w_dir}"
+            cmd_list = self.system_client.make_mkdir_command(r_dir)
             ret.append(MakedirCommand(self.parent, command=cmd_list, args=r_dir))
 
         # Chown pone el owner como 1100 que es lo que hay en la imagen de odoo
@@ -71,18 +71,18 @@ class EnvironmentManager:
             "log",
             "backup_dir",
         ]:
-            r_dir = f"{self.parent._client.base_dir}{w_dir}"
+            r_dir = f"{OeCoonfig.base_dir}{w_dir}"
             cmd_list = self.system_client.get_chmod_command(r_dir, "o+w", sudo=True)
             ret.append(Command(self.parent, command=cmd_list))
 
         # Nginx
         if self.parent.nginx:
             for w_dir in ["cert", "conf", "log"]:
-                r_dir = f"{BASE_DIR}nginx/{w_dir}"
-                cmd_list = self.system_client.get_mkdir_command(r_dir)
+                r_dir = f"{OeConfig().base_dir}nginx/{w_dir}"
+                cmd_list = self.system_client.make_mkdir_command(r_dir)
                 ret.append(MakedirCommand(self.parent, command=cmd_list, args=r_dir))
 
-            r_dir = f"{BASE_DIR}nginx/conf/"
+            r_dir = f"{OeConfig().base_dir}nginx/conf/"
             ret.append(
                 CreateNginxTemplate(
                     self.parent,

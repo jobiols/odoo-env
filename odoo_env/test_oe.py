@@ -4,7 +4,7 @@ from unittest.mock import patch
 from odoo_env.command import Command
 from odoo_env.config import OeConfig
 from odoo_env.constants import (
-    BASE_DIR,
+    OeConfig().base_dir,
     DBTOOLS_IMAGE,
 )
 from odoo_env.odooenv import OdooEnv
@@ -70,14 +70,14 @@ class TestRepository(unittest.TestCase):
         options = {"debug": False, "no-repos": False, "nginx": True}
         oe = OdooEnv(options)
         cmds = oe.install("test_client")
-        self.assertEqual(cmds[0].command, ["sudo", "mkdir", "-p", BASE_DIR])
+        self.assertEqual(cmds[0].command, ["sudo", "mkdir", "-p", OeConfig().base_dir])
         self.assertEqual(
             cmds[2].command,
             [
                 "sudo",
                 "mkdir",
                 "-p",
-                f"{BASE_DIR}odoo-9.0/test_client/postgresql",
+                f"{OeConfig().base_dir}odoo-9.0/test_client/postgresql",
             ],
         )
 
@@ -86,14 +86,14 @@ class TestRepository(unittest.TestCase):
         options = {"debug": False, "no-repos": False, "nginx": True}
         oe = OdooEnv(options)
         cmds = oe.install("test2_client")
-        self.assertEqual(cmds[0].command, ["sudo", "mkdir", "-p", BASE_DIR])
+        self.assertEqual(cmds[0].command, ["sudo", "mkdir", "-p", OeConfig().base_dir])
         self.assertEqual(
             cmds[2].command,
             [
                 "sudo",
                 "mkdir",
                 "-p",
-                f"{BASE_DIR}odoo-9.0/test2_client/postgresql",
+                f"{OeConfig().base_dir}odoo-9.0/test2_client/postgresql",
             ],
         )
 
@@ -107,14 +107,14 @@ class TestRepository(unittest.TestCase):
         }
         oe = OdooEnv(options)
         cmds = oe.install("test2e_client")
-        self.assertEqual(cmds[0].command, ["sudo", "mkdir", "-p", BASE_DIR])
+        self.assertEqual(cmds[0].command, ["sudo", "mkdir", "-p", OeConfig().base_dir])
         self.assertEqual(
             cmds[2].command,
             [
                 "sudo",
                 "mkdir",
                 "-p",
-                f"{BASE_DIR}odoo-9.0e/test2e_client/postgresql",
+                f"{OeConfig().base_dir}odoo-9.0e/test2e_client/postgresql",
             ],
         )
 
@@ -144,15 +144,15 @@ class TestRepository(unittest.TestCase):
             "--network",
             "odoo-net",
             "-v",
-            f"{BASE_DIR}odoo-9.0/test_client/config:/opt/odoo/etc/:rw",
+            f"{OeConfig().base_dir}odoo-9.0/test_client/config:/opt/odoo/etc/:rw",
             "-v",
-            f"{BASE_DIR}odoo-9.0/test_client/data_dir:/opt/odoo/data:rw",
+            f"{OeConfig().base_dir}odoo-9.0/test_client/data_dir:/opt/odoo/data:rw",
             "-v",
-            f"{BASE_DIR}odoo-9.0/test_client/log:/var/log/odoo:rw",
+            f"{OeConfig().base_dir}odoo-9.0/test_client/log:/var/log/odoo:rw",
             "-v",
-            f"{BASE_DIR}odoo-9.0/test_client/sources:/opt/odoo/custom-addons:rw",
+            f"{OeConfig().base_dir}odoo-9.0/test_client/sources:/opt/odoo/custom-addons:rw",
             "-v",
-            f"{BASE_DIR}odoo-9.0/test_client/backup_dir:/var/odoo/backups/:rw",
+            f"{OeConfig().base_dir}odoo-9.0/test_client/backup_dir:/var/odoo/backups/:rw",
             "-e",
             "WDB_SOCKET_SERVER=wdb",
             "-e",
@@ -196,15 +196,15 @@ class TestRepository(unittest.TestCase):
             "-p",
             "8072:8072",
             "-v",
-            f"{BASE_DIR}odoo-9.0/test_client/config:/opt/odoo/etc/:rw",
+            f"{OeConfig().base_dir}odoo-9.0/test_client/config:/opt/odoo/etc/:rw",
             "-v",
-            f"{BASE_DIR}odoo-9.0/test_client/data_dir:/opt/odoo/data:rw",
+            f"{OeConfig().base_dir}odoo-9.0/test_client/data_dir:/opt/odoo/data:rw",
             "-v",
-            f"{BASE_DIR}odoo-9.0/test_client/log:/var/log/odoo:rw",
+            f"{OeConfig().base_dir}odoo-9.0/test_client/log:/var/log/odoo:rw",
             "-v",
-            f"{BASE_DIR}odoo-9.0/test_client/sources:/opt/odoo/custom-addons:rw",
+            f"{OeConfig().base_dir}odoo-9.0/test_client/sources:/opt/odoo/custom-addons:rw",
             "-v",
-            f"{BASE_DIR}odoo-9.0/test_client/backup_dir:/var/odoo/backups/:rw",
+            f"{OeConfig().base_dir}odoo-9.0/test_client/backup_dir:/var/odoo/backups/:rw",
             "-e",
             "ODOO_CONF=/dev/null",
             "--link",
@@ -244,15 +244,15 @@ class TestRepository(unittest.TestCase):
             "--network",
             "odoo-net",
             "-v",
-            f"{BASE_DIR}odoo-9.0/test_client/config:/opt/odoo/etc/:rw",
+            f"{OeConfig().base_dir}odoo-9.0/test_client/config:/opt/odoo/etc/:rw",
             "-v",
-            f"{BASE_DIR}odoo-9.0/test_client/data_dir:/opt/odoo/data:rw",
+            f"{OeConfig().base_dir}odoo-9.0/test_client/data_dir:/opt/odoo/data:rw",
             "-v",
-            f"{BASE_DIR}odoo-9.0/test_client/log:/var/log/odoo:rw",
+            f"{OeConfig().base_dir}odoo-9.0/test_client/log:/var/log/odoo:rw",
             "-v",
-            f"{BASE_DIR}odoo-9.0/test_client/sources:/opt/odoo/custom-addons:rw",
+            f"{OeConfig().base_dir}odoo-9.0/test_client/sources:/opt/odoo/custom-addons:rw",
             "-v",
-            f"{BASE_DIR}odoo-9.0/test_client/backup_dir:/var/odoo/backups/:rw",
+            f"{OeConfig().base_dir}odoo-9.0/test_client/backup_dir:/var/odoo/backups/:rw",
             "-e",
             "ODOO_CONF=/dev/null",
             "--link",
@@ -285,9 +285,9 @@ class TestRepository(unittest.TestCase):
             "--network",
             "odoo-net",
             "-v",
-            f"{BASE_DIR}odoo-9.0/test_client/backup_dir/:/backup:rw",
+            f"{OeConfig().base_dir}odoo-9.0/test_client/backup_dir/:/backup:rw",
             "-v",
-            f"{BASE_DIR}odoo-9.0/test_client/data_dir/filestore:/filestore:rw",
+            f"{OeConfig().base_dir}odoo-9.0/test_client/data_dir/filestore:/filestore:rw",
             "-e",
             "NEW_DBNAME=client_prod",
             "-e",
@@ -308,7 +308,7 @@ class TestRepository(unittest.TestCase):
         }
         oe = OdooEnv(options)
         cmds = oe.install("test_client")
-        self.assertEqual(cmds[0].command, ["sudo", "mkdir", "-p", BASE_DIR])
+        self.assertEqual(cmds[0].command, ["sudo", "mkdir", "-p", OeConfig().base_dir])
 
         # Order: run, --rm, -it, --entrypoint, -v, image
         command = [
@@ -320,7 +320,7 @@ class TestRepository(unittest.TestCase):
             "--entrypoint",
             "/extract_dist-packages.sh",
             "-v",
-            f"{BASE_DIR}odoo-9.0/dist-packages/:/mnt/dist-packages:rw",
+            f"{OeConfig().base_dir}odoo-9.0/dist-packages/:/mnt/dist-packages:rw",
             "jobiols/odoo-jeo:9.0",
         ]
         self.assertEqual(cmds[25].command, command)

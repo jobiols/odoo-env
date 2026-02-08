@@ -5,36 +5,36 @@ import tempfile
 from pathlib import Path
 
 from odoo_env.config import OeConfig
-from odoo_env.constants import BASE_DIR
 from odoo_env.images import DockerImage
 from odoo_env.messages import msg
 from odoo_env.repos import GitRepo
-from odoo_env.singleton import Singleton
+from odoo_env.singleton import SingletonMeta
 
 
-class Client(Singleton):
+class Client():
     """Esta clase representa a un cliente, con su manifiesto, sus imagenes y repositorios."""
 
-    def __init__(self, odooenv, name: str):
-        self._parent = odooenv
-        self._name = name
-        self._license = None
+    def __init__(self, args):
+        print(f"Inicializando Client ")
+
+        self._name = OeConfig().client
+        self._args = args
+        # self._name = name
+        # self._license = None
         self._images = []
         self._repos = []
-        self._port = None
-        self._version = None
+        # self._port = None
+        # self._version = None
+        print(f"Inicializando Client {self.name}")
 
         # Caso especial para test
-        if name.startswith(("test_", "test2")):
+        if self._name.startswith(("test_", "test2")):
             root = Path(__file__).resolve().parent
             path = root / "data"
             manifest = self.get_manifest(path)
-            OeConfig().save_client_path(name, str(path))
+            OeConfig().save_client_path(self.name, str(path))
         else:
-            manifest = self.get_manifest(Path(BASE_DIR))
-
-        if not manifest:
-            manifest = self.get_manifest_from_url(odooenv._install)
+            manifest = self.get_manifest()
 
         self.check_common(manifest)
 
@@ -49,6 +49,7 @@ class Client(Singleton):
 
         # Procesar sintaxis v2
         self.check_v2(manifest)
+
 
     def check_v2(self, manifest):
         # Chequar que el manifiesto tenga bien las cosas
@@ -135,10 +136,10 @@ class Client(Singleton):
         else:
             self.config = manifest.get("config", [])
 
-    def get_manifest_from_url(self, url: str) -> dict[str, object] | None:
+    def get_manifest_from_url(self) -> dict[str, object] | None:
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            subprocess.run(["git", "clone", "--depth", "1", url, tmpdir], check=True)
+            subprocess.run(["git", "clone", "--depth", "1", self._args.install, tmpdir], check=True)
 
             manifest, _ = self.get_manifest_from_struct(Path(tmpdir))
             return manifest
@@ -177,25 +178,31 @@ class Client(Singleton):
 
         return None, None
 
-    def get_manifest(self, path):
+    def get_manifest(self):
         """
         :param path: path base para buscar el cliente
         :return: manifiesto del cliente
         """
         # traer el path al cliente de la configuracion
         client_path = OeConfig().get_client_path(self._name)
-        # si lo encuentro traigo el manifest rapidamente con el path
-        if client_path:
+        # No esta en la configuración, verificar si me lo pasan como repositorio
+        if not client_path:
+            if self._args.install:
+                manifest = self.get_manifest_from_url()
+                if manifest:
+                    return manifest
+
             manifest, _ = self.get_manifest_from_struct(client_path)
-            return manifest
+            if manifest:
+                return manifest
 
         # no lo encuentro, busco en toda la estructura de directorios
         manifest, path = self.get_manifest_from_struct(path)
         if manifest:
             # si lo encuentro lo guardo en el archivo para la proxima
             OeConfig().save_client_path(self._name, path)
-        # devuelvo el manifiesto o false si no esta
-        return manifest
+        # devuelvo el manifiesto o None si no esta
+        return manifest if manifest else None
 
     @staticmethod
     def load_manifest(filename: str) -> dict[str, object]:
@@ -280,13 +287,13 @@ class Client(Singleton):
         /odoo_ar/odoo-18.0e/
         """
         lic = "e" if self._license == "EE" else ""
-        return f"{BASE_DIR}odoo-{self._version}{lic}/"
+        return f"{OeConfig().base_dir}odoo-{self._version}{lic}/"
 
     @property
     def server_version_dir(self):
         """/odoo_ar/odoo-13.0/
         /odoo_ar/odoo-13.0e/
-        Esta funcion no tiene que tomar BASE_DIR porque en el servidor es siempre
+        Esta funcion no tiene que tomar OeConfig().base_dir porque en el servidor es siempre
         /odoo_ar/
         """
         lic = "e" if self._license == "EE" else ""
@@ -333,7 +340,7 @@ class Client(Singleton):
     @property
     def nginx_dir(self):
         """Ejemplo: /odoo_ar/nginx/"""
-        return f"{BASE_DIR}nginx/"
+        return f"{OeConfig().base_dir}nginx/"
 
     @property
     def debug(self):

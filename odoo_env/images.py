@@ -1,3 +1,4 @@
+from odoo_env.messages import msg
 
 
 # class Image:

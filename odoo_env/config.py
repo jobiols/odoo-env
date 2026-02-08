@@ -9,17 +9,43 @@ import yaml
 
 from odoo_env.__init__ import __version__
 from odoo_env.messages import msg
-from odoo_env.singleton import Singleton
+from odoo_env.singleton import SingletonMeta
 
-class OeConfig(Singleton):
+class OeConfig(metaclass=SingletonMeta):
 
-    def __init__(self):
+    def __init__(self, args):
         # en esta variable guardo toda la data del archivo oe_config.yaml
+        self._args = args
         self._config_data = self._get_config_data()
+        print(f"Inicializando OeConfig: -------------------------------------------------- ")
+
+    def persist_config(self):
+        """Salva en la configuracion los parametros que se declararon como persistentes"""
+
+        if self._args.debug:
+            self.save_environment("debug")
+
+        if self._args.prod:
+            self.save_environment("prod")
+
+        if self._args.client:
+            self.save_client(self.client)
+
+        if self._args.base_dir:
+            self.save_base_dir(self.base_dir)
+
+    @property
+    def client(self):
+        """Traer el nombre del cliente"""
+        return self.get_client()
 
     @property
     def config_data(self):
         return self._config_data
+
+    @property
+    def base_dir(self):
+        return self._config_data.get("base_dir", "/odoo_ar/")
 
     @property
     def debug(self):
@@ -68,11 +94,8 @@ class OeConfig(Singleton):
                 allow_unicode=True,
             )
 
-    def get_base_dir(self):
-        return self._config_data.get("base_dir", "/odoo_ar/")
-
     def get_client_path(self, client_name):
-        """Traer el path de un cliente"""
+        """Traer el path de un cliente desde el archivo de configuracion, si no esta devuelve None"""
 
         # Traer la lista de clientes del archivo de configuracion
         clients = self._config_data.get("clients")
@@ -81,7 +104,7 @@ class OeConfig(Singleton):
         return Path(path) if path else None
 
     def save_client_path(self, client_name, path):
-        """Salvar el path al cliente, una sola vez"""
+        """Salvar el path al cliente solo si no esta, sino no hago nada"""
 
         if self.get_client_path(client_name):
             return
@@ -105,15 +128,17 @@ class OeConfig(Singleton):
         return client_name
 
     def save_client(self, client):
+        if self._config_data["client"] == client:
+            return
+
         self._config_data["client"] = client
         self._save_config_data()
 
-    def get_environment(self):
-        """Traer el ambiente con prod por defecto"""
-        return self._config_data.get("environment", "prod")
-
     def save_environment(self, environment):
         """Salvar el ambiente"""
+        if self._config_data["environment"] == environment:
+            return
+
         self._config_data["environment"] = environment
         self._save_config_data()
 
@@ -121,8 +146,15 @@ class OeConfig(Singleton):
         """Salvar el base dir"""
         # Asegurar que termina con /
         value = os.path.join(value, "")
-        self.config_data["base_dir"] = value
+        if self._config_data["base_dir"] == value:
+            return
+
+        self._config_data["base_dir"] = value
         self._save_config_data()
+
+    def get_environment(self):
+        """Traer el ambiente con prod por defecto"""
+        return self._config_data.get("environment", "prod")
 
     def check_version(self):
         """Chequea si la version de odoo-env es la última y si no avisa al usuario"""

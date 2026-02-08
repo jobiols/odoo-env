@@ -1,14 +1,16 @@
+from odoo_env.config import OeConfig
+
 class SystemClient:
 
     @staticmethod
     def _base_cmd(sudo: bool = False) -> list[str]:
         return ["sudo"] if sudo else []
 
-    def get_mkdir_command(self, path: str, parents: bool = True) -> list[str]:
+    def make_mkdir_command(self, parents: bool = True) -> list[str]:
         cmd = self._base_cmd() + ["mkdir"]
         if parents:
             cmd.append("-p")
-        cmd.append(path)
+        cmd.append(OeConfig().base_dir)
         return cmd
 
     def get_chmod_command(

@@ -32,15 +32,20 @@ jobs:
       - name: Ejecutar pre-commit
         run: pre-commit run --all-files --show-diff-on-failure --color=always
 
+      - name: Instalar Graphviz (requerido por PlantUML)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y graphviz
+
       # -----------------------------
       # Render PlantUML → SVG
       # -----------------------------
 
       - name: Instalar Java (PlantUML)
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: '21'
 
       - name: Descargar PlantUML
         run: |
@@ -48,7 +53,7 @@ jobs:
 
       - name: Renderizar UML a SVG
         run: |
-          java -jar plantuml.jar -tsvg doc/uml/classes_odoo_env.puml
+          java -jar plantuml.jar -tsvg doc/uml/classes_odoo_env.plantuml
 
       # -----------------------------
       # Verificación de diffs

@@ -15,7 +15,8 @@ msg = Msg()
 
 
 class Client(Singleton):
-    """ Esta clase representa a un cliente, con su manifiesto, sus imagenes y repositorios."""
+    """Esta clase representa a un cliente, con su manifiesto, sus imagenes y repositorios."""
+
     def __init__(self, odooenv, name: str):
         self._parent = odooenv
         self._name = name
@@ -303,9 +304,7 @@ class Client(Singleton):
 
     @property
     def server_base_dir(self):
-        """Ejemplo: /odoo_ar/odoo-13.0/clientname/
-
-        """
+        """Ejemplo: /odoo_ar/odoo-13.0/clientname/"""
         return f"{self.server_version_dir}{self._name}/"
 
     @property

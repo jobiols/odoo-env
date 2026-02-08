@@ -234,3 +234,7 @@ a new version available in pypi. Fixed copy sources to host.
           sudo docker plus some enhacements)
 - 0.0.2  Minor fixes
 - 0.0.1  Starting project
+
+## Arquitectura
+
+![Diagrama de clases](doc/uml/classes_odoo_env.svg)

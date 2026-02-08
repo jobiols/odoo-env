@@ -12,7 +12,6 @@ repos:
       - id: check-merge-conflict
         exclude: /README\.rst$|^docs/.*\.rst$
       - id: check-symlinks
-      - id: check-xml
       - id: mixed-line-ending
         args: ["--fix=lf"]
 
@@ -56,3 +55,20 @@ repos:
         name: pylint checks
         args:
           - --rcfile=.pylintrc
+
+  - repo: local
+    hooks:
+      - id: pyreverse-plantuml
+        name: pyreverse (PlantUML)
+        entry: >
+          python -m pylint.pyreverse.main
+          -o plantuml
+          -p odoo_env
+          -d doc/uml
+          odoo_env
+          --ignore __pycache__,data
+
+        language: python
+        additional_dependencies:
+          - pylint==4.0.4
+        pass_filenames: false

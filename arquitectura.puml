@@ -1,0 +1,67 @@
+@startuml
+
+class OeConfig {
+    -config_file: str
+    +load_config(): None
+    +save_config(): None
+}
+
+class OdooEnv {
+    -clients: list[Client]
+    +add_client(client: Client): None
+    +get_client(name: str): Client
+}
+
+class Client {
+    -name: str
+    -server_version: str
+    +server_base_dir: str
+    +backup_dir: str
+    +server_backup_dir: str
+    +sources_dir: str
+    +psql_dir: str
+    +config_file: str
+    +nginx_dir: str
+}
+
+class Singleton {
+    -instance: Singleton
+    +get_instance(): Singleton
+}
+class Command {
+
+}
+
+class CreateGitignore {
+    +create_gitignore(client: Client): None
+}
+
+class MakedrCommand {
+    +execute(client: Client): None
+}
+class RemovedirCommand {
+    +execute(client: Client): None
+}
+class ExtractSourcesCommand {
+    +execute(client: Client): None
+}
+class CreateConfigCommand {
+    +execute(client: Client): None
+}
+class CreateNginxConfigCommand {
+    +execute(client: Client): None
+}
+class CreatePsqlCommand {
+    +execute(client: Client): None
+}
+class CreateBackupCommand {
+    +execute(client: Client): None
+}
+
+class WriteConfigFile {}
+class MessageOnly {}
+
+
+Client <|-- Singleton
+OeConfig <|-- Singleton
+@enduml

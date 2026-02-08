@@ -4,8 +4,8 @@ from unittest.mock import patch
 from odoo_env.command import Command
 from odoo_env.config import OeConfig
 from odoo_env.constants import (
-    OeConfig().base_dir,
     DBTOOLS_IMAGE,
+    OeConfig,
 )
 from odoo_env.odooenv import OdooEnv
 from odoo_env.repos import GitRepo

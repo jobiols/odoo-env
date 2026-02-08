@@ -5,11 +5,8 @@ import sys
 
 from odoo_env.__init__ import __version__
 from odoo_env.config import OeConfig
-from odoo_env.create_database import create_database
-from odoo_env.deploy_keys import deploy_keys
 from odoo_env.messages import msg
 from odoo_env.odooenv import OdooEnv
-from odoo_env.options import get_param
 
 
 def parse_args():
@@ -253,8 +250,6 @@ def get_client():
     if not client:
         msg().err("No client configured. Use -c <client>.")
     return client
-
-
 
 
 def main():

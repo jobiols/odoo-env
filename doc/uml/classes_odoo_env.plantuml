@@ -33,9 +33,9 @@ class "Client" as odoo_env.client.Client {
   check_common(manifest)
   check_v2(manifest)
   get_image(value)
-  get_manifest(path)
+  get_manifest()
   get_manifest_from_struct(path: Path) -> tuple[dict[str, object] | None, str | None]
-  get_manifest_from_url(url: str) -> dict[str, object] | None
+  get_manifest_from_url() -> dict[str, object] | None
   image(image_name)
   load_manifest(filename: str) -> dict[str, object]
   parse_odoo_version(ver: str) -> str
@@ -60,6 +60,12 @@ class "CreateNginxTemplate" as odoo_env.command.CreateNginxTemplate {
   check_args() -> bool
   execute()
 }
+class "DockerClient" as odoo_env.services.docker_client.DockerClient {
+  get_network_create_command(network: str) -> str
+  get_rm_command(container_name: str, recursive: bool, force: bool, sudo: bool) -> list[str]
+  get_run_command(image: str, cmd: str | list[str] | None, detach: bool, remove: bool, interactive: bool, name: str | None, ports: dict[int, int] | None, volumes: dict[str, dict[str, str]] | None, env: dict[str, str] | None, links: dict[str, str] | None, network: str | None, restart: str | None, user: str | None, entrypoint: str | None, workdir: str | None, stop_after_init: bool, logfile: str | None, log_level: str | None, test_enable: bool, extra_args: list[str] | None, database: str | None, network_alias: str | None) -> list[str]
+  get_stop_command(container_name: str) -> list[str]
+}
 class "DockerImage" as odoo_env.images.DockerImage {
   name
   numeric_ver
@@ -69,7 +75,6 @@ class "DockerImage" as odoo_env.images.DockerImage {
 class "EnvironmentManager" as odoo_env.managers.environment_manager.EnvironmentManager {
   client
   docker_client
-  parent
   system_client
   install()
   qa(database, modules_to_test, client_test)
@@ -133,7 +138,9 @@ class "OdooEnv" as odoo_env.odooenv.OdooEnv {
   no_repos
   verbose
   backup_list(client_name)
+  build_commands()
   do_extract_sources(client_name)
+  execute(commands)
   get_packs()
   install()
   pull_images()
@@ -148,14 +155,16 @@ class "OdooEnv" as odoo_env.odooenv.OdooEnv {
   write_config()
 }
 class "OeConfig" as odoo_env.config.OeConfig {
+  base_dir
+  client
   config_data
   debug
   prod
   check_version()
-  get_base_dir()
   get_client()
   get_client_path(client_name)
   get_environment()
+  persist_config()
   save_base_dir(value)
   save_client(client)
   save_client_path(client_name, path)
@@ -170,13 +179,13 @@ class "PullRepo" as odoo_env.command.PullRepo {
 class "RemovedirCommand" as odoo_env.command.RemovedirCommand {
   check_args()
 }
-class "Singleton" as odoo_env.singleton.Singleton {
+class "SingletonMeta" as odoo_env.singleton.SingletonMeta {
 }
 class "SystemClient" as odoo_env.services.system.SystemClient {
   get_chmod_command(path: str, mode: str, recursive: bool, sudo: bool) -> list[str]
   get_chown_command(path: str, user: str, group: str, recursive: bool, sudo: bool) -> list[str]
-  get_mkdir_command(path: str, parents: bool) -> list[str]
   get_rm_command(path: str, recursive: bool, force: bool, sudo: bool) -> list[str]
+  make_mkdir_command(parents: bool) -> list[str]
 }
 class "TestRepository" as odoo_env.test_oe.TestRepository {
   mock_get_manifest : AsyncMock, MagicMock, dict
@@ -204,7 +213,6 @@ class "WriteConfigFile" as odoo_env.command.WriteConfigFile {
   check_item(search_item, search_list)
   execute()
 }
-odoo_env.client.Client --|> odoo_env.singleton.Singleton
 odoo_env.command.CloneRepo --|> odoo_env.command.Command
 odoo_env.command.CreateGitignore --|> odoo_env.command.Command
 odoo_env.command.CreateNginxTemplate --|> odoo_env.command.Command
@@ -215,7 +223,6 @@ odoo_env.command.PullImage --|> odoo_env.command.Command
 odoo_env.command.PullRepo --|> odoo_env.command.Command
 odoo_env.command.RemovedirCommand --|> odoo_env.command.Command
 odoo_env.command.WriteConfigFile --|> odoo_env.command.Command
-odoo_env.config.OeConfig --|> odoo_env.singleton.Singleton
 odoo_env.client.Client --* odoo_env.managers.backup_manager.BackupManager : client
 odoo_env.client.Client --* odoo_env.managers.image_manager.ImageManager : client
 odoo_env.services.docker_client.DockerClient --* odoo_env.managers.backup_manager.BackupManager : docker_client

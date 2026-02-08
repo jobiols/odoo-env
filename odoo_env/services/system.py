@@ -1,5 +1,6 @@
 from odoo_env.config import OeConfig
 
+
 class SystemClient:
 
     @staticmethod

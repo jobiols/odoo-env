@@ -8,10 +8,9 @@ from odoo_env.config import OeConfig
 from odoo_env.images import DockerImage
 from odoo_env.messages import msg
 from odoo_env.repos import GitRepo
-from odoo_env.singleton import SingletonMeta
 
 
-class Client():
+class Client:
     """Esta clase representa a un cliente, con su manifiesto, sus imagenes y repositorios."""
 
     def __init__(self, args):
@@ -49,7 +48,6 @@ class Client():
 
         # Procesar sintaxis v2
         self.check_v2(manifest)
-
 
     def check_v2(self, manifest):
         # Chequar que el manifiesto tenga bien las cosas
@@ -139,7 +137,9 @@ class Client():
     def get_manifest_from_url(self) -> dict[str, object] | None:
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            subprocess.run(["git", "clone", "--depth", "1", self._args.install, tmpdir], check=True)
+            subprocess.run(
+                ["git", "clone", "--depth", "1", self._args.install, tmpdir], check=True
+            )
 
             manifest, _ = self.get_manifest_from_struct(Path(tmpdir))
             return manifest
@@ -170,9 +170,7 @@ class Client():
 
             # Validar nombre
             if isinstance(name, str) and name.lower() != self._name:
-                msg.err(
-                    f"project name {name} does not match client name {self._name}"
-                )
+                msg.err(f"project name {name} does not match client name {self._name}")
 
             return manifest, str(manifest_file.parent)
 

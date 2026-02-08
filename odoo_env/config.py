@@ -11,13 +11,16 @@ from odoo_env.__init__ import __version__
 from odoo_env.messages import msg
 from odoo_env.singleton import SingletonMeta
 
+
 class OeConfig(metaclass=SingletonMeta):
 
     def __init__(self, args):
         # en esta variable guardo toda la data del archivo oe_config.yaml
         self._args = args
         self._config_data = self._get_config_data()
-        print(f"Inicializando OeConfig: -------------------------------------------------- ")
+        print(
+            f"Inicializando OeConfig: -------------------------------------------------- "
+        )
 
     def persist_config(self):
         """Salva en la configuracion los parametros que se declararon como persistentes"""

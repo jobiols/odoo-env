@@ -11,6 +11,7 @@ from odoo_env.managers.environment_manager import EnvironmentManager
 from odoo_env.managers.image_manager import ImageManager
 from odoo_env.messages import msg
 
+
 class OdooEnv:
     """
     Implementa metodos que corresponden a cada una de las acciones que se
@@ -77,9 +78,7 @@ class OdooEnv:
             backup_file = get_param(self._args, "backup_file")
             no_deactivate = self._args.no_deactivate
             from_server = self._args.from_prod
-            commands += self.restore(
-                database, backup_file, no_deactivate, from_server
-            )
+            commands += self.restore(database, backup_file, no_deactivate, from_server)
 
         if self._args.create_test_db:
             # TODO crear un comando para hacer esto en diferido
@@ -88,8 +87,6 @@ class OdooEnv:
             msg().err("Not Implemented.")
 
         return commands
-
-
 
     def execute(self, commands):
         for command in commands:

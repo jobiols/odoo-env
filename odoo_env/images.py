@@ -1,6 +1,5 @@
 from odoo_env.messages import msg
 
-
 # class Image:
 #     def __init__(self, values):
 #         self._dict = values

@@ -1,4 +1,3 @@
-
 IN_CONFIG = "/opt/odoo/etc/"
 IN_DATA = "/opt/odoo/data"
 IN_LOG = "/var/log/odoo"

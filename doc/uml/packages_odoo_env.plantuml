@@ -49,16 +49,13 @@ package "odoo_env.singleton" as odoo_env.singleton {
 package "odoo_env.test_oe" as odoo_env.test_oe {
 }
 odoo_env.client --> odoo_env.config
-odoo_env.client --> odoo_env.constants
 odoo_env.client --> odoo_env.images
 odoo_env.client --> odoo_env.messages
 odoo_env.client --> odoo_env.repos
-odoo_env.client --> odoo_env.singleton
 odoo_env.command --> odoo_env.messages
 odoo_env.command --> odoo_env.odoo_conf
 odoo_env.config --> odoo_env.messages
 odoo_env.config --> odoo_env.singleton
-odoo_env.constants --> odoo_env.config
 odoo_env.create_database --> odoo_env.client
 odoo_env.create_database --> odoo_env.messages
 odoo_env.deploy_keys --> odoo_env.client
@@ -86,17 +83,15 @@ odoo_env.odooenv --> odoo_env.config
 odoo_env.odooenv --> odoo_env.managers.backup_manager
 odoo_env.odooenv --> odoo_env.managers.environment_manager
 odoo_env.odooenv --> odoo_env.managers.image_manager
-odoo_env.odooenv --> odoo_env.services.docker_client
+odoo_env.odooenv --> odoo_env.messages
 odoo_env.oe --> odoo_env.config
-odoo_env.oe --> odoo_env.create_database
-odoo_env.oe --> odoo_env.deploy_keys
 odoo_env.oe --> odoo_env.messages
 odoo_env.oe --> odoo_env.odooenv
-odoo_env.oe --> odoo_env.options
 odoo_env.options --> odoo_env.config
 odoo_env.options --> odoo_env.messages
 odoo_env.repos --> odoo_env.config
 odoo_env.repos --> odoo_env.messages
+odoo_env.services.system --> odoo_env.config
 odoo_env.test_oe --> odoo_env.command
 odoo_env.test_oe --> odoo_env.config
 odoo_env.test_oe --> odoo_env.constants

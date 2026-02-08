@@ -3,8 +3,6 @@ from odoo_env.command import (
     CreateNginxTemplate,
     MakedirCommand,
 )
-from odoo_env.client import Client
-
 from odoo_env.config import OeConfig
 from odoo_env.constants import (
     IN_BACKUP_DIR,
@@ -26,7 +24,7 @@ from odoo_env.services.system import SystemClient
 
 class EnvironmentManager:
     def __init__(self):
-#        self.parent = parent
+        #        self.parent = parent
         self.docker_client = DockerClient()
         self.system_client = SystemClient()
 

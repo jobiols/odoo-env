@@ -102,4 +102,5 @@ odoo_env.test_oe --> odoo_env.config
 odoo_env.test_oe --> odoo_env.constants
 odoo_env.test_oe --> odoo_env.odooenv
 odoo_env.test_oe --> odoo_env.repos
+
 @enduml

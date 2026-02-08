@@ -1,0 +1,105 @@
+@startuml packages_odoo_env
+set namespaceSeparator none
+package "odoo_env" as odoo_env {
+}
+package "odoo_env.client" as odoo_env.client {
+}
+package "odoo_env.command" as odoo_env.command {
+}
+package "odoo_env.config" as odoo_env.config {
+}
+package "odoo_env.constants" as odoo_env.constants {
+}
+package "odoo_env.create_database" as odoo_env.create_database {
+}
+package "odoo_env.deploy_keys" as odoo_env.deploy_keys {
+}
+package "odoo_env.images" as odoo_env.images {
+}
+package "odoo_env.managers" as odoo_env.managers {
+}
+package "odoo_env.managers.backup_manager" as odoo_env.managers.backup_manager {
+}
+package "odoo_env.managers.environment_manager" as odoo_env.managers.environment_manager {
+}
+package "odoo_env.managers.image_manager" as odoo_env.managers.image_manager {
+}
+package "odoo_env.messages" as odoo_env.messages {
+}
+package "odoo_env.odoo_conf" as odoo_env.odoo_conf {
+}
+package "odoo_env.odooenv" as odoo_env.odooenv {
+}
+package "odoo_env.oe" as odoo_env.oe {
+}
+package "odoo_env.options" as odoo_env.options {
+}
+package "odoo_env.repos" as odoo_env.repos {
+}
+package "odoo_env.sd" as odoo_env.sd {
+}
+package "odoo_env.services" as odoo_env.services {
+}
+package "odoo_env.services.docker_client" as odoo_env.services.docker_client {
+}
+package "odoo_env.services.system" as odoo_env.services.system {
+}
+package "odoo_env.singleton" as odoo_env.singleton {
+}
+package "odoo_env.test_oe" as odoo_env.test_oe {
+}
+odoo_env.client --> odoo_env.config
+odoo_env.client --> odoo_env.constants
+odoo_env.client --> odoo_env.images
+odoo_env.client --> odoo_env.messages
+odoo_env.client --> odoo_env.repos
+odoo_env.client --> odoo_env.singleton
+odoo_env.command --> odoo_env.messages
+odoo_env.command --> odoo_env.odoo_conf
+odoo_env.config --> odoo_env.messages
+odoo_env.config --> odoo_env.singleton
+odoo_env.constants --> odoo_env.config
+odoo_env.create_database --> odoo_env.client
+odoo_env.create_database --> odoo_env.messages
+odoo_env.deploy_keys --> odoo_env.client
+odoo_env.deploy_keys --> odoo_env.messages
+odoo_env.images --> odoo_env.messages
+odoo_env.managers.backup_manager --> odoo_env.client
+odoo_env.managers.backup_manager --> odoo_env.command
+odoo_env.managers.backup_manager --> odoo_env.constants
+odoo_env.managers.backup_manager --> odoo_env.services.docker_client
+odoo_env.managers.environment_manager --> odoo_env.command
+odoo_env.managers.environment_manager --> odoo_env.config
+odoo_env.managers.environment_manager --> odoo_env.constants
+odoo_env.managers.environment_manager --> odoo_env.messages
+odoo_env.managers.environment_manager --> odoo_env.services.docker_client
+odoo_env.managers.environment_manager --> odoo_env.services.system
+odoo_env.managers.image_manager --> odoo_env.client
+odoo_env.managers.image_manager --> odoo_env.command
+odoo_env.managers.image_manager --> odoo_env.config
+odoo_env.managers.image_manager --> odoo_env.services.docker_client
+odoo_env.managers.image_manager --> odoo_env.services.system
+odoo_env.odoo_conf --> odoo_env
+odoo_env.odooenv --> odoo_env.client
+odoo_env.odooenv --> odoo_env.command
+odoo_env.odooenv --> odoo_env.config
+odoo_env.odooenv --> odoo_env.managers.backup_manager
+odoo_env.odooenv --> odoo_env.managers.environment_manager
+odoo_env.odooenv --> odoo_env.managers.image_manager
+odoo_env.odooenv --> odoo_env.services.docker_client
+odoo_env.oe --> odoo_env.config
+odoo_env.oe --> odoo_env.create_database
+odoo_env.oe --> odoo_env.deploy_keys
+odoo_env.oe --> odoo_env.messages
+odoo_env.oe --> odoo_env.odooenv
+odoo_env.oe --> odoo_env.options
+odoo_env.options --> odoo_env.config
+odoo_env.options --> odoo_env.messages
+odoo_env.repos --> odoo_env.config
+odoo_env.repos --> odoo_env.messages
+odoo_env.test_oe --> odoo_env.command
+odoo_env.test_oe --> odoo_env.config
+odoo_env.test_oe --> odoo_env.constants
+odoo_env.test_oe --> odoo_env.odooenv
+odoo_env.test_oe --> odoo_env.repos
+@enduml

@@ -48,7 +48,7 @@ jobs:
 
       - name: Renderizar UML a SVG
         run: |
-          java -jar plantuml.jar -tsvg doc/uml/classes_odoo_env.plantuml
+          java -jar plantuml.jar -tsvg doc/uml/classes_odoo_env.puml
 
       # -----------------------------
       # Verificación de diffs

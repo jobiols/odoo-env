@@ -4,7 +4,7 @@ import subprocess
 from pathlib import Path
 
 from odoo_env.client import Client
-from odoo_env.messages import Msg
+from odoo_env.messages import msg
 
 
 def generate_ssh_keypair(key_name="id_ed25519", passphrase=""):
@@ -14,7 +14,7 @@ def generate_ssh_keypair(key_name="id_ed25519", passphrase=""):
     private_key_path = ssh_dir / key_name
 
     if private_key_path.exists():
-        Msg().inf(f"Key '{private_key_path}' already exists.")
+        msg().inf(f"Key '{private_key_path}' already exists.")
         return
 
     # Buscar la ruta absoluta de ssh-keygen
@@ -61,27 +61,27 @@ def update_ssh_config(key_name):
 
     # Verificar si el alias ya existe
     if pattern.search(config_content):
-        Msg().inf(f"Alias '{host_alias}' already exists in {ssh_config_path}.")
+        msg().inf(f"Alias '{host_alias}' already exists in {ssh_config_path}.")
     else:
         with ssh_config_path.open("a") as f:
             f.write(config_entry)
-        Msg().inf(f"Alias '{host_alias}' added to {ssh_config_path}.")
+        msg().inf(f"Alias '{host_alias}' added to {ssh_config_path}.")
 
 
 def list_public_keys(name):
     ssh_dir = Path.home() / ".ssh"
     path_key = ssh_dir / f"{name}.pub"
 
-    Msg().inf(name)
+    msg().inf(name)
     try:
         with path_key.open("r", encoding="utf-8") as file:
-            Msg().inf(file.read())
+            msg().inf(file.read())
     except Exception as ex:
-        Msg().err(ex)
+        msg().err(ex)
 
 
 def deploy_keys(_oe, client_name):
-    Msg().inf("Creating / Reviewing deploy keys.")
+    msg().inf("Creating / Reviewing deploy keys.")
     cli = Client(_oe, client_name)
 
     # Detectar cuales son los repositorios que están en protocolo SSH asumiendo que son privados
@@ -98,6 +98,6 @@ def deploy_keys(_oe, client_name):
         update_ssh_config(name)
 
     # Listar las claves públicas para que las pongan en los repositorios
-    Msg().inf("Available Public Keys:")
+    msg().inf("Available Public Keys:")
     for repo in ssh_repos:
         list_public_keys(repo.code_name)

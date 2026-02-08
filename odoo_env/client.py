@@ -6,12 +6,10 @@ from pathlib import Path
 
 from odoo_env.config import OeConfig
 from odoo_env.constants import BASE_DIR
-from odoo_env.images import Image2
-from odoo_env.messages import Msg
-from odoo_env.repos import Repo2
+from odoo_env.images import DockerImage
+from odoo_env.messages import msg
+from odoo_env.repos import GitRepo
 from odoo_env.singleton import Singleton
-
-msg = Msg()
 
 
 class Client(Singleton):
@@ -68,10 +66,10 @@ class Client(Singleton):
 
         # Crear imagenes y repos
         for rep in manifest.get("git-repos"):
-            self._repos.append(Repo2(rep, self._version))
+            self._repos.append(GitRepo(rep, self._version))
 
         for img in manifest.get("docker-images"):
-            self._images.append(Image2(img, OeConfig().debug))
+            self._images.append(DockerImage(img, OeConfig().debug))
 
         # levantar el nombre del user server
         self._prod_server = manifest.get("prod_server", "ubuntu")
@@ -171,7 +169,7 @@ class Client(Singleton):
 
             # Validar nombre
             if isinstance(name, str) and name.lower() != self._name:
-                Msg().err(
+                msg.err(
                     f"project name {name} does not match client name {self._name}"
                 )
 

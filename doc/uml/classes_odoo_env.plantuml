@@ -60,11 +60,11 @@ class "CreateNginxTemplate" as odoo_env.command.CreateNginxTemplate {
   check_args() -> bool
   execute()
 }
-class "DockerClient" as odoo_env.services.docker_client.DockerClient {
-  get_network_create_command(network: str) -> str
-  get_rm_command(container_name: str, recursive: bool, force: bool, sudo: bool) -> list[str]
-  get_run_command(image: str, cmd: str | list[str] | None, detach: bool, remove: bool, interactive: bool, name: str | None, ports: dict[int, int] | None, volumes: dict[str, dict[str, str]] | None, env: dict[str, str] | None, links: dict[str, str] | None, network: str | None, restart: str | None, user: str | None, entrypoint: str | None, workdir: str | None, stop_after_init: bool, logfile: str | None, log_level: str | None, test_enable: bool, extra_args: list[str] | None, database: str | None, network_alias: str | None) -> list[str]
-  get_stop_command(container_name: str) -> list[str]
+class "DockerImage" as odoo_env.images.DockerImage {
+  name
+  numeric_ver
+  short_name
+  version
 }
 class "EnvironmentManager" as odoo_env.managers.environment_manager.EnvironmentManager {
   client
@@ -82,16 +82,15 @@ class "EnvironmentManager" as odoo_env.managers.environment_manager.EnvironmentM
 class "ExtractSourcesCommand" as odoo_env.command.ExtractSourcesCommand {
   check_args()
 }
-class "Image" as odoo_env.images.Image {
-  name
-  short_name
-  version
-}
-class "Image2" as odoo_env.images.Image2 {
-  name
-  numeric_ver
-  short_name
-  version
+class "GitRepo" as odoo_env.repos.GitRepo {
+  branch
+  clone
+  code_name
+  dir_name
+  formatted
+  protocol
+  pull
+  url
 }
 class "ImageManager" as odoo_env.managers.image_manager.ImageManager {
   client
@@ -170,25 +169,6 @@ class "PullRepo" as odoo_env.command.PullRepo {
 }
 class "RemovedirCommand" as odoo_env.command.RemovedirCommand {
   check_args()
-}
-class "Repo" as odoo_env.repos.Repo {
-  branch
-  clone
-  dir_name
-  formatted
-  name
-  pull
-  url
-}
-class "Repo2" as odoo_env.repos.Repo2 {
-  branch
-  clone
-  code_name
-  dir_name
-  formatted
-  protocol
-  pull
-  url
 }
 class "Singleton" as odoo_env.singleton.Singleton {
 }

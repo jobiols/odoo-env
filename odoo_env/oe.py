@@ -7,7 +7,7 @@ from odoo_env.__init__ import __version__
 from odoo_env.config import OeConfig
 from odoo_env.create_database import create_database
 from odoo_env.deploy_keys import deploy_keys
-from odoo_env.messages import Msg
+from odoo_env.messages import msg
 from odoo_env.odooenv import OdooEnv
 from odoo_env.options import get_param
 
@@ -268,7 +268,7 @@ def get_client():
     conf = OeConfig()
     client = conf.get_client()
     if not client:
-        Msg().err("No client configured. Use -c <client>.")
+        msg().err("No client configured. Use -c <client>.")
     return client
 
 
@@ -307,7 +307,7 @@ def build_commands(args):
     if args.deploy_keys:
         conf = OeConfig()
         if not conf.prod:
-            Msg().err("Must be in prod mode in order to create deploy keys.")
+            msg().err("Must be in prod mode in order to create deploy keys.")
         deploy_keys(OdooEnv(args))
 
     if args.modules_to_test:
@@ -330,9 +330,9 @@ def build_commands(args):
 
     if args.create_test_db:
         # TODO crear un comando para hacer esto en diferido
-        Msg().inf("Creating test database with demo data.")
+        msg().inf("Creating test database with demo data.")
         create_database(OdooEnv(args))
-        Msg().err("Not Implemented.")
+        msg().err("Not Implemented.")
 
     return commands
 
@@ -340,7 +340,7 @@ def build_commands(args):
 def execute(commands):
     for command in commands:
         if command and command.check():
-            Msg().inf(command.usr_msg)
+            msg().inf(command.usr_msg)
             command.execute()
 
 
@@ -349,7 +349,7 @@ def main():
 
     if args.version:
         # TODO crear un comando para esto
-        Msg().inf(f"oe version {__version__}")
+        msg().inf(f"oe version {__version__}")
         sys.exit()
 
     persist_config(args)

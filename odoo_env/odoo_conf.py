@@ -4,8 +4,8 @@ from odoo_env import __version__
 
 
 class OdooConf:
-    """Representa el archivo odoo.conf y sus metodos para leer
-    salvar y agregarle datos
+    """Representa el archivo odoo.conf
+    Tiene metodos para leer salvar y agregarle datos
     """
 
     def __init__(self, filename):

@@ -8,23 +8,8 @@ import tornado.httpclient
 import yaml
 
 from odoo_env.__init__ import __version__
-from odoo_env.messages import Msg
+from odoo_env.messages import msg
 from odoo_env.singleton import Singleton
-
-msg = Msg()
-
-# oe_config = False
-
-# _instances = {}
-
-
-# class Singleton:
-#     def __new__(cls, *args, **kw):
-#         if cls not in _instances:
-#             instance = super().__new__(cls)
-#             _instances[cls] = instance
-#         return _instances[cls]
-
 
 class OeConfig(Singleton):
 
@@ -170,20 +155,20 @@ class OeConfig(Singleton):
                 info = json.loads(response.buffer.read().decode("utf-8"))
                 version = info["info"]["version"]
                 if version != __version__:
-                    Msg().warn(
+                    msg().warn(
                         f"BE CAREFUL, you are using version {__version__} of odoo-env "
                         f"however version {version} is already available."
                     )
-                    Msg().warn(
+                    msg().warn(
                         'You should update using "pipx upgrade odoo-env" or "pip '
                         'install --upgrade odoo-env" (old style).\n'
                     )
-                    Msg().warn(
+                    msg().warn(
                         "Do it right now before chaos knocks your digital door. Dont risk it."
                     )
 
             except Exception:
-                Msg().inf(
+                msg().inf(
                     "Oops! Looks like my cowboy hat is out of internet. "
                     "Did you forget to feed coins to the internet ranch, or did the Wi-Fi birds "
                     "fly away again?"

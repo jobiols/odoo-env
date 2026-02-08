@@ -1,5 +1,5 @@
 from odoo_env.config import OeConfig
-from odoo_env.messages import Msg
+from odoo_env.messages import msg
 
 
 def get_client(args):
@@ -9,7 +9,7 @@ def get_client(args):
     client = OeConfig().get_client()
     if client:
         return client
-    Msg().err("Need -c option (client name). Process aborted")
+    msg().err("Need -c option (client name). Process aborted")
 
 
 def get_database(args):
@@ -20,18 +20,18 @@ def get_database(args):
     if client:
         suffix = "_test" if args.modules_to_test else "_prod"
         default_database = client + suffix
-        Msg().inf(
+        msg().inf(
             f"Using default database: {default_database}, use -d to "
             "specify another database."
         )
         return default_database
-    Msg().err("Need -c option (client name). Process aborted")
+    msg().err("Need -c option (client name). Process aborted")
 
 
 def get_module(args):
     if args.module:
         return args.module
-    Msg().inf(
+    msg().inf(
         "Updating all modules. Use -m to specify single module "
         "or a comma separated list of modules."
     )
@@ -42,7 +42,7 @@ def get_backup_file(args):
     if args.backup_file:
         return args.backup_file[0]
 
-    Msg().inf("Restoring newest LOCAL backup. Use -f to store specific one.")
+    msg().inf("Restoring newest LOCAL backup. Use -f to store specific one.")
     return False
 
 
@@ -50,7 +50,7 @@ def get_prod_backup_file(args):
     if args.backup_file:
         return args.backup_file[0]
 
-    Msg().inf("Restoring newest SERVER backup. Use -f to store specific one.")
+    msg().inf("Restoring newest SERVER backup. Use -f to store specific one.")
     return False
 
 

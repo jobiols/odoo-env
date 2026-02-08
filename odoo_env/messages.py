@@ -40,3 +40,5 @@ class Msg:
 
     def warn(self, msg):
         print(self.red(msg))
+
+msg = Msg()

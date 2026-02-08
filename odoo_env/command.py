@@ -2,10 +2,8 @@ import os
 import subprocess
 from pathlib import Path
 
-from odoo_env.messages import Msg
+from odoo_env.messages import msg
 from odoo_env.odoo_conf import OdooConf
-
-msg = Msg()
 
 
 class Command:

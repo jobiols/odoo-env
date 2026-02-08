@@ -18,7 +18,7 @@ from odoo_env.constants import (
     WDB_IMAGE_DEFAULT,
     WDB_IMAGE_NEW,
 )
-from odoo_env.messages import Msg
+from odoo_env.messages import msg
 from odoo_env.services.docker_client import DockerClient
 from odoo_env.services.system import SystemClient
 
@@ -149,7 +149,7 @@ class EnvironmentManager:
         # Postgres
         image = self.parent._client.get_image("postgres")
         if not image:
-            Msg().err(f"There is no {image.name} image on this proyect")
+            msg().err(f"There is no {image.name} image on this proyect")
 
         msg = f"Starting postgres image {image.version}"
 
@@ -486,7 +486,7 @@ class EnvironmentManager:
         msg = "Starting nginx reverse proxy"
         image = self.client.get_image("nginx")
         if not image:
-            Msg().err("There is no nginx image on this proyect")
+            msg().err("There is no nginx image on this proyect")
             return ret
 
         nginx_dir = self.client.nginx_dir

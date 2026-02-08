@@ -8,7 +8,7 @@ from odoo_env.constants import (
     DBTOOLS_IMAGE,
 )
 from odoo_env.odooenv import OdooEnv
-from odoo_env.repos import Repo, Repo2
+from odoo_env.repos import GitRepo
 
 TEST_CLIENT_MANIFEST = {
     "name": "test_client",
@@ -343,11 +343,11 @@ class TestRepository(unittest.TestCase):
         self.assertEqual(OeConfig().get_client_path("test_clientx"), "multiple_path1")
 
     def test_repo_clone(self):
-        repo = Repo({"usr": "jobiols", "repo": "project", "branch": "9.0"})
+        repo = GitRepo({"usr": "jobiols", "repo": "project", "branch": "9.0"})
         self.assertEqual(
             repo.clone, "clone --depth 1 -b 9.0 https://github.com/jobiols/project"
         )
 
     def test_repo2_clone(self):
-        repo = Repo2("https://github.com/jobiols/project.git", "9.0")
+        repo = GitRepo("https://github.com/jobiols/project.git", "9.0")
         self.assertEqual(repo.dir_name, "project")

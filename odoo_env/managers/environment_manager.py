@@ -3,6 +3,7 @@ from odoo_env.command import (
     CreateNginxTemplate,
     MakedirCommand,
 )
+from odoo_env.odooenv import OdooEnv
 from odoo_env.config import OeConfig
 from odoo_env.constants import (
     IN_BACKUP_DIR,
@@ -22,7 +23,8 @@ from odoo_env.services.docker_client import DockerClient
 from odoo_env.services.system import SystemClient
 
 
-class EnvironmentManager:
+
+class EnvironmentManager(OdooEnv):
     def __init__(self):
         #        self.parent = parent
         self.docker_client = DockerClient()
@@ -48,7 +50,7 @@ class EnvironmentManager:
         ]:
             r_dir = f"{OeConfig().base_dir}{w_dir}"
             cmd_list = self.system_client.make_mkdir_command(r_dir)
-            ret.append(MakedirCommand(self.parent, command=cmd_list, args=r_dir))
+            ret.append(MakedirCommand( command=cmd_list, args=r_dir))
 
         # Chown pone el owner como 1100 que es lo que hay en la imagen de odoo
         for w_dir in [
@@ -56,7 +58,7 @@ class EnvironmentManager:
             "data_dir",
             "log",
         ]:
-            r_dir = f"{self.parent._client.base_dir}{w_dir}"
+            r_dir = f"{self._client.base_dir}{w_dir}"
             cmd_list = self.system_client.get_chown_command(
                 r_dir, recursive=True, user="1100", group="1100"
             )
@@ -69,7 +71,7 @@ class EnvironmentManager:
             "log",
             "backup_dir",
         ]:
-            r_dir = f"{OeCoonfig.base_dir}{w_dir}"
+            r_dir = f"{self._client.base_dir}{w_dir}"
             cmd_list = self.system_client.get_chmod_command(r_dir, "o+w", sudo=True)
             ret.append(Command(self.parent, command=cmd_list))
 

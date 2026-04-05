@@ -80,10 +80,14 @@ odoo_env.odoo_conf --> odoo_env
 odoo_env.odooenv --> odoo_env.client
 odoo_env.odooenv --> odoo_env.command
 odoo_env.odooenv --> odoo_env.config
+odoo_env.odooenv --> odoo_env.create_database
+odoo_env.odooenv --> odoo_env.deploy_keys
 odoo_env.odooenv --> odoo_env.managers.backup_manager
 odoo_env.odooenv --> odoo_env.managers.environment_manager
 odoo_env.odooenv --> odoo_env.managers.image_manager
 odoo_env.odooenv --> odoo_env.messages
+odoo_env.odooenv --> odoo_env.options
+odoo_env.odooenv --> odoo_env.services.docker_client
 odoo_env.oe --> odoo_env.config
 odoo_env.oe --> odoo_env.messages
 odoo_env.oe --> odoo_env.odooenv
@@ -97,4 +101,5 @@ odoo_env.test_oe --> odoo_env.config
 odoo_env.test_oe --> odoo_env.constants
 odoo_env.test_oe --> odoo_env.odooenv
 odoo_env.test_oe --> odoo_env.repos
+odoo_env.test_oe --> odoo_env.singleton
 @enduml

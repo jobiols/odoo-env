@@ -3,12 +3,13 @@ from unittest.mock import patch
 
 from odoo_env.command import Command
 from odoo_env.config import OeConfig
-from odoo_env.singleton import SingletonMeta
 from odoo_env.constants import (
     DBTOOLS_IMAGE,
 )
 from odoo_env.odooenv import OdooEnv
 from odoo_env.repos import GitRepo
+from odoo_env.singleton import SingletonMeta
+
 
 class MockArgs:
     def __init__(self, **kwargs):
@@ -130,13 +131,15 @@ class TestRepository(unittest.TestCase):
 
     def test_install(self):
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
-        options = MockArgs(debug=False, no_repos=False, nginx=True, client="test_client")
+        options = MockArgs(
+            debug=False, no_repos=False, nginx=True, client="test_client"
+        )
         oe = OdooEnv(options)
         cmds = oe.install()
-        
+
         # Base dir mkdir
         self.assertEqual(cmds[0].command, ["mkdir", "-p", OeConfig().base_dir])
-        
+
         # Postgresql dir mkdir (index 1 in new structure)
         psql_dir = f"{OeConfig().base_dir}odoo-9.0/test_client/postgresql"
         self.assertEqual(cmds[1].command, ["mkdir", "-p", psql_dir])
@@ -148,10 +151,10 @@ class TestRepository(unittest.TestCase):
         )
         oe = OdooEnv(options)
         cmds = oe.install()
-        
+
         # Base dir mkdir
         self.assertEqual(cmds[0].command, ["mkdir", "-p", OeConfig().base_dir])
-        
+
         # Postgresql dir mkdir
         psql_dir = f"{OeConfig().base_dir}odoo-9.0/test2_client/postgresql"
         self.assertEqual(cmds[1].command, ["mkdir", "-p", psql_dir])
@@ -167,17 +170,19 @@ class TestRepository(unittest.TestCase):
         )
         oe = OdooEnv(options)
         cmds = oe.install()
-        
+
         # Base dir mkdir
         self.assertEqual(cmds[0].command, ["mkdir", "-p", OeConfig().base_dir])
-        
+
         # Postgresql dir mkdir
         psql_dir = f"{OeConfig().base_dir}odoo-9.0e/test2e_client/postgresql"
         self.assertEqual(cmds[1].command, ["mkdir", "-p", psql_dir])
 
     def test_cmd(self):
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
-        options = MockArgs(debug=False, no_repos=False, nginx=False, client="test_client")
+        options = MockArgs(
+            debug=False, no_repos=False, nginx=False, client="test_client"
+        )
         oe = OdooEnv(options)
         c = Command(oe, command="cmd", usr_msg="hola")
         self.assertEqual(c.command, "cmd")
@@ -274,9 +279,7 @@ class TestRepository(unittest.TestCase):
         options = MockArgs(debug=False, nginx=False, client="test_client")
         oe = OdooEnv(options)
         cmds = oe.pull_images()
-        self.assertEqual(
-            cmds[0].command, ["docker", "run", "jobiols/odoo-jeo:9.0"]
-        )
+        self.assertEqual(cmds[0].command, ["docker", "run", "jobiols/odoo-jeo:9.0"])
 
     def test_update(self):
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
@@ -349,7 +352,7 @@ class TestRepository(unittest.TestCase):
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
         # Force debug mode in mock config data
         self.mock_config_data.return_value["environment"] = "debug"
-        
+
         options = MockArgs(
             debug=True,
             no_repos=False,
@@ -360,7 +363,14 @@ class TestRepository(unittest.TestCase):
         oe = OdooEnv(options)
         cmds = oe.install()
         # Find the extract command in the list (look for dist-packages)
-        extract_cmd = next((c for c in cmds if c._usr_msg and "Extracting dist-packages" in c._usr_msg), None)
+        extract_cmd = next(
+            (
+                c
+                for c in cmds
+                if c._usr_msg and "Extracting dist-packages" in c._usr_msg
+            ),
+            None,
+        )
 
         command = [
             "docker",
@@ -394,7 +404,9 @@ class TestRepository(unittest.TestCase):
         OeConfig(options)
         OeConfig().save_client_path("test_clientx", "multiple_path1")
         OeConfig().save_client_path("test_clientx", "multiple_path2")
-        self.assertEqual(str(OeConfig().get_client_path("test_clientx")), "multiple_path1")
+        self.assertEqual(
+            str(OeConfig().get_client_path("test_clientx")), "multiple_path1"
+        )
 
     def test_repo_clone(self):
         repo = GitRepo("https://github.com/jobiols/project.git", "9.0")

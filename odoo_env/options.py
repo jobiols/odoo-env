@@ -83,4 +83,3 @@ def get_param(args, param):
         if args.no_deactivate:
             return args.no_deactivate
         return False
-

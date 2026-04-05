@@ -214,5 +214,3 @@ Este workflow se considera correctamente ejecutado solo si:
 - Se detuvo a esperar aprobación explícita
 
 Si cualquiera de esos puntos no ocurre, el workflow está mal ejecutado.
-
-

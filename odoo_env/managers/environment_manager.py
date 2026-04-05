@@ -22,7 +22,6 @@ from odoo_env.services.docker_client import DockerClient
 from odoo_env.services.system import SystemClient
 
 
-
 class EnvironmentManager:
     def __init__(self, parent):
         self.parent = parent
@@ -36,7 +35,9 @@ class EnvironmentManager:
         cmd_list = self.system_client.make_mkdir_command()
 
         ret.append(
-            MakedirCommand(self.parent, command=cmd_list, usr_msg=msg, args=OeConfig().base_dir)
+            MakedirCommand(
+                self.parent, command=cmd_list, usr_msg=msg, args=OeConfig().base_dir
+            )
         )
 
         # Client hierarchy
@@ -375,7 +376,9 @@ class EnvironmentManager:
 
     def qa(self, database, modules_to_test, client_test=False):
         if client_test:
-            self._client = client_test  # This is a bit hacky, adapting to existing logic
+            self._client = (
+                client_test  # This is a bit hacky, adapting to existing logic
+            )
 
         ret = []
         volumes = self._get_normal_mountings()
@@ -492,7 +495,9 @@ class EnvironmentManager:
         nginx_dir = self._client.nginx_dir
         volumes = {
             f"{nginx_dir}conf": {"bind": "/etc/nginx/conf.d", "mode": "ro"},
-            f"{self._client.base_dir}data_dir/letsencrypt": {"bind": "/etc/letsencrypt"},
+            f"{self._client.base_dir}data_dir/letsencrypt": {
+                "bind": "/etc/letsencrypt"
+            },
             f"{nginx_dir}log": {"bind": "/var/log/nginx/"},
         }
 

@@ -33,7 +33,7 @@ class "Client" as odoo_env.client.Client {
   check_common(manifest)
   check_v2(manifest)
   get_image(value)
-  get_manifest()
+  get_manifest(path)
   get_manifest_from_struct(path: Path) -> tuple[dict[str, object] | None, str | None]
   get_manifest_from_url() -> dict[str, object] | None
   image(image_name)
@@ -73,8 +73,8 @@ class "DockerImage" as odoo_env.images.DockerImage {
   version
 }
 class "EnvironmentManager" as odoo_env.managers.environment_manager.EnvironmentManager {
-  client
   docker_client
+  parent
   system_client
   install()
   qa(database, modules_to_test, client_test)
@@ -111,6 +111,8 @@ class "MakedirCommand" as odoo_env.command.MakedirCommand {
 class "MessageOnly" as odoo_env.command.MessageOnly {
   check_args()
   {abstract}execute()
+}
+class "MockArgs" as odoo_env.test_oe.MockArgs {
 }
 class "Msg" as odoo_env.messages.Msg {
   done(msg)
@@ -185,11 +187,16 @@ class "SystemClient" as odoo_env.services.system.SystemClient {
   get_chmod_command(path: str, mode: str, recursive: bool, sudo: bool) -> list[str]
   get_chown_command(path: str, user: str, group: str, recursive: bool, sudo: bool) -> list[str]
   get_rm_command(path: str, recursive: bool, force: bool, sudo: bool) -> list[str]
-  make_mkdir_command(parents: bool) -> list[str]
+  make_mkdir_command(path: str, parents: bool) -> list[str]
 }
 class "TestRepository" as odoo_env.test_oe.TestRepository {
+  config_data_patcher : _patch
+  maxDiff : NoneType
+  mock_config_data : AsyncMock, MagicMock, dict
   mock_get_manifest : AsyncMock, MagicMock, dict
+  mock_save_config : AsyncMock, MagicMock, dict
   patcher : _patch
+  save_config_patcher : _patch
   setUp()
   tearDown()
   test_check_version()

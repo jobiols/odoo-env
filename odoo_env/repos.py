@@ -129,7 +129,7 @@ class GitRepo:
             return "ssh"
         if self._url.startswith("https:"):
             return "https"
-        msg().err(f"Unknown git protocol {self._url}")
+        msg.err(f"Unknown git protocol {self._url}")
 
     @property
     def code_name(self):
@@ -139,4 +139,4 @@ class GitRepo:
         if match:
             return match.group("name")
 
-        msg().err(f"invalid repository URL {self._url}")
+        msg.err(f"invalid repository URL {self._url}")

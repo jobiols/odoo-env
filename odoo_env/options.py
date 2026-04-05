@@ -4,8 +4,12 @@ from odoo_env.messages import msg
 
 def get_client(args):
     if args.client:
-        OeConfig().save_client(args.client[0])
-        return args.client[0]
+        if isinstance(args.client, list):
+            client = args.client[0]
+        else:
+            client = args.client
+        OeConfig().save_client(client)
+        return client
     client = OeConfig().get_client()
     if client:
         return client
@@ -14,13 +18,15 @@ def get_client(args):
 
 def get_database(args):
     if args.database:
-        return args.database[0]
+        if isinstance(args.database, list):
+            return args.database[0]
+        return args.database
 
     client = get_client(args)
     if client:
         suffix = "_test" if args.modules_to_test else "_prod"
         default_database = client + suffix
-        msg().inf(
+        msg.inf(
             f"Using default database: {default_database}, use -d to "
             "specify another database."
         )
@@ -31,7 +37,7 @@ def get_database(args):
 def get_module(args):
     if args.module:
         return args.module
-    msg().inf(
+    msg.inf(
         "Updating all modules. Use -m to specify single module "
         "or a comma separated list of modules."
     )
@@ -40,17 +46,21 @@ def get_module(args):
 
 def get_backup_file(args):
     if args.backup_file:
-        return args.backup_file[0]
+        if isinstance(args.backup_file, list):
+            return args.backup_file[0]
+        return args.backup_file
 
-    msg().inf("Restoring newest LOCAL backup. Use -f to store specific one.")
+    msg.inf("Restoring newest LOCAL backup. Use -f to store specific one.")
     return False
 
 
 def get_prod_backup_file(args):
     if args.backup_file:
-        return args.backup_file[0]
+        if isinstance(args.backup_file, list):
+            return args.backup_file[0]
+        return args.backup_file
 
-    msg().inf("Restoring newest SERVER backup. Use -f to store specific one.")
+    msg.inf("Restoring newest SERVER backup. Use -f to store specific one.")
     return False
 
 
@@ -73,3 +83,4 @@ def get_param(args, param):
         if args.no_deactivate:
             return args.no_deactivate
         return False
+

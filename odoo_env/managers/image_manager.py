@@ -9,7 +9,7 @@ class ImageManager:
     def __init__(self, parent):
         self.parent = parent
         client_name = OeConfig().get_client()
-        self.client = Client(parent, client_name)
+        self.client = Client(parent._args, client_name)
         self.docker_client = DockerClient()
         self.system_client = SystemClient()
 

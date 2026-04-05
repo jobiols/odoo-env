@@ -9,7 +9,7 @@ from odoo_env.services.docker_client import DockerClient
 class BackupManager:
     def __init__(self, parent, client_name):
         self.parent = parent
-        self.client = Client(parent, client_name)
+        self.client = Client(parent._args, client_name)
         self.docker_client = DockerClient()
 
     def backup_list(self):

@@ -7,11 +7,11 @@ class SystemClient:
     def _base_cmd(sudo: bool = False) -> list[str]:
         return ["sudo"] if sudo else []
 
-    def make_mkdir_command(self, parents: bool = True) -> list[str]:
+    def make_mkdir_command(self, path: str = None, parents: bool = True) -> list[str]:
         cmd = self._base_cmd() + ["mkdir"]
         if parents:
             cmd.append("-p")
-        cmd.append(OeConfig().base_dir)
+        cmd.append(path or OeConfig().base_dir)
         return cmd
 
     def get_chmod_command(

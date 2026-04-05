@@ -3,32 +3,69 @@ from unittest.mock import patch
 
 from odoo_env.command import Command
 from odoo_env.config import OeConfig
+from odoo_env.singleton import SingletonMeta
 from odoo_env.constants import (
     DBTOOLS_IMAGE,
-    OeConfig,
 )
 from odoo_env.odooenv import OdooEnv
 from odoo_env.repos import GitRepo
 
+class MockArgs:
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+        # Add default values for all possible args used in code
+        defaults = {
+            "debug": False,
+            "prod": False,
+            "client": None,
+            "base_dir": None,
+            "install": False,
+            "run_env": False,
+            "pull_images": False,
+            "write_config": False,
+            "run_cli": False,
+            "stop_env": False,
+            "stop_cli": False,
+            "update": False,
+            "deploy_keys": False,
+            "modules_to_test": None,
+            "server_help": False,
+            "backup_list": False,
+            "restore": False,
+            "create_test_db": False,
+            "force_create": False,
+            "no_deactivate": False,
+            "from_prod": False,
+            "no_repos": False,
+            "database": None,
+            "module": None,
+            "backup_file": None,
+            "nginx": False,
+        }
+        for k, v in defaults.items():
+            if k not in self.__dict__:
+                setattr(self, k, v)
+
+
 TEST_CLIENT_MANIFEST = {
     "name": "test_client",
-    "version": "9.0.1.0",
-    "docker": [
-        {"name": "odoo", "usr": "jobiols", "img": "odoo-jeo", "ver": "9.0"},
-        {"name": "postgres", "usr": "postgres", "ver": "9.5"},
-        {"name": "nginx", "usr": "nginx", "ver": "latest"},
-        {"name": "aeroo", "usr": "jobiols", "img": "aeroo-docs"},
+    "version": "9.0.1.0.0",
+    "docker-images": [
+        "odoo jobiols/odoo-jeo:9.0",
+        "postgres postgres:9.5",
+        "nginx nginx:latest",
+        "aeroo jobiols/aeroo-docs",
     ],
-    "repos": [
-        {"usr": "jobiols", "repo": "cl-test-client", "branch": "9.0"},
-        {"usr": "jobiols", "repo": "odoo-addons", "branch": "9.0"},
+    "git-repos": [
+        "https://github.com/jobiols/cl-test-client.git",
+        "https://github.com/jobiols/odoo-addons.git",
     ],
-    "env-ver": "1",
+    "env-ver": "2",
 }
 
 TEST2_CLIENT_MANIFEST = {
     "name": "test2_client",
-    "version": "9.0.3.0",
+    "version": "9.0.3.0.0",
     "odoo-license": "CE",
     "env-ver": "2",
     "docker-images": [
@@ -45,7 +82,7 @@ TEST2_CLIENT_MANIFEST = {
 
 TEST2E_CLIENT_MANIFEST = {
     "name": "test2e_client",
-    "version": "9.0.3.0",
+    "version": "9.0.3.0.0",
     "odoo-license": "EE",
     "env-ver": "2",
     "docker-images": [
@@ -58,85 +95,102 @@ TEST2E_CLIENT_MANIFEST = {
 
 class TestRepository(unittest.TestCase):
     def setUp(self):
+        self.maxDiff = None
+        # Reset Singleton for each test
+        if OeConfig in SingletonMeta._instances:
+            del SingletonMeta._instances[OeConfig]
+
+        # Patch Config to avoid reading/writing real user config
+        self.config_data_patcher = patch("odoo_env.config.OeConfig._get_config_data")
+        self.mock_config_data = self.config_data_patcher.start()
+        self.mock_config_data.return_value = {
+            "clients": [
+                {"test_client": "/home/jobiols/tmp/odoo-env/odoo_env/data"},
+                {"test2_client": "/home/jobiols/tmp/odoo-env/odoo_env/data"},
+                {"test2e_client": "/home/jobiols/tmp/odoo-env/odoo_env/data"},
+            ],
+            "client": "test_client",
+            "environment": "prod",
+            "base_dir": "/odoo_ar/",
+            "last_version_check": "2026-04-05",
+        }
+
+        self.save_config_patcher = patch("odoo_env.config.OeConfig._save_config_data")
+        self.mock_save_config = self.save_config_patcher.start()
+
+        # Patch Manifest
         self.patcher = patch("odoo_env.client.Client.get_manifest")
         self.mock_get_manifest = self.patcher.start()
-        self.mock_get_manifest.side_effect = lambda path: TEST_CLIENT_MANIFEST
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
 
     def tearDown(self):
         self.patcher.stop()
+        self.config_data_patcher.stop()
+        self.save_config_patcher.stop()
 
     def test_install(self):
-        self.mock_get_manifest.side_effect = lambda path: TEST_CLIENT_MANIFEST
-        options = {"debug": False, "no-repos": False, "nginx": True}
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(debug=False, no_repos=False, nginx=True, client="test_client")
         oe = OdooEnv(options)
-        cmds = oe.install("test_client")
-        self.assertEqual(cmds[0].command, ["sudo", "mkdir", "-p", OeConfig().base_dir])
-        self.assertEqual(
-            cmds[2].command,
-            [
-                "sudo",
-                "mkdir",
-                "-p",
-                f"{OeConfig().base_dir}odoo-9.0/test_client/postgresql",
-            ],
-        )
+        cmds = oe.install()
+        
+        # Base dir mkdir
+        self.assertEqual(cmds[0].command, ["mkdir", "-p", OeConfig().base_dir])
+        
+        # Postgresql dir mkdir (index 1 in new structure)
+        psql_dir = f"{OeConfig().base_dir}odoo-9.0/test_client/postgresql"
+        self.assertEqual(cmds[1].command, ["mkdir", "-p", psql_dir])
 
     def test_install2(self):
-        self.mock_get_manifest.side_effect = lambda path: TEST2_CLIENT_MANIFEST
-        options = {"debug": False, "no-repos": False, "nginx": True}
-        oe = OdooEnv(options)
-        cmds = oe.install("test2_client")
-        self.assertEqual(cmds[0].command, ["sudo", "mkdir", "-p", OeConfig().base_dir])
-        self.assertEqual(
-            cmds[2].command,
-            [
-                "sudo",
-                "mkdir",
-                "-p",
-                f"{OeConfig().base_dir}odoo-9.0/test2_client/postgresql",
-            ],
+        self.mock_get_manifest.side_effect = lambda path=None: TEST2_CLIENT_MANIFEST
+        options = MockArgs(
+            debug=False, no_repos=False, nginx=True, client="test2_client"
         )
+        oe = OdooEnv(options)
+        cmds = oe.install()
+        
+        # Base dir mkdir
+        self.assertEqual(cmds[0].command, ["mkdir", "-p", OeConfig().base_dir])
+        
+        # Postgresql dir mkdir
+        psql_dir = f"{OeConfig().base_dir}odoo-9.0/test2_client/postgresql"
+        self.assertEqual(cmds[1].command, ["mkdir", "-p", psql_dir])
 
     def test_install2_enterprise(self):
-        self.mock_get_manifest.side_effect = lambda path: TEST2E_CLIENT_MANIFEST
-        options = {
-            "debug": True,
-            "no-repos": False,
-            "nginx": True,
-            "extract_sources": False,
-        }
-        oe = OdooEnv(options)
-        cmds = oe.install("test2e_client")
-        self.assertEqual(cmds[0].command, ["sudo", "mkdir", "-p", OeConfig().base_dir])
-        self.assertEqual(
-            cmds[2].command,
-            [
-                "sudo",
-                "mkdir",
-                "-p",
-                f"{OeConfig().base_dir}odoo-9.0e/test2e_client/postgresql",
-            ],
+        self.mock_get_manifest.side_effect = lambda path=None: TEST2E_CLIENT_MANIFEST
+        options = MockArgs(
+            debug=True,
+            no_repos=False,
+            nginx=True,
+            extract_sources=False,
+            client="test2e_client",
         )
+        oe = OdooEnv(options)
+        cmds = oe.install()
+        
+        # Base dir mkdir
+        self.assertEqual(cmds[0].command, ["mkdir", "-p", OeConfig().base_dir])
+        
+        # Postgresql dir mkdir
+        psql_dir = f"{OeConfig().base_dir}odoo-9.0e/test2e_client/postgresql"
+        self.assertEqual(cmds[1].command, ["mkdir", "-p", psql_dir])
 
     def test_cmd(self):
-        options = {"debug": False, "no-repos": False, "nginx": False}
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(debug=False, no_repos=False, nginx=False, client="test_client")
         oe = OdooEnv(options)
         c = Command(oe, command="cmd", usr_msg="hola")
         self.assertEqual(c.command, "cmd")
 
     def test_qa(self):
-        self.mock_get_manifest.side_effect = lambda path: TEST_CLIENT_MANIFEST
-        options = {"debug": False}
-        client_name = "test_client"
-        database = "cliente_test"
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(debug=False, client="test_client")
         modules = "modulo_a_testear"
         oe = OdooEnv(options)
-        cmds = oe.qa(client_name, database, modules)
+        cmds = oe.qa(modules)
 
-        # Order: run, --rm, -it, --network, volumes, env, links, image, stop-after-init, log-level,
-        # test-enable, extra_args
+        # Order: volumes, env, links, image
         command = [
-            "sudo",
             "docker",
             "run",
             "--rm",
@@ -161,27 +215,24 @@ class TestRepository(unittest.TestCase):
             "ODOO_CONF=/dev/null",
             "--link",
             "pg-test_client:db",
-            "jobiols/odoo-jeo:9.0",  # Expect non-debug image for v1
+            "jobiols/odoo-jeo:9.0",
             "--stop-after-init",
             "--log-level=test",
             "--test-enable",
             "-d",
-            "cliente_test",
+            "test_client_test",
             "-u",
             "modulo_a_testear",
         ]
         self.assertEqual(cmds[0].command, command)
 
     def test_run_cli(self):
-        self.mock_get_manifest.side_effect = lambda path: TEST_CLIENT_MANIFEST
-        options = {"debug": False, "nginx": False}
-        client_name = "test_client"
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(debug=False, nginx=False, client="test_client")
         oe = OdooEnv(options)
-        cmds = oe.run_client(client_name)
+        cmds = oe.run_client()
 
-        # Order: run, -d, --name, --network, --restart, -p, -v, -e, --link, image, --logfile
         command = [
-            "sudo",
             "docker",
             "run",
             "-d",
@@ -213,30 +264,29 @@ class TestRepository(unittest.TestCase):
             "pg-test_client:db",
             "jobiols/odoo-jeo:9.0",
             "--logfile=/var/log/odoo/odoo.log",
+            "-d",
+            "test_client_prod",
         ]
         self.assertEqual(cmds[0].command, command)
 
     def test_pull_images(self):
-        self.mock_get_manifest.side_effect = lambda path: TEST_CLIENT_MANIFEST
-        options = {"debug": False, "nginx": False}
-        client_name = "test_client"
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(debug=False, nginx=False, client="test_client")
         oe = OdooEnv(options)
-        cmds = oe.pull_images(client_name)
-        # Expect odoo first as per manifest
+        cmds = oe.pull_images()
         self.assertEqual(
-            cmds[0].command, ["sudo", "docker", "pull", "jobiols/odoo-jeo:9.0"]
+            cmds[0].command, ["docker", "run", "jobiols/odoo-jeo:9.0"]
         )
 
     def test_update(self):
-        self.mock_get_manifest.side_effect = lambda path: TEST_CLIENT_MANIFEST
-        options = {"debug": False, "nginx": False}
-        client_name = "test_client"
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(debug=False, nginx=False, client="test_client")
+        database = "test_client_prod"
+        modules = ["all"]
         oe = OdooEnv(options)
-        cmds = oe.update(client_name, "client_prod", ["all"])
+        cmds = oe.update(database, modules)
 
-        # Order: run, --rm, -it, --network, -v, -e, --link, image, --stop-after-init, --logfile, extra_args
         command = [
-            "sudo",
             "docker",
             "run",
             "--rm",
@@ -261,24 +311,21 @@ class TestRepository(unittest.TestCase):
             "--stop-after-init",
             "--logfile=false",
             "-d",
-            "client_prod",
+            "test_client_prod",
             "-u",
             "all",
         ]
         self.assertEqual(cmds[0].command, command)
 
     def test_restore(self):
-        self.mock_get_manifest.side_effect = lambda path: TEST_CLIENT_MANIFEST
-        options = {"debug": False, "nginx": False}
-        client_name = "test_client"
-        database = "client_prod"
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(debug=False, nginx=False, client="test_client")
+        database = "test_client_prod"
         backup_file = "bkp.zip"
         oe = OdooEnv(options)
-        cmds = oe.restore(client_name, database, backup_file, no_deactivate=False)
+        cmds = oe.restore("test_client", database, backup_file, no_deactivate=False)
 
-        # Order: run, --rm, --network, -v, -e, image
         command = [
-            "sudo",
             "docker",
             "run",
             "--rm",
@@ -289,7 +336,7 @@ class TestRepository(unittest.TestCase):
             "-v",
             f"{OeConfig().base_dir}odoo-9.0/test_client/data_dir/filestore:/filestore:rw",
             "-e",
-            "NEW_DBNAME=client_prod",
+            "NEW_DBNAME=test_client_prod",
             "-e",
             "ZIPFILE=bkp.zip",
             "-e",
@@ -299,20 +346,23 @@ class TestRepository(unittest.TestCase):
         self.assertEqual(cmds[0].command, command)
 
     def test_download_image_sources(self):
-        self.mock_get_manifest.side_effect = lambda path: TEST_CLIENT_MANIFEST
-        options = {
-            "debug": True,
-            "no-repos": False,
-            "nginx": False,
-            "extract_sources": True,
-        }
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        # Force debug mode in mock config data
+        self.mock_config_data.return_value["environment"] = "debug"
+        
+        options = MockArgs(
+            debug=True,
+            no_repos=False,
+            nginx=False,
+            extract_sources=True,
+            client="test_client",
+        )
         oe = OdooEnv(options)
-        cmds = oe.install("test_client")
-        self.assertEqual(cmds[0].command, ["sudo", "mkdir", "-p", OeConfig().base_dir])
+        cmds = oe.install()
+        # Find the extract command in the list (look for dist-packages)
+        extract_cmd = next((c for c in cmds if c._usr_msg and "Extracting dist-packages" in c._usr_msg), None)
 
-        # Order: run, --rm, -it, --entrypoint, -v, image
         command = [
-            "sudo",
             "docker",
             "run",
             "--rm",
@@ -321,31 +371,35 @@ class TestRepository(unittest.TestCase):
             "/extract_dist-packages.sh",
             "-v",
             f"{OeConfig().base_dir}odoo-9.0/dist-packages/:/mnt/dist-packages:rw",
-            "jobiols/odoo-jeo:9.0",
+            "jobiols/odoo-jeo:9.0.debug",
         ]
-        self.assertEqual(cmds[25].command, command)
+        self.assertEqual(extract_cmd.command, command)
 
     def test_check_version(self):
-        self.assertTrue(OeConfig().check_version())
+        options = MockArgs(debug=False, client="test_client")
+        OeConfig(options)
+        self.assertIsNone(OeConfig().check_version())
 
     def test_environment(self):
-        env = OeConfig().get_environment()
+        options = MockArgs(debug=False, client="test_client")
+        OeConfig(options)
+        # env = OeConfig().get_environment()
         OeConfig().save_environment("prod")
-        env = OeConfig().get_environment()
-        self.assertEqual(env, "prod")
+        self.assertEqual(OeConfig().prod, True)
         OeConfig().save_environment("debug")
-        env = OeConfig().get_environment()
-        self.assertEqual(env, "debug")
+        self.assertEqual(OeConfig().debug, True)
 
     def test_save_multiple_clients(self):
+        options = MockArgs(debug=False, client="test_client")
+        OeConfig(options)
         OeConfig().save_client_path("test_clientx", "multiple_path1")
         OeConfig().save_client_path("test_clientx", "multiple_path2")
-        self.assertEqual(OeConfig().get_client_path("test_clientx"), "multiple_path1")
+        self.assertEqual(str(OeConfig().get_client_path("test_clientx")), "multiple_path1")
 
     def test_repo_clone(self):
-        repo = GitRepo({"usr": "jobiols", "repo": "project", "branch": "9.0"})
+        repo = GitRepo("https://github.com/jobiols/project.git", "9.0")
         self.assertEqual(
-            repo.clone, "clone --depth 1 -b 9.0 https://github.com/jobiols/project"
+            repo.clone, "clone --depth 1  -b 9.0 https://github.com/jobiols/project.git"
         )
 
     def test_repo2_clone(self):

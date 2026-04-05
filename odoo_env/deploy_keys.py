@@ -77,7 +77,7 @@ def list_public_keys(name):
         with path_key.open("r", encoding="utf-8") as file:
             msg().inf(file.read())
     except Exception as ex:
-        msg().err(ex)
+        msg.err(ex)
 
 
 def deploy_keys(_oe, client_name):

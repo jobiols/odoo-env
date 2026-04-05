@@ -13,11 +13,12 @@ from odoo_env.repos import GitRepo
 class Client:
     """Esta clase representa a un cliente, con su manifiesto, sus imagenes y repositorios."""
 
-    def __init__(self, args):
+    def __init__(self, args, name=None):
         print(f"Inicializando Client ")
 
-        self._name = OeConfig().client
+        self._name = name or OeConfig().client
         self._args = args
+        self._parent = args
         # self._name = name
         # self._license = None
         self._images = []
@@ -176,11 +177,15 @@ class Client:
 
         return None, None
 
-    def get_manifest(self):
+    def get_manifest(self, path=None):
         """
         :param path: path base para buscar el cliente
         :return: manifiesto del cliente
         """
+        # Si no me pasan un path, busco en el directorio actual o base
+        if path is None:
+            path = Path.cwd()
+
         # traer el path al cliente de la configuracion
         client_path = OeConfig().get_client_path(self._name)
         # No esta en la configuración, verificar si me lo pasan como repositorio
@@ -190,7 +195,8 @@ class Client:
                 if manifest:
                     return manifest
 
-            manifest, _ = self.get_manifest_from_struct(client_path)
+        else:
+            manifest, _ = self.get_manifest_from_struct(Path(client_path))
             if manifest:
                 return manifest
 

@@ -22,7 +22,7 @@ def restore_database(cli):
 
 def create_backup_db(client):
     """Crear una base de datos vacia con datos de test"""
-    msg().err(f"Test database does not exist, create it manually {client.name}")
+    msg.err(f"Test database does not exist, create it manually {client.name}")
 
 
 def create_database(_oe, client_name):
@@ -32,11 +32,11 @@ def create_database(_oe, client_name):
     db_bkp_file = f"{client.server_backup_dir}test_bkp/test.zip"
 
     if _oe.force_create:
-        msg().inf("Forced database creation")
+        msg.inf("Forced database creation")
         create_backup_db(client)
 
     if not os.path.exists(db_bkp_file):
-        msg().inf("I can't find the backup creating database")
+        msg.inf("I can't find the backup creating database")
         create_backup_db(client)
 
     restore_database(client)

@@ -190,20 +190,20 @@ class OeConfig(metaclass=SingletonMeta):
                 info = json.loads(response.buffer.read().decode("utf-8"))
                 version = info["info"]["version"]
                 if version != __version__:
-                    msg().warn(
+                    msg.warn(
                         f"BE CAREFUL, you are using version {__version__} of odoo-env "
                         f"however version {version} is already available."
                     )
-                    msg().warn(
+                    msg.warn(
                         'You should update using "pipx upgrade odoo-env" or "pip '
                         'install --upgrade odoo-env" (old style).\n'
                     )
-                    msg().warn(
+                    msg.warn(
                         "Do it right now before chaos knocks your digital door. Dont risk it."
                     )
 
             except Exception:
-                msg().inf(
+                msg.inf(
                     "Oops! Looks like my cowboy hat is out of internet. "
                     "Did you forget to feed coins to the internet ranch, or did the Wi-Fi birds "
                     "fly away again?"

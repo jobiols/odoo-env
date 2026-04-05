@@ -9,7 +9,7 @@ from odoo_env.odoo_conf import OdooConf
 class Command:
     def __init__(
         self,
-        #        parent,
+        parent,
         command=None,
         usr_msg=None,
         args=None,
@@ -22,7 +22,7 @@ class Command:
         :param args: Argumentos para chequear, define si se ejecuta o no
         :return: El objeto Comando que se ejecutara luego
         """
-        #        self._parent = parent
+        self._parent = parent
         self._command = command
         self._usr_msg = usr_msg
         self._args = args

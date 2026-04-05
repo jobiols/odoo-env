@@ -248,7 +248,7 @@ def get_client():
     conf = OeConfig()
     client = conf.get_client()
     if not client:
-        msg().err("No client configured. Use -c <client>.")
+        msg.err("No client configured. Use -c <client>.")
     return client
 
 
@@ -257,15 +257,16 @@ def main():
 
     if args.version:
         # TODO crear un comando para esto
-        msg().inf(f"oe version {__version__}")
+        msg.inf(f"oe version {__version__}")
         sys.exit()
 
     conf = OeConfig(args)
     conf.persist_config()
     conf.check_version()
 
-    commands = OdooEnv(args).build_commands()
-    commands.execute()
+    oe = OdooEnv(args)
+    commands = oe.build_commands()
+    oe.execute(commands)
 
 
 if __name__ == "__main__":

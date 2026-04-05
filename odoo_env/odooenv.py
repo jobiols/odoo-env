@@ -6,10 +6,13 @@ from odoo_env.command import (
     WriteConfigFile,
 )
 from odoo_env.config import OeConfig
+from odoo_env.create_database import create_database
+from odoo_env.deploy_keys import deploy_keys
 from odoo_env.managers.backup_manager import BackupManager
 from odoo_env.managers.environment_manager import EnvironmentManager
 from odoo_env.managers.image_manager import ImageManager
 from odoo_env.messages import msg
+from odoo_env.options import get_param
 
 
 class OdooEnv:
@@ -24,7 +27,10 @@ class OdooEnv:
 
     def __init__(self, args):
         self._args = args
-        self._client = Client(args)
+        OeConfig(args)
+        # Seteamos el cliente inicial resolviendo el nombre desde los args
+        client_name = get_param(args, "client")
+        self._client = Client(args, name=client_name)
 
     def build_commands(self):
 
@@ -52,17 +58,20 @@ class OdooEnv:
             commands += self.stop_client()
 
         if self._args.update:
-            # TODO Si no esa definida la base traer el default pero est lo tiene que hacer config o Client
             database = get_param(self._args, "database")
+            if not database:
+                database = self.client.database_default_name
             # trajendo los modulos definidos en linea de comandos o todos si no hay ninguno
             modules = get_param(self._args, "module")
+            if not modules:
+                modules = ["all"]
             commands += self.update(database, modules)
 
         if self._args.deploy_keys:
             conf = OeConfig()
             if not conf.prod:
-                msg().err("Must be in prod mode in order to create deploy keys.")
-            deploy_keys(odoo_env)
+                msg.err("Must be in prod mode in order to create deploy keys.")
+            deploy_keys(self, self.client.name)
 
         if self._args.modules_to_test:
             commands += self.qa(self._args.modules_to_test[0])
@@ -82,9 +91,9 @@ class OdooEnv:
 
         if self._args.create_test_db:
             # TODO crear un comando para hacer esto en diferido
-            msg().inf("Creating test database with demo data.")
-            create_database(odoo_env)
-            msg().err("Not Implemented.")
+            msg.inf("Creating test database with demo data.")
+            create_database(self, self.client.name)
+            msg.err("Not Implemented.")
 
         return commands
 
@@ -96,10 +105,9 @@ class OdooEnv:
 
     def write_config(self):
         """Sobreescribe el odoo.conf config con los datos que vienen en el manifiesto"""
-        self._client = Client(self, OeConfig().get_client())
         ret = []
         cmd = WriteConfigFile(
-            self, args={"client": self._client}, usr_msg="Writing config file"
+            self, args={"client": self.client}, usr_msg="Writing config file"
         )
         ret.append(cmd)
         return ret
@@ -154,7 +162,6 @@ class OdooEnv:
 
     def backup_list(self, client_name):
         """Listar los archivos disponibles para restore"""
-        self._client = Client(self, client_name)
         return BackupManager(self, client_name).backup_list()
 
     def restore(
@@ -168,26 +175,23 @@ class OdooEnv:
         """Restaurar un backup desde el directorio backup_dir o desde el server de
         produccion
         """
-        self._client = Client(self, client_name)
         return BackupManager(self, client_name).restore(
             database, backup_file, no_deactivate, from_server
         )
 
     def do_extract_sources(self, client_name):
         """Extrae los fuentes de la imagen debug"""
-        self._client = Client(self, client_name)
         return ImageManager(self).extract_sources()
 
     def install(self):
         """Instalacion de cliente,"""
-        return EnvironmentManager().install()
+        return EnvironmentManager(self).install()
 
     def pull_images(self):
         """Forzar la bajada de las imagenes"""
         return ImageManager(self).pull_images()
 
     def stop_environment(self):
-        self._client = Client(self, OeConfig().get_client())
         return EnvironmentManager(self).stop_environment()
 
     def run_environment(self):
@@ -198,11 +202,10 @@ class OdooEnv:
         return EnvironmentManager(self).run_environment()
 
     def stop_client(self):
-        self._client = Client(self, OeConfig().get_client())
         return EnvironmentManager(self).stop_client()
 
     def server_help(self):
-        from self.services.docker_client import DockerClient
+        from odoo_env.services.docker_client import DockerClient
 
         dc = DockerClient()
         cmd_list = dc.get_run_command(
@@ -230,7 +233,7 @@ class OdooEnv:
         :param modules: parametro -m (es una lista)
         :return: lista con los comandos para correr
         """
-        database = self._client.database_default_name
+        database = f"{self._client.name}_test"
         return EnvironmentManager(self).qa(database, modules_to_test, client_test)
 
     @property
@@ -243,16 +246,16 @@ class OdooEnv:
 
     @property
     def verbose(self):
-        return self._verbose
+        return self._args.verbose
 
     @property
     def no_repos(self):
-        return self._no_repos
+        return self._args.no_repos
 
     @property
     def nginx(self):
-        return self._nginx
+        return self._args.nginx
 
     @property
     def force_create(self):
-        return self._force_create
+        return self._args.force_create

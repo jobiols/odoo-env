@@ -3,7 +3,6 @@ from odoo_env.command import (
     CreateNginxTemplate,
     MakedirCommand,
 )
-from odoo_env.odooenv import OdooEnv
 from odoo_env.config import OeConfig
 from odoo_env.constants import (
     IN_BACKUP_DIR,
@@ -24,9 +23,10 @@ from odoo_env.services.system import SystemClient
 
 
 
-class EnvironmentManager(OdooEnv):
-    def __init__(self):
-        #        self.parent = parent
+class EnvironmentManager:
+    def __init__(self, parent):
+        self.parent = parent
+        self._client = parent.client
         self.docker_client = DockerClient()
         self.system_client = SystemClient()
 
@@ -36,7 +36,7 @@ class EnvironmentManager(OdooEnv):
         cmd_list = self.system_client.make_mkdir_command()
 
         ret.append(
-            MakedirCommand(command=cmd_list, usr_msg=msg, args=OeConfig().base_dir)
+            MakedirCommand(self.parent, command=cmd_list, usr_msg=msg, args=OeConfig().base_dir)
         )
 
         # Client hierarchy
@@ -48,9 +48,9 @@ class EnvironmentManager(OdooEnv):
             "log",
             "sources",
         ]:
-            r_dir = f"{OeConfig().base_dir}{w_dir}"
+            r_dir = f"{self._client.base_dir}{w_dir}"
             cmd_list = self.system_client.make_mkdir_command(r_dir)
-            ret.append(MakedirCommand( command=cmd_list, args=r_dir))
+            ret.append(MakedirCommand(self.parent, command=cmd_list, args=r_dir))
 
         # Chown pone el owner como 1100 que es lo que hay en la imagen de odoo
         for w_dir in [
@@ -89,7 +89,7 @@ class EnvironmentManager(OdooEnv):
                     command=f"{r_dir}nginx.conf",
                     args=f"{r_dir}nginx.conf",
                     usr_msg="Generating nginx.conf template",
-                    client_name=self.parent._client.name,
+                    client_name=self._client.name,
                 )
             )
 
@@ -98,7 +98,7 @@ class EnvironmentManager(OdooEnv):
 
         if OeConfig().debug:
             # Aca se crean los compandos para hacer el exttract souces
-            ret.extend(self.parent.do_extract_sources(self.parent._client.name))
+            ret.extend(self.parent.do_extract_sources(self._client.name))
 
         return ret
 
@@ -149,7 +149,7 @@ class EnvironmentManager(OdooEnv):
         # Postgres
         image = self.parent._client.get_image("postgres")
         if not image:
-            msg().err(f"There is no {image.name} image on this proyect")
+            msg.err(f"There is no {image.name} image on this proyect")
 
         msg = f"Starting postgres image {image.version}"
 
@@ -375,7 +375,7 @@ class EnvironmentManager(OdooEnv):
 
     def qa(self, database, modules_to_test, client_test=False):
         if client_test:
-            self.client = client_test  # This is a bit hacky, adapting to existing logic
+            self._client = client_test  # This is a bit hacky, adapting to existing logic
 
         ret = []
         volumes = self._get_normal_mountings()
@@ -484,15 +484,15 @@ class EnvironmentManager(OdooEnv):
     def _run_nginx(self):
         ret = []
         msg = "Starting nginx reverse proxy"
-        image = self.client.get_image("nginx")
+        image = self._client.get_image("nginx")
         if not image:
-            msg().err("There is no nginx image on this proyect")
+            msg.err("There is no nginx image on this proyect")
             return ret
 
-        nginx_dir = self.client.nginx_dir
+        nginx_dir = self._client.nginx_dir
         volumes = {
             f"{nginx_dir}conf": {"bind": "/etc/nginx/conf.d", "mode": "ro"},
-            f"{self.client.base_dir}data_dir/letsencrypt": {"bind": "/etc/letsencrypt"},
+            f"{self._client.base_dir}data_dir/letsencrypt": {"bind": "/etc/letsencrypt"},
             f"{nginx_dir}log": {"bind": "/var/log/nginx/"},
         }
 

@@ -93,3 +93,9 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# Engram persistent memory (local DB — do NOT commit)
+.engram/*.db
+.engram/*.db-wal
+.engram/*.db-shm
+engram-export.json

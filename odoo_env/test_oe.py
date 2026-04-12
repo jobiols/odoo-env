@@ -435,7 +435,9 @@ class TestRepository(unittest.TestCase):
         mock_result = unittest.mock.MagicMock()
         mock_result.returncode = 0
 
-        with patch("odoo_env.command.subprocess.run", return_value=mock_result) as mock_run:
+        with patch(
+            "odoo_env.command.subprocess.run", return_value=mock_result
+        ) as mock_run:
             result = cmd.check_args()
 
         self.assertFalse(result)
@@ -462,7 +464,9 @@ class TestRepository(unittest.TestCase):
         mock_result = unittest.mock.MagicMock()
         mock_result.returncode = 1
 
-        with patch("odoo_env.command.subprocess.run", return_value=mock_result) as mock_run:
+        with patch(
+            "odoo_env.command.subprocess.run", return_value=mock_result
+        ) as mock_run:
             result = cmd.check_args()
 
         self.assertTrue(result)

@@ -61,7 +61,7 @@ class "CreateNginxTemplate" as odoo_env.command.CreateNginxTemplate {
   execute()
 }
 class "DockerClient" as odoo_env.services.docker_client.DockerClient {
-  get_network_create_command(network: str) -> str
+  get_network_create_command(network: str) -> list[str]
   get_rm_command(container_name: str, recursive: bool, force: bool, sudo: bool) -> list[str]
   get_run_command(image: str, cmd: str | list[str] | None, detach: bool, remove: bool, interactive: bool, name: str | None, ports: dict[int, int] | None, volumes: dict[str, dict[str, str]] | None, env: dict[str, str] | None, links: dict[str, str] | None, network: str | None, restart: str | None, user: str | None, entrypoint: str | None, workdir: str | None, stop_after_init: bool, logfile: str | None, log_level: str | None, test_enable: bool, extra_args: list[str] | None, database: str | None, network_alias: str | None) -> list[str]
   get_stop_command(container_name: str) -> list[str]
@@ -71,6 +71,9 @@ class "DockerImage" as odoo_env.images.DockerImage {
   numeric_ver
   short_name
   version
+}
+class "EnsureNetworkCommand" as odoo_env.command.EnsureNetworkCommand {
+  check_args() -> bool
 }
 class "EnvironmentManager" as odoo_env.managers.environment_manager.EnvironmentManager {
   docker_client
@@ -202,6 +205,8 @@ class "TestRepository" as odoo_env.test_oe.TestRepository {
   test_check_version()
   test_cmd()
   test_download_image_sources()
+  test_ensure_network_runs_when_absent()
+  test_ensure_network_skips_when_exists()
   test_environment()
   test_install()
   test_install2()
@@ -223,6 +228,7 @@ class "WriteConfigFile" as odoo_env.command.WriteConfigFile {
 odoo_env.command.CloneRepo --|> odoo_env.command.Command
 odoo_env.command.CreateGitignore --|> odoo_env.command.Command
 odoo_env.command.CreateNginxTemplate --|> odoo_env.command.Command
+odoo_env.command.EnsureNetworkCommand --|> odoo_env.command.Command
 odoo_env.command.ExtractSourcesCommand --|> odoo_env.command.Command
 odoo_env.command.MakedirCommand --|> odoo_env.command.Command
 odoo_env.command.MessageOnly --|> odoo_env.command.Command

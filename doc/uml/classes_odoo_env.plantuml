@@ -62,6 +62,7 @@ class "CreateNginxTemplate" as odoo_env.command.CreateNginxTemplate {
 }
 class "DockerClient" as odoo_env.services.docker_client.DockerClient {
   get_network_create_command(network: str) -> list[str]
+  get_pull_command(image: str) -> list[str]
   get_rm_command(container_name: str, recursive: bool, force: bool, sudo: bool) -> list[str]
   get_run_command(image: str, cmd: str | list[str] | None, detach: bool, remove: bool, interactive: bool, name: str | None, ports: dict[int, int] | None, volumes: dict[str, dict[str, str]] | None, env: dict[str, str] | None, links: dict[str, str] | None, network: str | None, restart: str | None, user: str | None, entrypoint: str | None, workdir: str | None, stop_after_init: bool, logfile: str | None, log_level: str | None, test_enable: bool, extra_args: list[str] | None, database: str | None, network_alias: str | None) -> list[str]
   get_stop_command(container_name: str) -> list[str]
@@ -115,7 +116,11 @@ class "MessageOnly" as odoo_env.command.MessageOnly {
   check_args()
   {abstract}execute()
 }
+class "MockArgs" as odoo_env.test_environment_manager.MockArgs {
+}
 class "MockArgs" as odoo_env.test_oe.MockArgs {
+}
+class "MockArgs" as odoo_env.test_image_manager.MockArgs {
 }
 class "Msg" as odoo_env.messages.Msg {
   done(msg)
@@ -191,6 +196,41 @@ class "SystemClient" as odoo_env.services.system.SystemClient {
   get_chown_command(path: str, user: str, group: str, recursive: bool, sudo: bool) -> list[str]
   get_rm_command(path: str, recursive: bool, force: bool, sudo: bool) -> list[str]
   make_mkdir_command(path: str, parents: bool) -> list[str]
+}
+class "TestDockerClient" as odoo_env.test_docker_client.TestDockerClient {
+  test_get_pull_command_does_not_contain_run()
+  test_get_pull_command_has_no_flags()
+  test_get_pull_command_returns_docker_pull_image()
+}
+class "TestEnvironmentManager" as odoo_env.test_environment_manager.TestEnvironmentManager {
+  config_data_patcher : _patch
+  maxDiff : NoneType
+  mock_config_data : AsyncMock, MagicMock, dict
+  mock_get_manifest : AsyncMock, MagicMock, dict
+  mock_save_config : AsyncMock, MagicMock, dict
+  patcher : _patch
+  save_config_patcher : _patch
+  setUp()
+  tearDown()
+  test_install_does_not_call_extract_sources_in_debug_mode()
+  test_install_does_not_call_extract_sources_in_non_debug_mode()
+  test_install_does_not_reference_dist_dirs()
+  test_install_never_calls_extract_sources()
+}
+class "TestImageManager" as odoo_env.test_image_manager.TestImageManager {
+  config_data_patcher : _patch
+  maxDiff : NoneType
+  mock_config_data : AsyncMock, MagicMock, dict
+  mock_get_manifest : AsyncMock, MagicMock, dict
+  mock_save_config : AsyncMock, MagicMock, dict
+  patcher : _patch
+  save_config_patcher : _patch
+  setUp()
+  tearDown()
+  test_pull_images_calls_extract_sources_in_debug_mode()
+  test_pull_images_command_starts_with_docker_pull()
+  test_pull_images_no_extract_sources_in_non_debug_mode()
+  test_pull_images_uses_pull_not_run()
 }
 class "TestRepository" as odoo_env.test_oe.TestRepository {
   config_data_patcher : _patch

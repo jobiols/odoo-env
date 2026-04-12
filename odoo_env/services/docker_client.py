@@ -127,6 +127,9 @@ class DockerClient:
     ) -> list[str]:
         return ["docker", "rm", container_name]
 
+    def get_pull_command(self, image: str) -> list[str]:
+        return ["docker", "pull", image]
+
     # ---------- API pública (SIN CAMBIOS) ----------
     # pylint: disable=too-many-arguments
     def get_run_command(

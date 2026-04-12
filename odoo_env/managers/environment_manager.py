@@ -98,10 +98,6 @@ class EnvironmentManager:
         # Repos
         ret.extend(self.parent._process_repos())
 
-        if OeConfig().debug:
-            # Aca se crean los compandos para hacer el exttract souces
-            ret.extend(self.parent.do_extract_sources(self._client.name))
-
         return ret
 
     def run_environment(self):

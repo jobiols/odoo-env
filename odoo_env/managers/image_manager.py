@@ -16,7 +16,7 @@ class ImageManager:
     def pull_images(self):
         ret = []
         for image in self.client._images:
-            cmd_list = self.docker_client.get_run_command(image.name)
+            cmd_list = self.docker_client.get_pull_command(image.name)
             cmd = Command(
                 self.parent,
                 command=cmd_list,

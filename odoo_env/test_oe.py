@@ -279,7 +279,7 @@ class TestRepository(unittest.TestCase):
         options = MockArgs(debug=False, nginx=False, client="test_client")
         oe = OdooEnv(options)
         cmds = oe.pull_images()
-        self.assertEqual(cmds[0].command, ["docker", "run", "jobiols/odoo-jeo:9.0"])
+        self.assertEqual(cmds[0].command, ["docker", "pull", "jobiols/odoo-jeo:9.0"])
 
     def test_update(self):
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
@@ -350,9 +350,7 @@ class TestRepository(unittest.TestCase):
 
     def test_download_image_sources(self):
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
-        # Force debug mode in mock config data
         self.mock_config_data.return_value["environment"] = "debug"
-
         options = MockArgs(
             debug=True,
             no_repos=False,
@@ -361,8 +359,7 @@ class TestRepository(unittest.TestCase):
             client="test_client",
         )
         oe = OdooEnv(options)
-        cmds = oe.install()
-        # Find the extract command in the list (look for dist-packages)
+        cmds = oe.pull_images()  # changed from oe.install()
         extract_cmd = next(
             (
                 c
@@ -371,8 +368,11 @@ class TestRepository(unittest.TestCase):
             ),
             None,
         )
-
-        command = [
+        self.assertIsNotNone(
+            extract_cmd,
+            "Expected Extracting dist-packages command in pull_images() debug mode",
+        )
+        expected = [
             "docker",
             "run",
             "--rm",
@@ -383,7 +383,7 @@ class TestRepository(unittest.TestCase):
             f"{OeConfig().base_dir}odoo-9.0/dist-packages/:/mnt/dist-packages:rw",
             "jobiols/odoo-jeo:9.0.debug",
         ]
-        self.assertEqual(extract_cmd.command, command)
+        self.assertEqual(extract_cmd.command, expected)
 
     def test_check_version(self):
         options = MockArgs(debug=False, client="test_client")

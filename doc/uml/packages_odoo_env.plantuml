@@ -46,6 +46,12 @@ package "odoo_env.services.system" as odoo_env.services.system {
 }
 package "odoo_env.singleton" as odoo_env.singleton {
 }
+package "odoo_env.test_docker_client" as odoo_env.test_docker_client {
+}
+package "odoo_env.test_environment_manager" as odoo_env.test_environment_manager {
+}
+package "odoo_env.test_image_manager" as odoo_env.test_image_manager {
+}
 package "odoo_env.test_oe" as odoo_env.test_oe {
 }
 odoo_env.client --> odoo_env.config
@@ -96,6 +102,13 @@ odoo_env.options --> odoo_env.messages
 odoo_env.repos --> odoo_env.config
 odoo_env.repos --> odoo_env.messages
 odoo_env.services.system --> odoo_env.config
+odoo_env.test_docker_client --> odoo_env.services.docker_client
+odoo_env.test_environment_manager --> odoo_env.config
+odoo_env.test_environment_manager --> odoo_env.odooenv
+odoo_env.test_environment_manager --> odoo_env.singleton
+odoo_env.test_image_manager --> odoo_env.config
+odoo_env.test_image_manager --> odoo_env.odooenv
+odoo_env.test_image_manager --> odoo_env.singleton
 odoo_env.test_oe --> odoo_env.command
 odoo_env.test_oe --> odoo_env.config
 odoo_env.test_oe --> odoo_env.constants

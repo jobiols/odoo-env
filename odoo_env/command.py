@@ -123,6 +123,36 @@ class MakedirCommand(Command):
         return not os.path.isdir(self._args)
 
 
+class EnsureNetworkCommand(Command):
+    """
+    Creates a Docker network only when it does not yet exist.
+
+    check_args() runs 'docker network inspect <network>' via subprocess.run
+    (no shell=True) to probe whether the network is present:
+      - returncode 0  → network exists → return False (skip creation)
+      - returncode ≠ 0 → network absent → return True  (proceed to create)
+
+    execute() is inherited from Command unchanged; it runs the
+    'docker network create <network>' command passed via command=.
+    """
+
+    def check_args(self) -> bool:
+        """
+        Returns False when the network already exists (skip creation),
+        True when it is absent (proceed to create).
+
+        Side effect: spawns 'docker network inspect self._args' with both
+        stdout and stderr discarded so no Docker output reaches the user.
+        Does NOT raise for any exit code from docker network inspect.
+        """
+        result = subprocess.run(
+            ["docker", "network", "inspect", self._args],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        return result.returncode != 0
+
+
 class RemovedirCommand(Command):
     def check_args(self):
         # si el directorio existe lo borramos

@@ -1,0 +1,63 @@
+# openspec/config.yaml
+schema: spec-driven
+
+context: |
+  Tech stack: Python 3.9–3.13, hatchling build, PyYAML, tornado
+  Architecture: CLI tool (oe/sd commands), Docker orchestration via subprocess
+  Entry points: odoo_env/oe.py, odoo_env/sd.py
+  Key patterns: Command pattern (command.py), Singleton (config/OeConfig), Managers (environment/backup/image)
+  Testing: unittest (stdlib), 15 tests in odoo_env/test_oe.py
+  Style: DeepSource Python analyzer, no local linter/formatter detected
+
+strict_tdd: true
+
+testing:
+  test_runner:
+    framework: unittest
+    command: "PYTHONPATH=/home/jobiols/tmp/odoo-env /home/jobiols/tmp/odoo-env/venv/bin/python -m unittest discover -s odoo_env -p 'test_*.py'"
+  layers:
+    unit:
+      available: true
+      tool: unittest
+    integration:
+      available: false
+      tool: ~
+    e2e:
+      available: false
+      tool: ~
+  coverage:
+    available: false
+    command: ~
+  quality_tools:
+    linter:
+      available: false
+      command: ~
+    type_checker:
+      available: false
+      command: ~
+    formatter:
+      available: false
+      command: ~
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Identify affected modules (command.py, managers/, services/)
+  specs:
+    - Use Given/When/Then format for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Document architecture decisions with rationale
+    - Prefer extending Command subclass pattern over modifying subprocess calls
+  tasks:
+    - Group tasks by phase (infrastructure, implementation, testing)
+    - Use hierarchical numbering (1.1, 1.2, etc.)
+    - Keep tasks small enough to complete in one session
+  apply:
+    - Follow existing Command subclass pattern in command.py
+    - Maintain check_args / execute separation
+  verify:
+    - Run: PYTHONPATH=. venv/bin/python -m unittest discover -s odoo_env -p "test_*.py"
+    - Compare implementation against every spec scenario
+  archive:
+    - Warn before merging destructive deltas (large removals)

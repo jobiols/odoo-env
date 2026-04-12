@@ -1,6 +1,7 @@
 from odoo_env.command import (
     Command,
     CreateNginxTemplate,
+    EnsureNetworkCommand,
     MakedirCommand,
 )
 from odoo_env.config import OeConfig
@@ -129,21 +130,13 @@ class EnvironmentManager:
 
         ret = []
 
-        # Network TODO
-        # Aqui hay que agregar un comando dedicado que en el chequeo verificque si la red existe
-        # def ensure_network(self, network: str) -> None:
-        #     inspect = subprocess.run(
-        #     ["docker", "network", "inspect", network],
-        #     stdout=subprocess.DEVNULL,
-        #     stderr=subprocess.DEVNULL,
-        # )
-
-        cmd_str = self.docker_client.get_network_create_command("odoo-net")
+        # Network — create only if absent
         ret.append(
-            Command(
+            EnsureNetworkCommand(
                 self.parent,
-                command=cmd_str,
+                command=self.docker_client.get_network_create_command("odoo-net"),
                 usr_msg="Starting odoo-net network if needed",
+                args="odoo-net",
             )
         )
 

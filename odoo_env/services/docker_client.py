@@ -180,5 +180,5 @@ class DockerClient:
         return command
 
     @staticmethod
-    def get_network_create_command(network: str) -> str:
+    def get_network_create_command(network: str) -> list[str]:
         return ["docker", "network", "create", network]

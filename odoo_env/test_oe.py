@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-from odoo_env.command import Command
+from odoo_env.command import Command, EnsureNetworkCommand
 from odoo_env.config import OeConfig
 from odoo_env.constants import (
     DBTOOLS_IMAGE,
@@ -417,3 +417,57 @@ class TestRepository(unittest.TestCase):
     def test_repo2_clone(self):
         repo = GitRepo("https://github.com/jobiols/project.git", "9.0")
         self.assertEqual(repo.dir_name, "project")
+
+    def test_ensure_network_skips_when_exists(self):
+        """SC-03: check_args() returns False when docker network inspect exits 0."""
+        import subprocess as _subprocess
+
+        mock_parent = unittest.mock.MagicMock()
+        mock_parent.verbose = False
+
+        cmd = EnsureNetworkCommand(
+            mock_parent,
+            command=["docker", "network", "create", "odoo-net"],
+            usr_msg="Starting odoo-net network if needed",
+            args="odoo-net",
+        )
+
+        mock_result = unittest.mock.MagicMock()
+        mock_result.returncode = 0
+
+        with patch("odoo_env.command.subprocess.run", return_value=mock_result) as mock_run:
+            result = cmd.check_args()
+
+        self.assertFalse(result)
+        mock_run.assert_called_once_with(
+            ["docker", "network", "inspect", "odoo-net"],
+            stdout=_subprocess.DEVNULL,
+            stderr=_subprocess.DEVNULL,
+        )
+
+    def test_ensure_network_runs_when_absent(self):
+        """SC-04: check_args() returns True when docker network inspect exits non-zero."""
+        import subprocess as _subprocess
+
+        mock_parent = unittest.mock.MagicMock()
+        mock_parent.verbose = False
+
+        cmd = EnsureNetworkCommand(
+            mock_parent,
+            command=["docker", "network", "create", "odoo-net"],
+            usr_msg="Starting odoo-net network if needed",
+            args="odoo-net",
+        )
+
+        mock_result = unittest.mock.MagicMock()
+        mock_result.returncode = 1
+
+        with patch("odoo_env.command.subprocess.run", return_value=mock_result) as mock_run:
+            result = cmd.check_args()
+
+        self.assertTrue(result)
+        mock_run.assert_called_once_with(
+            ["docker", "network", "inspect", "odoo-net"],
+            stdout=_subprocess.DEVNULL,
+            stderr=_subprocess.DEVNULL,
+        )

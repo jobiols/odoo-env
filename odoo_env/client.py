@@ -14,8 +14,6 @@ class Client:
     """Esta clase representa a un cliente, con su manifiesto, sus imagenes y repositorios."""
 
     def __init__(self, args, name=None):
-        print(f"Inicializando Client ")
-
         self._name = name or OeConfig().client
         self._args = args
         self._parent = args
@@ -25,7 +23,6 @@ class Client:
         self._repos = []
         # self._port = None
         # self._version = None
-        print(f"Inicializando Client {self.name}")
 
         # Caso especial para test
         if self._name.startswith(("test_", "test2")):

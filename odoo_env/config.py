@@ -18,9 +18,6 @@ class OeConfig(metaclass=SingletonMeta):
         # en esta variable guardo toda la data del archivo oe_config.yaml
         self._args = args
         self._config_data = self._get_config_data()
-        print(
-            f"Inicializando OeConfig: -------------------------------------------------- "
-        )
 
     def persist_config(self):
         """Salva en la configuracion los parametros que se declararon como persistentes"""

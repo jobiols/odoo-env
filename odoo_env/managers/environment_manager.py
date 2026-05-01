@@ -204,9 +204,19 @@ class EnvironmentManager:
             )
 
         if self.parent.debug:
-            cmd_list = self.docker_client.get_rm_command("wdb", force=True)
             ret.append(
-                Command(self.parent, command=cmd_list, usr_msg="Removing image wdb")
+                Command(
+                    self.parent,
+                    command=self.docker_client.get_stop_command("wdb"),
+                    usr_msg="Stopping image wdb please wait...",
+                )
+            )
+            ret.append(
+                Command(
+                    self.parent,
+                    command=self.docker_client.get_rm_command("wdb"),
+                    usr_msg="Removing image wdb",
+                )
             )
 
         return ret

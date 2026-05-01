@@ -594,3 +594,47 @@ class TestRepository(unittest.TestCase):
                 cmd.subprocess_call(["echo", "hello"])
 
         self.assertTrue(mock_msg.run.called)
+
+    def test_stop_environment_prod(self):
+        """oe -S modo prod: stop+rm para pg-xxx y aeroo, sin wdb."""
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(debug=False, client="test_client")
+        oe = OdooEnv(options)
+        cmds = oe.stop_environment()
+
+        commands = [c.command for c in cmds]
+        self.assertIn(["docker", "stop", "pg-test_client"], commands)
+        self.assertIn(["docker", "rm", "pg-test_client"], commands)
+        self.assertIn(["docker", "stop", "aeroo"], commands)
+        self.assertIn(["docker", "rm", "aeroo"], commands)
+        # stop debe ir antes que rm para cada contenedor
+        self.assertLess(
+            commands.index(["docker", "stop", "pg-test_client"]),
+            commands.index(["docker", "rm", "pg-test_client"]),
+        )
+        self.assertLess(
+            commands.index(["docker", "stop", "aeroo"]),
+            commands.index(["docker", "rm", "aeroo"]),
+        )
+        # sin wdb en prod
+        self.assertNotIn(["docker", "stop", "wdb"], commands)
+        self.assertNotIn(["docker", "rm", "wdb"], commands)
+
+    def test_stop_environment_debug(self):
+        """oe -S modo debug: stop+rm para pg-xxx, aeroo y wdb."""
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        self.mock_config_data.return_value["environment"] = "debug"
+        options = MockArgs(debug=True, client="test_client")
+        oe = OdooEnv(options)
+        cmds = oe.stop_environment()
+
+        commands = [c.command for c in cmds]
+        self.assertIn(["docker", "stop", "pg-test_client"], commands)
+        self.assertIn(["docker", "rm", "pg-test_client"], commands)
+        self.assertIn(["docker", "stop", "wdb"], commands)
+        self.assertIn(["docker", "rm", "wdb"], commands)
+        # stop wdb debe ir antes que rm wdb
+        self.assertLess(
+            commands.index(["docker", "stop", "wdb"]),
+            commands.index(["docker", "rm", "wdb"]),
+        )

@@ -339,11 +339,6 @@ class Client:
         return self.base_dir + "config/odoo.conf"
 
     @property
-    def nginx_dir(self):
-        """Ejemplo: /odoo_ar/nginx/"""
-        return f"{OeConfig().base_dir}nginx/"
-
-    @property
     def debug(self):
         return self._parent.debug
 

@@ -249,9 +249,5 @@ class OdooEnv:
         return self._args.no_repos
 
     @property
-    def nginx(self):
-        return self._args.nginx
-
-    @property
     def force_create(self):
         return self._args.force_create

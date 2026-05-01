@@ -1,6 +1,5 @@
 from odoo_env.command import (
     Command,
-    CreateNginxTemplate,
     EnsureNetworkCommand,
     MakedirCommand,
 )
@@ -76,24 +75,6 @@ class EnvironmentManager:
             r_dir = f"{self._client.base_dir}{w_dir}"
             cmd_list = self.system_client.get_chmod_command(r_dir, "o+w", sudo=True)
             ret.append(Command(self.parent, command=cmd_list))
-
-        # Nginx
-        if self.parent.nginx:
-            for w_dir in ["cert", "conf", "log"]:
-                r_dir = f"{OeConfig().base_dir}nginx/{w_dir}"
-                cmd_list = self.system_client.make_mkdir_command(r_dir)
-                ret.append(MakedirCommand(self.parent, command=cmd_list, args=r_dir))
-
-            r_dir = f"{OeConfig().base_dir}nginx/conf/"
-            ret.append(
-                CreateNginxTemplate(
-                    self.parent,
-                    command=f"{r_dir}nginx.conf",
-                    args=f"{r_dir}nginx.conf",
-                    usr_msg="Generating nginx.conf template",
-                    client_name=self._client.name,
-                )
-            )
 
         # Repos
         ret.extend(self.parent._process_repos())
@@ -254,7 +235,7 @@ class EnvironmentManager:
         links[f"pg-{self.parent._client.name}"] = "db"
 
         ports = {}
-        if not (self.parent.nginx or write_config):
+        if not write_config:
             ports[self.parent._client.port] = 8069
             ports[self.parent._client.longpolling_port] = 8072
 
@@ -311,10 +292,6 @@ class EnvironmentManager:
 
         ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))
 
-        # Nginx
-        if self.parent.nginx:
-            ret.extend(self._run_nginx())
-
         return ret
 
     def stop_client(self):
@@ -328,11 +305,6 @@ class EnvironmentManager:
             )
         )
 
-        if self.parent.nginx:
-            cmd_list = self.docker_client.get_rm_command("nginx", force=True)
-            ret.append(
-                Command(self.parent, command=cmd_list, usr_msg="Killing image nginx")
-            )
         return ret
 
     def update(self, database, modules):
@@ -473,31 +445,3 @@ class EnvironmentManager:
             env["WORKERS"] = "3"
         return env
 
-    def _run_nginx(self):
-        ret = []
-        msg = "Starting nginx reverse proxy"
-        image = self._client.get_image("nginx")
-        if not image:
-            msg.err("There is no nginx image on this project")
-            return ret
-
-        nginx_dir = self._client.nginx_dir
-        volumes = {
-            f"{nginx_dir}conf": {"bind": "/etc/nginx/conf.d", "mode": "ro"},
-            f"{self._client.base_dir}data_dir/letsencrypt": {
-                "bind": "/etc/letsencrypt"
-            },
-            f"{nginx_dir}log": {"bind": "/var/log/nginx/"},
-        }
-
-        cmd_list = self.docker_client.get_run_command(
-            image.name,
-            detach=True,
-            ports={80: 80, 443: 443},
-            name=image.short_name,
-            links={self.parent._client.name: "odoo"},
-            restart="always",
-            volumes=volumes,
-        )
-        ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))
-        return ret

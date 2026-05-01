@@ -184,18 +184,6 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         help="Does not clone or pull repos when doing -i (install)",
     )
 
-    # parser.add_argument(
-    #     "--nginx",
-    #     action="store_true",
-    #     help="Add nginx to installation: Used with -i creates nginx dir "
-    #     "with config file. "
-    #     "Used with -r starts an nginx container linked to odoo."
-    #     "Used with -s stops nginx container. "
-    #     "If you want to add certificates review nginx.conf file located "
-    #     "in /odoo_ar/nginx/conf NOTE: This option will be deprecated in the"
-    #     "near future",
-    # )
-
     parser.add_argument(
         "--backup-list",
         action="store_true",

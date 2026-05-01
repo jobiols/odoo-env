@@ -3,7 +3,6 @@ from unittest.mock import patch
 
 from odoo_env.config import OeConfig
 from odoo_env.odooenv import OdooEnv
-from odoo_env.singleton import SingletonMeta
 
 
 class MockArgs:
@@ -35,7 +34,6 @@ class MockArgs:
             "database": None,
             "module": None,
             "backup_file": None,
-            "nginx": False,
         }
         for k, v in defaults.items():
             if k not in self.__dict__:
@@ -48,7 +46,6 @@ TEST_CLIENT_MANIFEST = {
     "docker-images": [
         "odoo jobiols/odoo-jeo:9.0",
         "postgres postgres:9.5",
-        "nginx nginx:latest",
         "aeroo jobiols/aeroo-docs",
     ],
     "git-repos": [
@@ -62,8 +59,7 @@ TEST_CLIENT_MANIFEST = {
 class TestImageManager(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None
-        if OeConfig in SingletonMeta._instances:
-            del SingletonMeta._instances[OeConfig]
+        OeConfig.reset()
 
         self.config_data_patcher = patch("odoo_env.config.OeConfig._get_config_data")
         self.mock_config_data = self.config_data_patcher.start()
@@ -88,6 +84,7 @@ class TestImageManager(unittest.TestCase):
         self.patcher.stop()
         self.config_data_patcher.stop()
         self.save_config_patcher.stop()
+        OeConfig.reset()
 
     def test_pull_images_uses_pull_not_run(self):
         with (

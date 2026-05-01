@@ -183,23 +183,6 @@ class PullImage(Command):
         return True
 
 
-class CreateNginxTemplate(Command):
-    def check_args(self) -> bool:
-        # si el archivo existe no lo dejamos pasar
-        return not os.path.isfile(self._args)
-
-    def execute(self):
-        # leer el nginx.conf
-        with open("/usr/local/nginx.conf") as _f:
-            conf = _f.read()
-
-        # poner el nombre del cliente en el config
-        conf = conf.replace("$client$", self._client_name)
-
-        with open(self._command, "w") as _f:
-            _f.write(conf)
-
-
 class WriteConfigFile(Command):
     """Escribe el archivo odoo.conf segun los parametros del manifiesto"""
 

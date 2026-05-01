@@ -40,7 +40,6 @@ class MockArgs:
             "database": None,
             "module": None,
             "backup_file": None,
-            "nginx": False,
         }
         for k, v in defaults.items():
             if k not in self.__dict__:
@@ -53,7 +52,6 @@ TEST_CLIENT_MANIFEST = {
     "docker-images": [
         "odoo jobiols/odoo-jeo:9.0",
         "postgres postgres:9.5",
-        "nginx nginx:latest",
         "aeroo jobiols/aeroo-docs",
     ],
     "git-repos": [
@@ -72,7 +70,6 @@ TEST2_CLIENT_MANIFEST = {
         "odoo jobiols/odoo-jeo:9.0",
         "postgres postgres:11.1-alpine",
         "aeroo adhoc/aeroo",
-        "nginx nginx",
     ],
     "git-repos": [
         "https://github.com/jobiols/odoo-addons.git",
@@ -134,9 +131,7 @@ class TestRepository(unittest.TestCase):
 
     def test_install(self):
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
-        options = MockArgs(
-            debug=False, no_repos=False, nginx=True, client="test_client"
-        )
+        options = MockArgs(debug=False, no_repos=False, client="test_client")
         oe = OdooEnv(options)
         cmds = oe.install()
 
@@ -149,9 +144,7 @@ class TestRepository(unittest.TestCase):
 
     def test_install2(self):
         self.mock_get_manifest.side_effect = lambda path=None: TEST2_CLIENT_MANIFEST
-        options = MockArgs(
-            debug=False, no_repos=False, nginx=True, client="test2_client"
-        )
+        options = MockArgs(debug=False, no_repos=False, client="test2_client")
         oe = OdooEnv(options)
         cmds = oe.install()
 
@@ -167,7 +160,6 @@ class TestRepository(unittest.TestCase):
         options = MockArgs(
             debug=True,
             no_repos=False,
-            nginx=True,
             extract_sources=False,
             client="test2e_client",
         )
@@ -184,7 +176,7 @@ class TestRepository(unittest.TestCase):
     def test_cmd(self):
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
         options = MockArgs(
-            debug=False, no_repos=False, nginx=False, client="test_client"
+            debug=False, no_repos=False, client="test_client"
         )
         oe = OdooEnv(options)
         c = Command(oe, command="cmd", usr_msg="hola")
@@ -236,7 +228,7 @@ class TestRepository(unittest.TestCase):
 
     def test_run_cli(self):
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
-        options = MockArgs(debug=False, nginx=False, client="test_client")
+        options = MockArgs(debug=False, client="test_client")
         oe = OdooEnv(options)
         cmds = oe.run_client()
 
@@ -279,14 +271,14 @@ class TestRepository(unittest.TestCase):
 
     def test_pull_images(self):
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
-        options = MockArgs(debug=False, nginx=False, client="test_client")
+        options = MockArgs(debug=False, client="test_client")
         oe = OdooEnv(options)
         cmds = oe.pull_images()
         self.assertEqual(cmds[0].command, ["docker", "pull", "jobiols/odoo-jeo:9.0"])
 
     def test_update(self):
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
-        options = MockArgs(debug=False, nginx=False, client="test_client")
+        options = MockArgs(debug=False, client="test_client")
         database = "test_client_prod"
         modules = ["all"]
         oe = OdooEnv(options)
@@ -325,7 +317,7 @@ class TestRepository(unittest.TestCase):
 
     def test_restore(self):
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
-        options = MockArgs(debug=False, nginx=False, client="test_client")
+        options = MockArgs(debug=False, client="test_client")
         database = "test_client_prod"
         backup_file = "bkp.zip"
         oe = OdooEnv(options)
@@ -357,7 +349,6 @@ class TestRepository(unittest.TestCase):
         options = MockArgs(
             debug=True,
             no_repos=False,
-            nginx=False,
             extract_sources=True,
             client="test_client",
         )

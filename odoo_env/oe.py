@@ -181,9 +181,11 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     parser.add_argument(
         "--restore",
         action="store_true",
-        help="Restores a backup. it uses last backup and restores to default "
-        "database. You can change the backup file to restore with -f "
-        "option and change database name -d option",
+        help="Restore a backup into the client database. By default restores "
+        "the newest .zip file found in backup_dir into the default database "
+        "([client]_prod). Use -f to specify a particular backup file and "
+        "-d to target a different database. The restored database is "
+        "deactivated automatically unless --no-deactivate is passed.",
     )
 
     parser.add_argument(

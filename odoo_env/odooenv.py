@@ -73,7 +73,7 @@ class OdooEnv:
             deploy_keys(self, self.client.name)
 
         if self._args.modules_to_test:
-            commands += self.qa(self._args.modules_to_test[0])
+            commands += self.qa(self._args.modules_to_test)
 
         if self._args.server_help:
             commands += self.server_help()

@@ -620,6 +620,27 @@ class TestRepository(unittest.TestCase):
         self.assertNotIn(["docker", "stop", "wdb"], commands)
         self.assertNotIn(["docker", "rm", "wdb"], commands)
 
+    def test_qa_passes_full_module_name(self):
+        """oe -Q modulo_a_testear genera -u modulo_a_testear, no -u m.
+
+        El bug era modules_to_test[0] que rebanaba el string al primer carácter.
+        """
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(
+            debug=False, client="test_client", modules_to_test="modulo_a_testear"
+        )
+        oe = OdooEnv(options)
+        cmds = oe.build_commands()
+
+        all_commands = [c.command for c in cmds]
+        run_cmd = next(
+            (c for c in all_commands if "--test-enable" in c or "--stop-after-init" in c),
+            None,
+        )
+        self.assertIsNotNone(run_cmd, "No se generó comando de test")
+        u_index = run_cmd.index("-u")
+        self.assertEqual(run_cmd[u_index + 1], "modulo_a_testear")
+
     def test_stop_environment_debug(self):
         """oe -S modo debug: stop+rm para pg-xxx, aeroo y wdb."""
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST

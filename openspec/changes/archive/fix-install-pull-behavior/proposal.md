@@ -1,7 +1,7 @@
 # Proposal: fix-install-pull-behavior
 
-**Status**: draft  
-**Date**: 2026-04-12  
+**Status**: draft
+**Date**: 2026-04-12
 
 ---
 

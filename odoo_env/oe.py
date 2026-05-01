@@ -16,19 +16,9 @@ def parse_args():
 Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.com>
 """
     )
-    # parser.add_argument(
-    #     "-i",
-    #     "--install",
-    #     action="store_true",
-    #     help="On the first run, it creates the directory structure and clones all repositories "
-    #     "defined in the project. On subsequent runs, it updates those repositories. "
-    #     "Use this option together with --extract-sources to copy the Odoo image sources "
-    #     "to the host, which is required for working in debug mode.",
-    # )
-
     parser.add_argument(
         "-i",
-        "--install",
+        dest="install",
         nargs="?",
         const=True,
         metavar="REPO_URL",
@@ -41,69 +31,74 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
 
     parser.add_argument(
         "-R",
-        "--run-env",
+        dest="run_env",
         action="store_true",
         help="Run postgres, wdb and aeroo images (aeroo only for old odoo versions).",
     )
 
     parser.add_argument(
         "-p",
-        "--pull-images",
+        dest="pull_images",
         action="store_true",
         help="Pull Images. Download all images declared in client manifest.",
     )
 
     parser.add_argument(
         "-w",
-        "--write-config",
+        dest="write_config",
         action="store_true",
         help="Create / Overwrite config file.",
     )
 
     parser.add_argument(
         "-r",
-        "--run-cli",
+        dest="run_cli",
         action="store_true",
         help="Run odoo image",
     )
 
     parser.add_argument(
         "-S",
-        "--stop-env",
+        dest="stop_env",
         action="store_true",
         help="Stop postgres, wdb and aeroo images.",
     )
 
     parser.add_argument(
-        "-s", "--stop-cli", action="store_true", help="Stop odoo image."
+        "-s", dest="stop_cli", action="store_true", help="Stop odoo image."
     )
 
     parser.add_argument(
         "-u",
-        "--update",
+        dest="update",
         action="store_true",
         help="Updates modules in the database. With no parameters, all modules "
-        "are updated. Use -m modulename to update only the specified module; "
-        "you can also pass a list of modules separated by commas (without "
-        "spaces). Use -d databasename to update a database other than the "
-        "default database.",
+        "are updated. Use -m list-modules to update only the specified modules "
+        "Use -d databasename to update a database other than the default database.",
     )
 
     parser.add_argument(
-        "--deploy-keys",
+        "-H",
+        dest="server-help",
         action="store_true",
-        help="Available only in production mode. It creates a pair of deploy keys for each private "
-        "repository found in the manifest, lists the public keys for adding to the repositories.",
+        help="Show odoo server help, it shows the help from the odoo image "
+        "declared in the cliente manifest",
+    )
+
+    parser.add_argument(
+        "-V",
+        dest="version",
+        action="store_true",
+        help="Show version number and exit.",
     )
 
     parser.add_argument(
         "-Q",
-        action="store",
-        metavar="repo",
+        metavar="MODULES",
         dest="modules_to_test",
-        help="Run the tests. Required parameters: -m <module name>. "
-        "Optional parameters: -d <database>; if omitted, the default test database will be used, "
-        "which is [client]_test. NOTE: The database used for testing must be created with demo "
+        help="Run the tests. Required parameters: list of modules to test separate by commas (without spaces) e.g. -Q sale,stock."
+        "Optional parameters: -d <database>; if omitted, the default [project]_test database will be used, "
+        "NOTE: The database used for testing must be created with demo "
         "data and must have admin/admin credentials.",
     )
 
@@ -115,7 +110,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
 
     parser.add_argument(
         "-v",
-        "--verbose",
+        dest="verbose",
         action="store_true",
         help="Go verbose mode. Prints every command",
     )
@@ -125,6 +120,31 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         action="store",
         dest="database",
         help="Set default Database name. This option is persistent",
+    )
+
+    parser.add_argument(
+        "-m",
+        action="append",
+        dest="module",
+        help="Module to update. Used with -u (update) i.e. -m sale for "
+        "updating sale module -m all for updating all modules. NOTE: if "
+        "you perform -u without -m it asumes all modules",
+    )
+
+    parser.add_argument(
+        "-f",
+        action="append",
+        dest="backup_file",
+        help="Filename to restore. Used with --restore. To get the name of "
+        "this file issue a --backup-list command."
+        "If ommited the newest file will be restored",
+    )
+
+    parser.add_argument(
+        "--deploy-keys",
+        action="store_true",
+        help="Available only in production mode. It creates a pair of deploy keys for each private "
+        "repository found in the manifest, lists the public keys for adding to the repositories.",
     )
 
     parser.add_argument(
@@ -164,50 +184,17 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         help="Does not clone or pull repos when doing -i (install)",
     )
 
-    parser.add_argument(
-        "-m",
-        action="append",
-        dest="module",
-        help="Module to update. Used with -u (update) i.e. -m sale for "
-        "updating sale module -m all for updating all modules. NOTE: if "
-        "you perform -u without -m it asumes all modules",
-    )
-
-    parser.add_argument(
-        "-f",
-        action="append",
-        dest="backup_file",
-        help="Filename to restore. Used with --restore. To get the name of "
-        "this file issue a --backup-list command."
-        "If ommited the newest file will be restored",
-    )
-
-    parser.add_argument(
-        "-H",
-        "--server-help",
-        action="store_true",
-        help="Show odoo server help, it shows the help from the odoo image"
-        "declared in the cliente manifest",
-    )
-
-    parser.add_argument(
-        "-V",
-        "--version",
-        action="store_true",
-        help="Show version number and exit.",
-    )
-
-    parser.add_argument(
-        "--nginx",
-        action="store_true",
-        help="Add nginx to installation: Used with -i creates nginx dir "
-        "with config file. "
-        "Used with -r starts an nginx container linked to odoo."
-        "Used with -s stops nginx container. "
-        "If you want to add certificates review nginx.conf file located "
-        "in /odoo_ar/nginx/conf NOTE: This option will be deprecated in the"
-        "near future",
-    )
+    # parser.add_argument(
+    #     "--nginx",
+    #     action="store_true",
+    #     help="Add nginx to installation: Used with -i creates nginx dir "
+    #     "with config file. "
+    #     "Used with -r starts an nginx container linked to odoo."
+    #     "Used with -s stops nginx container. "
+    #     "If you want to add certificates review nginx.conf file located "
+    #     "in /odoo_ar/nginx/conf NOTE: This option will be deprecated in the"
+    #     "near future",
+    # )
 
     parser.add_argument(
         "--backup-list",

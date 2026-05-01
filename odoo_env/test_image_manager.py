@@ -2,8 +2,8 @@ import unittest
 from unittest.mock import patch
 
 from odoo_env.config import OeConfig
-from odoo_env.singleton import SingletonMeta
 from odoo_env.odooenv import OdooEnv
+from odoo_env.singleton import SingletonMeta
 
 
 class MockArgs:
@@ -90,12 +90,15 @@ class TestImageManager(unittest.TestCase):
         self.save_config_patcher.stop()
 
     def test_pull_images_uses_pull_not_run(self):
-        with patch(
-            "odoo_env.services.docker_client.DockerClient.get_pull_command",
-            return_value=["docker", "pull", "jobiols/odoo-jeo:9.0"],
-        ) as mock_pull, patch(
-            "odoo_env.services.docker_client.DockerClient.get_run_command"
-        ) as mock_run:
+        with (
+            patch(
+                "odoo_env.services.docker_client.DockerClient.get_pull_command",
+                return_value=["docker", "pull", "jobiols/odoo-jeo:9.0"],
+            ) as mock_pull,
+            patch(
+                "odoo_env.services.docker_client.DockerClient.get_run_command"
+            ) as mock_run,
+        ):
             options = MockArgs(debug=False, client="test_client")
             oe = OdooEnv(options)
             oe.pull_images()

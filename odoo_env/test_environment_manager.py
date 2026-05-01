@@ -2,8 +2,8 @@ import unittest
 from unittest.mock import patch
 
 from odoo_env.config import OeConfig
-from odoo_env.singleton import SingletonMeta
 from odoo_env.odooenv import OdooEnv
+from odoo_env.singleton import SingletonMeta
 
 
 class MockArgs:
@@ -91,14 +91,18 @@ class TestEnvironmentManager(unittest.TestCase):
 
     def test_install_never_calls_extract_sources(self):
         with patch("odoo_env.odooenv.OdooEnv.do_extract_sources") as mock_extract:
-            options = MockArgs(debug=True, no_repos=False, nginx=False, client="test_client")
+            options = MockArgs(
+                debug=True, no_repos=False, nginx=False, client="test_client"
+            )
             oe = OdooEnv(options)
             oe.install()
             mock_extract.assert_not_called()
 
     def test_install_does_not_call_extract_sources_in_debug_mode(self):
         self.mock_config_data.return_value["environment"] = "debug"
-        options = MockArgs(debug=True, no_repos=False, nginx=False, client="test_client")
+        options = MockArgs(
+            debug=True, no_repos=False, nginx=False, client="test_client"
+        )
         oe = OdooEnv(options)
         cmds = oe.install()
         for c in cmds:
@@ -109,7 +113,9 @@ class TestEnvironmentManager(unittest.TestCase):
             )
 
     def test_install_does_not_call_extract_sources_in_non_debug_mode(self):
-        options = MockArgs(debug=False, no_repos=False, nginx=False, client="test_client")
+        options = MockArgs(
+            debug=False, no_repos=False, nginx=False, client="test_client"
+        )
         oe = OdooEnv(options)
         cmds = oe.install()
         for c in cmds:
@@ -121,7 +127,9 @@ class TestEnvironmentManager(unittest.TestCase):
 
     def test_install_does_not_reference_dist_dirs(self):
         self.mock_config_data.return_value["environment"] = "debug"
-        options = MockArgs(debug=True, no_repos=False, nginx=False, client="test_client")
+        options = MockArgs(
+            debug=True, no_repos=False, nginx=False, client="test_client"
+        )
         oe = OdooEnv(options)
         cmds = oe.install()
         for c in cmds:

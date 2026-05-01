@@ -340,6 +340,8 @@ class TestRepository(unittest.TestCase):
             "ZIPFILE=bkp.zip",
             "-e",
             "DEACTIVATE=True",
+            "--link",
+            "pg-test_client:db",
             DBTOOLS_IMAGE,
         ]
         self.assertEqual(cmds[0].command, command)
@@ -619,6 +621,48 @@ class TestRepository(unittest.TestCase):
         # sin wdb en prod
         self.assertNotIn(["docker", "stop", "wdb"], commands)
         self.assertNotIn(["docker", "rm", "wdb"], commands)
+
+    def test_restore_links_postgres_container(self):
+        """oe --restore incluye --link pg-test_client:db para que dbtools resuelva 'db'."""
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(debug=False, client="test_client", restore=True)
+        oe = OdooEnv(options)
+        cmds = oe.build_commands()
+
+        restore_cmd = next(
+            (c for c in cmds if DBTOOLS_IMAGE in c.command),
+            None,
+        )
+        self.assertIsNotNone(restore_cmd, "No se generó comando de restore")
+        cmd = restore_cmd.command
+        self.assertIn("--link", cmd)
+        link_index = cmd.index("--link")
+        self.assertEqual(cmd[link_index + 1], "pg-test_client:db")
+
+    def test_restore_uses_client_name_not_database(self):
+        """oe --restore no confunde client_name con database.
+
+        El bug era que build_commands pasaba 'database' como primer arg a
+        restore(), pero la firma espera 'client_name' primero.
+        """
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(debug=False, client="test_client", restore=True)
+        oe = OdooEnv(options)
+        cmds = oe.build_commands()
+
+        restore_cmd = next(
+            (c for c in cmds if DBTOOLS_IMAGE in c.command),
+            None,
+        )
+        self.assertIsNotNone(restore_cmd, "No se generó comando de restore")
+        # El volumen de backup debe contener test_client, no test_client_prod
+        backup_volume = next(
+            (part for part in restore_cmd.command if "backup_dir" in part),
+            None,
+        )
+        self.assertIsNotNone(backup_volume)
+        self.assertIn("test_client", backup_volume)
+        self.assertNotIn("test_client_prod", backup_volume)
 
     def test_qa_passes_full_module_name(self):
         """oe -Q modulo_a_testear genera -u modulo_a_testear, no -u m.

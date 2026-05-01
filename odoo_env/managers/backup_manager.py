@@ -73,7 +73,12 @@ class BackupManager:
             env["DEACTIVATE"] = "True"
 
         cmd_list = self.docker_client.get_run_command(
-            DBTOOLS_IMAGE, remove=True, network="odoo-net", volumes=volumes, env=env
+            DBTOOLS_IMAGE,
+            remove=True,
+            network="odoo-net",
+            volumes=volumes,
+            env=env,
+            links={f"pg-{self.client.name}": "db"},
         )
 
         cmd = Command(self.parent, command=cmd_list, usr_msg=msg)

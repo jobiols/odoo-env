@@ -192,11 +192,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         help="Create database with demo data.",
     )
 
-    parser.add_argument(
-        "--force-create",
-        action="store_true",
-        help="Force database creation.",
-    )
+
     parser.add_argument(
         "--base-dir",
         action="append",

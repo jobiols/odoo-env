@@ -33,7 +33,6 @@ class MockArgs:
             "server_help": False,
             "restore": False,
             "create_test_db": False,
-            "force_create": False,
             "no_deactivate": False,
             "from_prod": False,
             "database": None,

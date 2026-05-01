@@ -31,10 +31,6 @@ def create_database(_oe, client_name):
     client = Client(_oe, client_name)
     db_bkp_file = f"{client.server_backup_dir}test_bkp/test.zip"
 
-    if _oe.force_create:
-        msg.inf("Forced database creation")
-        create_backup_db(client)
-
     if not os.path.exists(db_bkp_file):
         msg.inf("I can't find the backup creating database")
         create_backup_db(client)

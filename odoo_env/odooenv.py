@@ -234,6 +234,3 @@ class OdooEnv:
         return self._args.verbose
 
 
-    @property
-    def force_create(self):
-        return self._args.force_create

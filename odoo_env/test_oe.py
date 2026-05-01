@@ -5,6 +5,7 @@ from odoo_env.command import Command, EnsureNetworkCommand
 from odoo_env.config import OeConfig
 from odoo_env.constants import (
     DBTOOLS_IMAGE,
+    WDB_IMAGE_DEFAULT,
 )
 from odoo_env.odooenv import OdooEnv
 from odoo_env.repos import GitRepo
@@ -469,3 +470,127 @@ class TestRepository(unittest.TestCase):
             stdout=_subprocess.DEVNULL,
             stderr=_subprocess.DEVNULL,
         )
+
+    def test_server_help(self):
+        """oe -H genera docker run --rm con entrypoint odoo y --help."""
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(debug=False, client="test_client")
+        oe = OdooEnv(options)
+        cmds = oe.server_help()
+
+        expected = [
+            "docker", "run",
+            "--rm",
+            "--name", "help",
+            "--entrypoint", "odoo",
+            "jobiols/odoo-jeo:9.0",
+            "--help",
+        ]
+        self.assertEqual(len(cmds), 1)
+        self.assertEqual(cmds[0].command, expected)
+
+    def test_run_environment_prod(self):
+        """oe -R modo prod: EnsureNetwork + postgres (sin ports) + aeroo."""
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(debug=False, client="test_client")
+        oe = OdooEnv(options)
+        cmds = oe.run_environment()
+
+        psql_dir = f"{OeConfig().base_dir}odoo-9.0/test_client/postgresql/"
+
+        self.assertEqual(cmds[0].command, ["docker", "network", "create", "odoo-net"])
+
+        expected_postgres = [
+            "docker", "run", "-d",
+            "--name", "pg-test_client",
+            "--network", "odoo-net",
+            "--restart", "unless-stopped",
+            "-v", f"{psql_dir}:/var/lib/postgresql/data:rw",
+            "-e", "POSTGRES_USER=odoo",
+            "-e", "POSTGRES_PASSWORD=odoo",
+            "postgres:9.5",
+        ]
+        self.assertEqual(cmds[1].command, expected_postgres)
+
+        expected_aeroo = [
+            "docker", "run", "-d",
+            "--name", "aeroo",
+            "--restart", "always",
+            "jobiols/aeroo-docs",
+        ]
+        self.assertEqual(cmds[2].command, expected_aeroo)
+        self.assertEqual(len(cmds), 3)
+
+    def test_run_environment_debug(self):
+        """oe -R modo debug: EnsureNetwork + postgres (con port 5432) + aeroo + wdb."""
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        self.mock_config_data.return_value["environment"] = "debug"
+        options = MockArgs(debug=True, client="test_client")
+        oe = OdooEnv(options)
+        cmds = oe.run_environment()
+
+        psql_dir = f"{OeConfig().base_dir}odoo-9.0/test_client/postgresql/"
+
+        self.assertEqual(cmds[0].command, ["docker", "network", "create", "odoo-net"])
+
+        expected_postgres = [
+            "docker", "run", "-d",
+            "--name", "pg-test_client",
+            "--network", "odoo-net",
+            "--restart", "unless-stopped",
+            "-p", "5432:5432",
+            "-v", f"{psql_dir}:/var/lib/postgresql/data:rw",
+            "-e", "POSTGRES_USER=odoo",
+            "-e", "POSTGRES_PASSWORD=odoo",
+            "postgres:9.5",
+        ]
+        self.assertEqual(cmds[1].command, expected_postgres)
+
+        expected_aeroo = [
+            "docker", "run", "-d",
+            "--name", "aeroo",
+            "--restart", "always",
+            "jobiols/aeroo-docs",
+        ]
+        self.assertEqual(cmds[2].command, expected_aeroo)
+
+        expected_wdb = [
+            "docker", "run", "-d",
+            "--name", "wdb",
+            "--network", "odoo-net",
+            "--restart", "unless-stopped",
+            "-p", "1984:1984",
+            WDB_IMAGE_DEFAULT,
+        ]
+        self.assertEqual(cmds[3].command, expected_wdb)
+        self.assertEqual(len(cmds), 4)
+
+    def test_verbose_flag_true(self):
+        """OdooEnv.verbose returns True when -v is passed."""
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(debug=False, client="test_client", verbose=True)
+        oe = OdooEnv(options)
+        self.assertTrue(oe.verbose)
+
+    def test_verbose_flag_false(self):
+        """OdooEnv.verbose returns False when -v is not passed."""
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(debug=False, client="test_client", verbose=False)
+        oe = OdooEnv(options)
+        self.assertFalse(oe.verbose)
+
+    def test_verbose_prints_command(self):
+        """Command.subprocess_call calls msg.run when verbose=True."""
+        mock_parent = unittest.mock.MagicMock()
+        mock_parent.verbose = True
+
+        cmd = Command(mock_parent, command=["echo", "hello"])
+
+        mock_result = unittest.mock.MagicMock()
+        mock_result.returncode = 0
+
+        with patch("odoo_env.command.subprocess.run", return_value=mock_result):
+            with patch("odoo_env.command.msg") as mock_msg:
+                cmd.subprocess_call(["echo", "hello"])
+
+        self.assertTrue(mock_msg.run.called)

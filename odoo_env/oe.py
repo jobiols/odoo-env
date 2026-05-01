@@ -79,7 +79,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
 
     parser.add_argument(
         "-H",
-        dest="server-help",
+        dest="server_help",
         action="store_true",
         help="Show odoo server help, it shows the help from the odoo image "
         "declared in the cliente manifest",

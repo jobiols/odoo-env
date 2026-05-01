@@ -184,7 +184,9 @@ class OeConfig(metaclass=SingletonMeta):
             ) as response:
                 info = json.loads(response.read().decode("utf-8"))
             version = info["info"]["version"]
-            if version != __version__:
+            pypi_tuple = tuple(int(x) for x in version.split("."))
+            local_tuple = tuple(int(x) for x in __version__.split("."))
+            if pypi_tuple > local_tuple:
                 msg.warn(
                     f"BE CAREFUL, you are using version {__version__} of odoo-env "
                     f"however version {version} is already available."

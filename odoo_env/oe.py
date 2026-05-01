@@ -196,7 +196,9 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     parser.add_argument(
         "--base-dir",
         dest="base_dir",
-        help="Set default base-dir. This parameter is persistent.",
+        help="Set the root directory where all client environments are stored "
+        "(e.g. /odoo_ar/). Saved persistently in the config file; subsequent "
+        "commands will use this value as the default until changed.",
     )
 
     return parser.parse_args()

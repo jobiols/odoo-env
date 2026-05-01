@@ -8,7 +8,6 @@ from odoo_env.constants import (
 )
 from odoo_env.odooenv import OdooEnv
 from odoo_env.repos import GitRepo
-from odoo_env.singleton import SingletonMeta
 
 
 class MockArgs:
@@ -97,9 +96,7 @@ TEST2E_CLIENT_MANIFEST = {
 class TestRepository(unittest.TestCase):
     def setUp(self):
         self.maxDiff = None
-        # Reset Singleton for each test
-        if OeConfig in SingletonMeta._instances:
-            del SingletonMeta._instances[OeConfig]
+        OeConfig.reset()
 
         # Patch Config to avoid reading/writing real user config
         self.config_data_patcher = patch("odoo_env.config.OeConfig._get_config_data")
@@ -123,6 +120,12 @@ class TestRepository(unittest.TestCase):
         self.patcher = patch("odoo_env.client.Client.get_manifest")
         self.mock_get_manifest = self.patcher.start()
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+
+    def tearDown(self):
+        self.config_data_patcher.stop()
+        self.save_config_patcher.stop()
+        self.patcher.stop()
+        OeConfig.reset()
 
     def tearDown(self):
         self.patcher.stop()

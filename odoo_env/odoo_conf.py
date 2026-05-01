@@ -16,7 +16,7 @@ class OdooConf:
         """lee el odoo.conf del archivo y carga la configuración"""
         config = configparser.ConfigParser()
         config.read(self._filename)
-        self.config = config._sections
+        self.config = {s: dict(config[s]) for s in config.sections()}
 
     def write_config(self):
         """Escribe o sobreescribe el odoo.conf file"""

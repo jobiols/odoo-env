@@ -6,7 +6,6 @@ from odoo_env.command import (
     WriteConfigFile,
 )
 from odoo_env.config import OeConfig
-from odoo_env.create_database import create_database
 from odoo_env.deploy_keys import deploy_keys
 from odoo_env.managers.backup_manager import BackupManager
 from odoo_env.managers.environment_manager import EnvironmentManager
@@ -90,10 +89,7 @@ class OdooEnv:
             commands += self.restore(database, backup_file, no_deactivate, from_server)
 
         if self._args.create_test_db:
-            # TODO crear un comando para hacer esto en diferido
-            msg.inf("Creating test database with demo data.")
-            create_database(self, self.client.name)
-            msg.err("Not Implemented.")
+            msg.err("create-test-db is not yet implemented.")
 
         return commands
 

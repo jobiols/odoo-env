@@ -139,7 +139,7 @@ class EnvironmentManager:
         # Postgres
         image = self.parent._client.get_image("postgres")
         if not image:
-            msg.err(f"There is no {image.name} image on this proyect")
+            msg.err(f"There is no {image.name} image on this project")
 
         msg = f"Starting postgres image {image.version}"
 
@@ -478,7 +478,7 @@ class EnvironmentManager:
         msg = "Starting nginx reverse proxy"
         image = self._client.get_image("nginx")
         if not image:
-            msg.err("There is no nginx image on this proyect")
+            msg.err("There is no nginx image on this project")
             return ret
 
         nginx_dir = self._client.nginx_dir

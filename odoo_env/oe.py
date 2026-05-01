@@ -5,7 +5,7 @@ import sys
 
 from odoo_env.__init__ import __version__
 from odoo_env.config import OeConfig
-from odoo_env.messages import msg
+from odoo_env.messages import OeError, msg
 from odoo_env.odooenv import OdooEnv
 
 
@@ -247,13 +247,16 @@ def main():
         msg.inf(f"oe version {__version__}")
         sys.exit()
 
-    conf = OeConfig(args)
-    conf.persist_config()
-    conf.check_version()
+    try:
+        conf = OeConfig(args)
+        conf.persist_config()
+        conf.check_version()
 
-    oe = OdooEnv(args)
-    commands = oe.build_commands()
-    oe.execute(commands)
+        oe = OdooEnv(args)
+        commands = oe.build_commands()
+        oe.execute(commands)
+    except OeError:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

@@ -1,10 +1,11 @@
+import atexit
 import json
 import os
+import threading
+import urllib.request
 from datetime import datetime
 from pathlib import Path
 
-import tornado
-import tornado.httpclient
 import yaml
 
 from odoo_env.__init__ import __version__
@@ -128,7 +129,7 @@ class OeConfig(metaclass=SingletonMeta):
         return client_name
 
     def save_client(self, client):
-        if self._config_data["client"] == client:
+        if self._config_data.get("client") == client:
             return
 
         self._config_data["client"] = client
@@ -136,7 +137,7 @@ class OeConfig(metaclass=SingletonMeta):
 
     def save_environment(self, environment):
         """Salvar el ambiente"""
-        if self._config_data["environment"] == environment:
+        if self._config_data.get("environment") == environment:
             return
 
         self._config_data["environment"] = environment
@@ -146,7 +147,7 @@ class OeConfig(metaclass=SingletonMeta):
         """Salvar el base dir"""
         # Asegurar que termina con /
         value = os.path.join(value, "")
-        if self._config_data["base_dir"] == value:
+        if self._config_data.get("base_dir") == value:
             return
 
         self._config_data["base_dir"] = value
@@ -161,47 +162,39 @@ class OeConfig(metaclass=SingletonMeta):
 
         dt_today = datetime.today()
 
-        # veo las fechas, si no tiene fecha es que esta recien instalado
-        # me guardo la fecha y termino
         last_check = self._config_data.get("last_version_check")
         if last_check is None:
             self._config_data["last_version_check"] = dt_today.strftime("%Y-%m-%d")
             self._save_config_data()
+            return
 
-        # tiene fecha, la paso a datetime
         dt_last = datetime.strptime(last_check, "%Y-%m-%d")
 
-        # verifico la version cada 10 dias
         if abs((dt_today - dt_last).days) > 1:
-            # guardo la fecha del chequeo
             self._config_data["last_version_check"] = dt_today.strftime("%Y-%m-%d")
             self._save_config_data()
+            thread = threading.Thread(target=self._fetch_pypi_version, daemon=True)
+            thread.start()
+            atexit.register(thread.join, 5)
 
-            http = tornado.httpclient.HTTPClient()
-            try:
-                response = http.fetch(
-                    "https://pypi.python.org/pypi/odoo-env/json",
-                    connect_timeout=5,
-                    request_timeout=5,
+    def _fetch_pypi_version(self):
+        try:
+            with urllib.request.urlopen(
+                "https://pypi.python.org/pypi/odoo-env/json", timeout=5
+            ) as response:
+                info = json.loads(response.read().decode("utf-8"))
+            version = info["info"]["version"]
+            if version != __version__:
+                msg.warn(
+                    f"BE CAREFUL, you are using version {__version__} of odoo-env "
+                    f"however version {version} is already available."
                 )
-                info = json.loads(response.buffer.read().decode("utf-8"))
-                version = info["info"]["version"]
-                if version != __version__:
-                    msg.warn(
-                        f"BE CAREFUL, you are using version {__version__} of odoo-env "
-                        f"however version {version} is already available."
-                    )
-                    msg.warn(
-                        'You should update using "pipx upgrade odoo-env" or "pip '
-                        'install --upgrade odoo-env" (old style).\n'
-                    )
-                    msg.warn(
-                        "Do it right now before chaos knocks your digital door. Dont risk it."
-                    )
-
-            except Exception:
-                msg.inf(
-                    "Oops! Looks like my cowboy hat is out of internet. "
-                    "Did you forget to feed coins to the internet ranch, or did the Wi-Fi birds "
-                    "fly away again?"
+                msg.warn(
+                    'You should update using "pipx upgrade odoo-env" or "pip '
+                    'install --upgrade odoo-env" (old style).\n'
                 )
+                msg.warn(
+                    "Do it right now before chaos knocks your digital door. Dont risk it."
+                )
+        except Exception:
+            pass

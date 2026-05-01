@@ -91,5 +91,5 @@ class BackupManager:
 
         return (
             f"scp {self.client.prod_server}:{self.client.server_backup_dir}$({_file}) "
-            "{self.client.backup_dir}server_bkp.zip"
+            f"{self.client.backup_dir}server_bkp.zip"
         )

@@ -1,7 +1,7 @@
 import os
 
 from odoo_env.client import Client
-from odoo_env.command import Command, MessageOnly
+from odoo_env.command import Command
 from odoo_env.constants import DBTOOLS_IMAGE
 from odoo_env.services.docker_client import DockerClient
 
@@ -11,27 +11,6 @@ class BackupManager:
         self.parent = parent
         self.client = Client(parent._args, client_name)
         self.docker_client = DockerClient()
-
-    def backup_list(self):
-        ret = []
-        filenames = []
-        for _, _, files in os.walk(self.client.backup_dir):
-            for filedesc in files:
-                _, file_extension = os.path.splitext(filedesc)
-                if file_extension == ".zip":
-                    filenames.append(filedesc)
-
-        if len(filenames) > 0:
-            filenames.sort()
-            msg = f"List of available backups for client {self.parent._client.name}\n\n"
-            for filedesc in filenames:
-                msg += filedesc + "\n"
-        else:
-            msg = "There are no backups to restore"
-
-        cmd = MessageOnly(self.parent, command=False, usr_msg=msg)
-        ret.append(cmd)
-        return ret
 
     def restore(
         self, database=False, backup_file=False, no_deactivate=False, from_server=False

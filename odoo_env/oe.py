@@ -136,7 +136,6 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         action="append",
         dest="backup_file",
         help="Filename to restore. Used with --restore. To get the name of "
-        "this file issue a --backup-list command."
         "If ommited the newest file will be restored",
     )
 
@@ -182,12 +181,6 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         action="store_true",
         default=False,
         help="Does not clone or pull repos when doing -i (install)",
-    )
-
-    parser.add_argument(
-        "--backup-list",
-        action="store_true",
-        help="List all backup files available for restore",
     )
 
     parser.add_argument(

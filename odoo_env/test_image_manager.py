@@ -24,7 +24,6 @@ class MockArgs:
             "deploy_keys": False,
             "modules_to_test": None,
             "server_help": False,
-            "backup_list": False,
             "restore": False,
             "create_test_db": False,
             "force_create": False,

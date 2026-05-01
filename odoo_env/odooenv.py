@@ -78,9 +78,6 @@ class OdooEnv:
         if self._args.server_help:
             commands += self.server_help()
 
-        if self._args.backup_list:
-            commands += self.backup_list()
-
         if self._args.restore:
             database = get_param(self._args, "database")
             backup_file = get_param(self._args, "backup_file")
@@ -155,10 +152,6 @@ class OdooEnv:
             ret.append(cmd)
 
         return ret
-
-    def backup_list(self, client_name):
-        """Listar los archivos disponibles para restore"""
-        return BackupManager(self, client_name).backup_list()
 
     def restore(
         self,

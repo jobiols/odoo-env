@@ -9,55 +9,7 @@ from odoo_env.constants import (
 )
 from odoo_env.odooenv import OdooEnv
 from odoo_env.repos import GitRepo
-
-
-class MockArgs:
-    def __init__(self, **kwargs):
-        self.__dict__.update(kwargs)
-        # Add default values for all possible args used in code
-        defaults = {
-            "debug": False,
-            "prod": False,
-            "client": None,
-            "base_dir": None,
-            "install": False,
-            "run_env": False,
-            "pull_images": False,
-            "write_config": False,
-            "run_cli": False,
-            "stop_env": False,
-            "stop_cli": False,
-            "update": False,
-            "deploy_keys": False,
-            "modules_to_test": None,
-            "server_help": False,
-            "restore": False,
-            "create_test_db": False,
-            "no_deactivate": False,
-            "from_prod": False,
-            "database": None,
-            "module": None,
-            "backup_file": None,
-        }
-        for k, v in defaults.items():
-            if k not in self.__dict__:
-                setattr(self, k, v)
-
-
-TEST_CLIENT_MANIFEST = {
-    "name": "test_client",
-    "version": "9.0.1.0.0",
-    "docker-images": [
-        "odoo jobiols/odoo-jeo:9.0",
-        "postgres postgres:9.5",
-        "aeroo jobiols/aeroo-docs",
-    ],
-    "git-repos": [
-        "https://github.com/jobiols/cl-test-client.git",
-        "https://github.com/jobiols/odoo-addons.git",
-    ],
-    "env-ver": "2",
-}
+from odoo_env.test_helpers import TEST_CLIENT_MANIFEST, MockArgs, OdooEnvTestCase
 
 TEST2_CLIENT_MANIFEST = {
     "name": "test2_client",
@@ -88,44 +40,14 @@ TEST2E_CLIENT_MANIFEST = {
 }
 
 
-class TestRepository(unittest.TestCase):
+class TestRepository(OdooEnvTestCase):
     def setUp(self):
-        self.maxDiff = None
-        OeConfig.reset()
-
-        # Patch Config to avoid reading/writing real user config
-        self.config_data_patcher = patch("odoo_env.config.OeConfig._get_config_data")
-        self.mock_config_data = self.config_data_patcher.start()
-        self.mock_config_data.return_value = {
-            "clients": [
-                {"test_client": "/home/jobiols/tmp/odoo-env/odoo_env/data"},
-                {"test2_client": "/home/jobiols/tmp/odoo-env/odoo_env/data"},
-                {"test2e_client": "/home/jobiols/tmp/odoo-env/odoo_env/data"},
-            ],
-            "client": "test_client",
-            "environment": "prod",
-            "base_dir": "/odoo_ar/",
-            "last_version_check": "2026-04-05",
-        }
-
-        self.save_config_patcher = patch("odoo_env.config.OeConfig._save_config_data")
-        self.mock_save_config = self.save_config_patcher.start()
-
-        # Patch Manifest
-        self.patcher = patch("odoo_env.client.Client.get_manifest")
-        self.mock_get_manifest = self.patcher.start()
-        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
-
-    def tearDown(self):
-        self.config_data_patcher.stop()
-        self.save_config_patcher.stop()
-        self.patcher.stop()
-        OeConfig.reset()
-
-    def tearDown(self):
-        self.patcher.stop()
-        self.config_data_patcher.stop()
-        self.save_config_patcher.stop()
+        super().setUp()
+        self.mock_config_data.return_value["clients"] = [
+            {"test_client": "/home/jobiols/tmp/odoo-env/odoo_env/data"},
+            {"test2_client": "/home/jobiols/tmp/odoo-env/odoo_env/data"},
+            {"test2e_client": "/home/jobiols/tmp/odoo-env/odoo_env/data"},
+        ]
 
     def test_install(self):
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
@@ -474,10 +396,13 @@ class TestRepository(unittest.TestCase):
         cmds = oe.server_help()
 
         expected = [
-            "docker", "run",
+            "docker",
+            "run",
             "--rm",
-            "--name", "help",
-            "--entrypoint", "odoo",
+            "--name",
+            "help",
+            "--entrypoint",
+            "odoo",
             "jobiols/odoo-jeo:9.0",
             "--help",
         ]
@@ -496,21 +421,33 @@ class TestRepository(unittest.TestCase):
         self.assertEqual(cmds[0].command, ["docker", "network", "create", "odoo-net"])
 
         expected_postgres = [
-            "docker", "run", "-d",
-            "--name", "pg-test_client",
-            "--network", "odoo-net",
-            "--restart", "unless-stopped",
-            "-v", f"{psql_dir}:/var/lib/postgresql/data:rw",
-            "-e", "POSTGRES_USER=odoo",
-            "-e", "POSTGRES_PASSWORD=odoo",
+            "docker",
+            "run",
+            "-d",
+            "--name",
+            "pg-test_client",
+            "--network",
+            "odoo-net",
+            "--restart",
+            "unless-stopped",
+            "-v",
+            f"{psql_dir}:/var/lib/postgresql/data:rw",
+            "-e",
+            "POSTGRES_USER=odoo",
+            "-e",
+            "POSTGRES_PASSWORD=odoo",
             "postgres:9.5",
         ]
         self.assertEqual(cmds[1].command, expected_postgres)
 
         expected_aeroo = [
-            "docker", "run", "-d",
-            "--name", "aeroo",
-            "--restart", "always",
+            "docker",
+            "run",
+            "-d",
+            "--name",
+            "aeroo",
+            "--restart",
+            "always",
             "jobiols/aeroo-docs",
         ]
         self.assertEqual(cmds[2].command, expected_aeroo)
@@ -529,32 +466,51 @@ class TestRepository(unittest.TestCase):
         self.assertEqual(cmds[0].command, ["docker", "network", "create", "odoo-net"])
 
         expected_postgres = [
-            "docker", "run", "-d",
-            "--name", "pg-test_client",
-            "--network", "odoo-net",
-            "--restart", "unless-stopped",
-            "-p", "5432:5432",
-            "-v", f"{psql_dir}:/var/lib/postgresql/data:rw",
-            "-e", "POSTGRES_USER=odoo",
-            "-e", "POSTGRES_PASSWORD=odoo",
+            "docker",
+            "run",
+            "-d",
+            "--name",
+            "pg-test_client",
+            "--network",
+            "odoo-net",
+            "--restart",
+            "unless-stopped",
+            "-p",
+            "5432:5432",
+            "-v",
+            f"{psql_dir}:/var/lib/postgresql/data:rw",
+            "-e",
+            "POSTGRES_USER=odoo",
+            "-e",
+            "POSTGRES_PASSWORD=odoo",
             "postgres:9.5",
         ]
         self.assertEqual(cmds[1].command, expected_postgres)
 
         expected_aeroo = [
-            "docker", "run", "-d",
-            "--name", "aeroo",
-            "--restart", "always",
+            "docker",
+            "run",
+            "-d",
+            "--name",
+            "aeroo",
+            "--restart",
+            "always",
             "jobiols/aeroo-docs",
         ]
         self.assertEqual(cmds[2].command, expected_aeroo)
 
         expected_wdb = [
-            "docker", "run", "-d",
-            "--name", "wdb",
-            "--network", "odoo-net",
-            "--restart", "unless-stopped",
-            "-p", "1984:1984",
+            "docker",
+            "run",
+            "-d",
+            "--name",
+            "wdb",
+            "--network",
+            "odoo-net",
+            "--restart",
+            "unless-stopped",
+            "-p",
+            "1984:1984",
             WDB_IMAGE_DEFAULT,
         ]
         self.assertEqual(cmds[3].command, expected_wdb)
@@ -671,7 +627,11 @@ class TestRepository(unittest.TestCase):
 
         all_commands = [c.command for c in cmds]
         run_cmd = next(
-            (c for c in all_commands if "--test-enable" in c or "--stop-after-init" in c),
+            (
+                c
+                for c in all_commands
+                if "--test-enable" in c or "--stop-after-init" in c
+            ),
             None,
         )
         self.assertIsNotNone(run_cmd, "No se generó comando de test")

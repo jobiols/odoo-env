@@ -195,7 +195,6 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
 
     parser.add_argument(
         "--base-dir",
-        action="append",
         dest="base_dir",
         help="Set default base-dir. This parameter is persistent.",
     )

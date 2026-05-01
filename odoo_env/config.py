@@ -33,7 +33,7 @@ class OeConfig(metaclass=SingletonMeta):
             self.save_client(self.client)
 
         if self._args.base_dir:
-            self.save_base_dir(self.base_dir)
+            self.save_base_dir(self._args.base_dir)
 
     @property
     def client(self):

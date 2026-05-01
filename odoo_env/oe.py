@@ -176,12 +176,7 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "odoo deactivate -d database",
     )
 
-    parser.add_argument(
-        "--no-repos",
-        action="store_true",
-        default=False,
-        help="Does not clone or pull repos when doing -i (install)",
-    )
+
 
     parser.add_argument(
         "--restore",

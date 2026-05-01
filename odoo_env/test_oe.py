@@ -36,7 +36,6 @@ class MockArgs:
             "force_create": False,
             "no_deactivate": False,
             "from_prod": False,
-            "no_repos": False,
             "database": None,
             "module": None,
             "backup_file": None,
@@ -131,7 +130,7 @@ class TestRepository(unittest.TestCase):
 
     def test_install(self):
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
-        options = MockArgs(debug=False, no_repos=False, client="test_client")
+        options = MockArgs(debug=False, client="test_client")
         oe = OdooEnv(options)
         cmds = oe.install()
 
@@ -144,7 +143,7 @@ class TestRepository(unittest.TestCase):
 
     def test_install2(self):
         self.mock_get_manifest.side_effect = lambda path=None: TEST2_CLIENT_MANIFEST
-        options = MockArgs(debug=False, no_repos=False, client="test2_client")
+        options = MockArgs(debug=False, client="test2_client")
         oe = OdooEnv(options)
         cmds = oe.install()
 
@@ -159,7 +158,6 @@ class TestRepository(unittest.TestCase):
         self.mock_get_manifest.side_effect = lambda path=None: TEST2E_CLIENT_MANIFEST
         options = MockArgs(
             debug=True,
-            no_repos=False,
             extract_sources=False,
             client="test2e_client",
         )
@@ -175,9 +173,7 @@ class TestRepository(unittest.TestCase):
 
     def test_cmd(self):
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
-        options = MockArgs(
-            debug=False, no_repos=False, client="test_client"
-        )
+        options = MockArgs(debug=False, client="test_client")
         oe = OdooEnv(options)
         c = Command(oe, command="cmd", usr_msg="hola")
         self.assertEqual(c.command, "cmd")
@@ -350,7 +346,6 @@ class TestRepository(unittest.TestCase):
         self.mock_config_data.return_value["environment"] = "debug"
         options = MockArgs(
             debug=True,
-            no_repos=False,
             extract_sources=True,
             client="test_client",
         )

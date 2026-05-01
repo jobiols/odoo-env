@@ -29,7 +29,6 @@ class MockArgs:
             "force_create": False,
             "no_deactivate": False,
             "from_prod": False,
-            "no_repos": False,
             "database": None,
             "module": None,
             "backup_file": None,

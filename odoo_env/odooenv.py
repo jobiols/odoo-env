@@ -124,10 +124,6 @@ class OdooEnv:
         """Clone or update repos as needed"""
         ret = []
 
-        # do nothing if no-repos option is true
-        if self.no_repos:
-            return ret
-
         for repo in self.client.repos:
             ##############################################################
             # Clone repo if does not exist
@@ -237,9 +233,6 @@ class OdooEnv:
     def verbose(self):
         return self._args.verbose
 
-    @property
-    def no_repos(self):
-        return self._args.no_repos
 
     @property
     def force_create(self):

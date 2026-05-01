@@ -638,6 +638,14 @@ class TestRepository(OdooEnvTestCase):
         u_index = run_cmd.index("-u")
         self.assertEqual(run_cmd[u_index + 1], "modulo_a_testear")
 
+    def test_base_dir_does_not_require_client(self):
+        """oe --base-dir /x no falla si no hay cliente configurado."""
+        self.mock_config_data.return_value["client"] = None
+        options = MockArgs(base_dir="/nuevo/dir/")
+        conf = OeConfig(options)
+        conf.persist_config()
+        self.assertEqual(OeConfig().base_dir, "/nuevo/dir/")
+
     def test_base_dir_saved_as_string(self):
         """--base-dir /mi/dir guarda un string, no una lista."""
         options = MockArgs(base_dir="/mi/dir/")

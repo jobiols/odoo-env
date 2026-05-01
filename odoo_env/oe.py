@@ -213,6 +213,14 @@ def main():
         conf.persist_config()
         conf.check_version()
 
+        if args.base_dir and not any([
+            args.install, args.run_env, args.pull_images, args.write_config,
+            args.run_cli, args.stop_env, args.stop_cli, args.update,
+            args.deploy_keys, args.modules_to_test, args.server_help,
+            args.restore, args.create_test_db,
+        ]):
+            return
+
         oe = OdooEnv(args)
         commands = oe.build_commands()
         oe.execute(commands)

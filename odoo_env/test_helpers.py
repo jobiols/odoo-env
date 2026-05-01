@@ -37,10 +37,10 @@ class MockArgs:
 
 TEST_CLIENT_MANIFEST = {
     "name": "test_client",
-    "version": "9.0.1.0.0",
+    "version": "14.0.1.0.0",
     "docker-images": [
-        "odoo jobiols/odoo-jeo:9.0",
-        "postgres postgres:9.5",
+        "odoo jobiols/odoo-jeo:14.0",
+        "postgres postgres:13",
         "aeroo jobiols/aeroo-docs",
     ],
     "git-repos": [

@@ -13,12 +13,12 @@ from odoo_env.test_helpers import TEST_CLIENT_MANIFEST, MockArgs, OdooEnvTestCas
 
 TEST2_CLIENT_MANIFEST = {
     "name": "test2_client",
-    "version": "9.0.3.0.0",
+    "version": "14.0.3.0.0",
     "odoo-license": "CE",
     "env-ver": "2",
     "docker-images": [
-        "odoo jobiols/odoo-jeo:9.0",
-        "postgres postgres:11.1-alpine",
+        "odoo jobiols/odoo-jeo:14.0",
+        "postgres postgres:13",
         "aeroo adhoc/aeroo",
     ],
     "git-repos": [
@@ -29,12 +29,12 @@ TEST2_CLIENT_MANIFEST = {
 
 TEST2E_CLIENT_MANIFEST = {
     "name": "test2e_client",
-    "version": "9.0.3.0.0",
+    "version": "14.0.3.0.0",
     "odoo-license": "EE",
     "env-ver": "2",
     "docker-images": [
-        "odoo jobiols/odoo-jeo:9.0",
-        "postgres postgres:11.1-alpine",
+        "odoo jobiols/odoo-jeo:14.0",
+        "postgres postgres:13",
     ],
     "git-repos": ["https://github.com/jobiols/odoo-enterprise.git"],
 }
@@ -59,7 +59,7 @@ class TestRepository(OdooEnvTestCase):
         self.assertEqual(cmds[0].command, ["mkdir", "-p", OeConfig().base_dir])
 
         # Postgresql dir mkdir (index 1 in new structure)
-        psql_dir = f"{OeConfig().base_dir}odoo-9.0/test_client/postgresql"
+        psql_dir = f"{OeConfig().base_dir}odoo-14.0/test_client/postgresql"
         self.assertEqual(cmds[1].command, ["mkdir", "-p", psql_dir])
 
     def test_install2(self):
@@ -72,7 +72,7 @@ class TestRepository(OdooEnvTestCase):
         self.assertEqual(cmds[0].command, ["mkdir", "-p", OeConfig().base_dir])
 
         # Postgresql dir mkdir
-        psql_dir = f"{OeConfig().base_dir}odoo-9.0/test2_client/postgresql"
+        psql_dir = f"{OeConfig().base_dir}odoo-14.0/test2_client/postgresql"
         self.assertEqual(cmds[1].command, ["mkdir", "-p", psql_dir])
 
     def test_install2_enterprise(self):
@@ -89,7 +89,7 @@ class TestRepository(OdooEnvTestCase):
         self.assertEqual(cmds[0].command, ["mkdir", "-p", OeConfig().base_dir])
 
         # Postgresql dir mkdir
-        psql_dir = f"{OeConfig().base_dir}odoo-9.0e/test2e_client/postgresql"
+        psql_dir = f"{OeConfig().base_dir}odoo-14.0e/test2e_client/postgresql"
         self.assertEqual(cmds[1].command, ["mkdir", "-p", psql_dir])
 
     def test_cmd(self):
@@ -115,15 +115,15 @@ class TestRepository(OdooEnvTestCase):
             "--network",
             "odoo-net",
             "-v",
-            f"{OeConfig().base_dir}odoo-9.0/test_client/config:/opt/odoo/etc/:rw",
+            f"{OeConfig().base_dir}odoo-14.0/test_client/config:/opt/odoo/etc/:rw",
             "-v",
-            f"{OeConfig().base_dir}odoo-9.0/test_client/data_dir:/opt/odoo/data:rw",
+            f"{OeConfig().base_dir}odoo-14.0/test_client/data_dir:/opt/odoo/data:rw",
             "-v",
-            f"{OeConfig().base_dir}odoo-9.0/test_client/log:/var/log/odoo:rw",
+            f"{OeConfig().base_dir}odoo-14.0/test_client/log:/var/log/odoo:rw",
             "-v",
-            f"{OeConfig().base_dir}odoo-9.0/test_client/sources:/opt/odoo/custom-addons:rw",
+            f"{OeConfig().base_dir}odoo-14.0/test_client/sources:/opt/odoo/custom-addons:rw",
             "-v",
-            f"{OeConfig().base_dir}odoo-9.0/test_client/backup_dir:/var/odoo/backups/:rw",
+            f"{OeConfig().base_dir}odoo-14.0/test_client/backup_dir:/var/odoo/backups/:rw",
             "-e",
             "WDB_SOCKET_SERVER=wdb",
             "-e",
@@ -132,7 +132,7 @@ class TestRepository(OdooEnvTestCase):
             "ODOO_CONF=/dev/null",
             "--link",
             "pg-test_client:db",
-            "jobiols/odoo-jeo:9.0",
+            "jobiols/odoo-jeo:14.0",
             "--stop-after-init",
             "--log-level=test",
             "--test-enable",
@@ -164,22 +164,22 @@ class TestRepository(OdooEnvTestCase):
             "-p",
             "8072:8072",
             "-v",
-            f"{OeConfig().base_dir}odoo-9.0/test_client/config:/opt/odoo/etc/:rw",
+            f"{OeConfig().base_dir}odoo-14.0/test_client/config:/opt/odoo/etc/:rw",
             "-v",
-            f"{OeConfig().base_dir}odoo-9.0/test_client/data_dir:/opt/odoo/data:rw",
+            f"{OeConfig().base_dir}odoo-14.0/test_client/data_dir:/opt/odoo/data:rw",
             "-v",
-            f"{OeConfig().base_dir}odoo-9.0/test_client/log:/var/log/odoo:rw",
+            f"{OeConfig().base_dir}odoo-14.0/test_client/log:/var/log/odoo:rw",
             "-v",
-            f"{OeConfig().base_dir}odoo-9.0/test_client/sources:/opt/odoo/custom-addons:rw",
+            f"{OeConfig().base_dir}odoo-14.0/test_client/sources:/opt/odoo/custom-addons:rw",
             "-v",
-            f"{OeConfig().base_dir}odoo-9.0/test_client/backup_dir:/var/odoo/backups/:rw",
+            f"{OeConfig().base_dir}odoo-14.0/test_client/backup_dir:/var/odoo/backups/:rw",
             "-e",
             "ODOO_CONF=/dev/null",
             "--link",
             "aeroo:aeroo",
             "--link",
             "pg-test_client:db",
-            "jobiols/odoo-jeo:9.0",
+            "jobiols/odoo-jeo:14.0",
             "--logfile=/var/log/odoo/odoo.log",
             "-d",
             "test_client_prod",
@@ -191,7 +191,7 @@ class TestRepository(OdooEnvTestCase):
         options = MockArgs(debug=False, client="test_client")
         oe = OdooEnv(options)
         cmds = oe.pull_images()
-        self.assertEqual(cmds[0].command, ["docker", "pull", "jobiols/odoo-jeo:9.0"])
+        self.assertEqual(cmds[0].command, ["docker", "pull", "jobiols/odoo-jeo:14.0"])
 
     def test_update(self):
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
@@ -209,20 +209,20 @@ class TestRepository(OdooEnvTestCase):
             "--network",
             "odoo-net",
             "-v",
-            f"{OeConfig().base_dir}odoo-9.0/test_client/config:/opt/odoo/etc/:rw",
+            f"{OeConfig().base_dir}odoo-14.0/test_client/config:/opt/odoo/etc/:rw",
             "-v",
-            f"{OeConfig().base_dir}odoo-9.0/test_client/data_dir:/opt/odoo/data:rw",
+            f"{OeConfig().base_dir}odoo-14.0/test_client/data_dir:/opt/odoo/data:rw",
             "-v",
-            f"{OeConfig().base_dir}odoo-9.0/test_client/log:/var/log/odoo:rw",
+            f"{OeConfig().base_dir}odoo-14.0/test_client/log:/var/log/odoo:rw",
             "-v",
-            f"{OeConfig().base_dir}odoo-9.0/test_client/sources:/opt/odoo/custom-addons:rw",
+            f"{OeConfig().base_dir}odoo-14.0/test_client/sources:/opt/odoo/custom-addons:rw",
             "-v",
-            f"{OeConfig().base_dir}odoo-9.0/test_client/backup_dir:/var/odoo/backups/:rw",
+            f"{OeConfig().base_dir}odoo-14.0/test_client/backup_dir:/var/odoo/backups/:rw",
             "-e",
             "ODOO_CONF=/dev/null",
             "--link",
             "pg-test_client:db",
-            "jobiols/odoo-jeo:9.0",
+            "jobiols/odoo-jeo:14.0",
             "--stop-after-init",
             "--logfile=false",
             "-d",
@@ -247,9 +247,9 @@ class TestRepository(OdooEnvTestCase):
             "--network",
             "odoo-net",
             "-v",
-            f"{OeConfig().base_dir}odoo-9.0/test_client/backup_dir/:/backup:rw",
+            f"{OeConfig().base_dir}odoo-14.0/test_client/backup_dir/:/backup:rw",
             "-v",
-            f"{OeConfig().base_dir}odoo-9.0/test_client/data_dir/filestore:/filestore:rw",
+            f"{OeConfig().base_dir}odoo-14.0/test_client/data_dir/filestore:/filestore:rw",
             "-e",
             "NEW_DBNAME=test_client_prod",
             "-e",
@@ -292,8 +292,8 @@ class TestRepository(OdooEnvTestCase):
             "--entrypoint",
             "/extract_dist-packages.sh",
             "-v",
-            f"{OeConfig().base_dir}odoo-9.0/dist-packages/:/mnt/dist-packages:rw",
-            "jobiols/odoo-jeo:9.0.debug",
+            f"{OeConfig().base_dir}odoo-14.0/dist-packages/:/mnt/dist-packages:rw",
+            "jobiols/odoo-jeo:14.0.debug",
         ]
         self.assertEqual(extract_cmd.command, expected)
 
@@ -321,13 +321,13 @@ class TestRepository(OdooEnvTestCase):
         )
 
     def test_repo_clone(self):
-        repo = GitRepo("https://github.com/jobiols/project.git", "9.0")
+        repo = GitRepo("https://github.com/jobiols/project.git", "14.0")
         self.assertEqual(
-            repo.clone, "clone --depth 1  -b 9.0 https://github.com/jobiols/project.git"
+            repo.clone, "clone --depth 1  -b 14.0 https://github.com/jobiols/project.git"
         )
 
     def test_repo2_clone(self):
-        repo = GitRepo("https://github.com/jobiols/project.git", "9.0")
+        repo = GitRepo("https://github.com/jobiols/project.git", "14.0")
         self.assertEqual(repo.dir_name, "project")
 
     def test_ensure_network_skips_when_exists(self):
@@ -403,7 +403,7 @@ class TestRepository(OdooEnvTestCase):
             "help",
             "--entrypoint",
             "odoo",
-            "jobiols/odoo-jeo:9.0",
+            "jobiols/odoo-jeo:14.0",
             "--help",
         ]
         self.assertEqual(len(cmds), 1)
@@ -416,7 +416,7 @@ class TestRepository(OdooEnvTestCase):
         oe = OdooEnv(options)
         cmds = oe.run_environment()
 
-        psql_dir = f"{OeConfig().base_dir}odoo-9.0/test_client/postgresql/"
+        psql_dir = f"{OeConfig().base_dir}odoo-14.0/test_client/postgresql/"
 
         self.assertEqual(cmds[0].command, ["docker", "network", "create", "odoo-net"])
 
@@ -436,7 +436,7 @@ class TestRepository(OdooEnvTestCase):
             "POSTGRES_USER=odoo",
             "-e",
             "POSTGRES_PASSWORD=odoo",
-            "postgres:9.5",
+            "postgres:13",
         ]
         self.assertEqual(cmds[1].command, expected_postgres)
 
@@ -461,7 +461,7 @@ class TestRepository(OdooEnvTestCase):
         oe = OdooEnv(options)
         cmds = oe.run_environment()
 
-        psql_dir = f"{OeConfig().base_dir}odoo-9.0/test_client/postgresql/"
+        psql_dir = f"{OeConfig().base_dir}odoo-14.0/test_client/postgresql/"
 
         self.assertEqual(cmds[0].command, ["docker", "network", "create", "odoo-net"])
 
@@ -483,7 +483,7 @@ class TestRepository(OdooEnvTestCase):
             "POSTGRES_USER=odoo",
             "-e",
             "POSTGRES_PASSWORD=odoo",
-            "postgres:9.5",
+            "postgres:13",
         ]
         self.assertEqual(cmds[1].command, expected_postgres)
 

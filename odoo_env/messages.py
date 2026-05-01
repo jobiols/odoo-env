@@ -1,10 +1,10 @@
-import sys
-
 RED = "\033[1;31m"
 
 
 class OeError(Exception):
     pass
+
+
 GREEN = "\033[1;32m"
 YELLOW = "\033[1;33m"
 YELLOW_LIGHT = "\033[33m"

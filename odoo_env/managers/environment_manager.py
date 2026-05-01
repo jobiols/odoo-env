@@ -454,4 +454,3 @@ class EnvironmentManager:
         else:
             env["WORKERS"] = "3"
         return env
-

@@ -1,5 +1,3 @@
-import os
-
 from odoo_env.client import Client
 from odoo_env.command import Command
 from odoo_env.constants import DBTOOLS_IMAGE

@@ -4,7 +4,6 @@ class "BackupManager" as odoo_env.managers.backup_manager.BackupManager {
   client
   docker_client
   parent
-  backup_list()
   restore(database, backup_file, no_deactivate, from_server)
 }
 class "Client" as odoo_env.client.Client {
@@ -18,7 +17,6 @@ class "Client" as odoo_env.client.Client {
   images
   longpolling_port
   name
-  nginx_dir
   numeric_ver
   port
   prod_server
@@ -54,10 +52,6 @@ class "Command" as odoo_env.command.Command {
 }
 class "CreateGitignore" as odoo_env.command.CreateGitignore {
   check_args()
-  execute()
-}
-class "CreateNginxTemplate" as odoo_env.command.CreateNginxTemplate {
-  check_args() -> bool
   execute()
 }
 class "DockerClient" as odoo_env.services.docker_client.DockerClient {
@@ -116,11 +110,7 @@ class "MessageOnly" as odoo_env.command.MessageOnly {
   check_args()
   {abstract}execute()
 }
-class "MockArgs" as odoo_env.test_environment_manager.MockArgs {
-}
-class "MockArgs" as odoo_env.test_oe.MockArgs {
-}
-class "MockArgs" as odoo_env.test_image_manager.MockArgs {
+class "MockArgs" as odoo_env.test_helpers.MockArgs {
 }
 class "Msg" as odoo_env.messages.Msg {
   done(msg)
@@ -143,11 +133,7 @@ class "OdooConf" as odoo_env.odoo_conf.OdooConf {
 class "OdooEnv" as odoo_env.odooenv.OdooEnv {
   client
   debug
-  force_create
-  nginx
-  no_repos
   verbose
-  backup_list(client_name)
   build_commands()
   do_extract_sources(client_name)
   execute(commands)
@@ -163,6 +149,17 @@ class "OdooEnv" as odoo_env.odooenv.OdooEnv {
   stop_environment()
   update(database, modules)
   write_config()
+}
+class "OdooEnvTestCase" as odoo_env.test_helpers.OdooEnvTestCase {
+  config_data_patcher : _patch
+  maxDiff : NoneType
+  mock_config_data : AsyncMock, MagicMock, dict
+  mock_get_manifest : AsyncMock, MagicMock, dict
+  mock_save_config : AsyncMock, MagicMock, dict
+  patcher : _patch
+  save_config_patcher : _patch
+  setUp()
+  tearDown()
 }
 class "OeConfig" as odoo_env.config.OeConfig {
   base_dir
@@ -180,6 +177,8 @@ class "OeConfig" as odoo_env.config.OeConfig {
   save_client_path(client_name, path)
   save_environment(environment)
 }
+class "<color:red>OeError</color>" as odoo_env.messages.OeError {
+}
 class "PullImage" as odoo_env.command.PullImage {
   check_args()
 }
@@ -190,6 +189,7 @@ class "RemovedirCommand" as odoo_env.command.RemovedirCommand {
   check_args()
 }
 class "SingletonMeta" as odoo_env.singleton.SingletonMeta {
+  reset()
 }
 class "SystemClient" as odoo_env.services.system.SystemClient {
   get_chmod_command(path: str, mode: str, recursive: bool, sudo: bool) -> list[str]
@@ -203,45 +203,20 @@ class "TestDockerClient" as odoo_env.test_docker_client.TestDockerClient {
   test_get_pull_command_returns_docker_pull_image()
 }
 class "TestEnvironmentManager" as odoo_env.test_environment_manager.TestEnvironmentManager {
-  config_data_patcher : _patch
-  maxDiff : NoneType
-  mock_config_data : AsyncMock, MagicMock, dict
-  mock_get_manifest : AsyncMock, MagicMock, dict
-  mock_save_config : AsyncMock, MagicMock, dict
-  patcher : _patch
-  save_config_patcher : _patch
-  setUp()
-  tearDown()
   test_install_does_not_call_extract_sources_in_debug_mode()
   test_install_does_not_call_extract_sources_in_non_debug_mode()
   test_install_does_not_reference_dist_dirs()
   test_install_never_calls_extract_sources()
 }
 class "TestImageManager" as odoo_env.test_image_manager.TestImageManager {
-  config_data_patcher : _patch
-  maxDiff : NoneType
-  mock_config_data : AsyncMock, MagicMock, dict
-  mock_get_manifest : AsyncMock, MagicMock, dict
-  mock_save_config : AsyncMock, MagicMock, dict
-  patcher : _patch
-  save_config_patcher : _patch
-  setUp()
-  tearDown()
   test_pull_images_calls_extract_sources_in_debug_mode()
   test_pull_images_command_starts_with_docker_pull()
   test_pull_images_no_extract_sources_in_non_debug_mode()
   test_pull_images_uses_pull_not_run()
 }
 class "TestRepository" as odoo_env.test_oe.TestRepository {
-  config_data_patcher : _patch
-  maxDiff : NoneType
-  mock_config_data : AsyncMock, MagicMock, dict
-  mock_get_manifest : AsyncMock, MagicMock, dict
-  mock_save_config : AsyncMock, MagicMock, dict
-  patcher : _patch
-  save_config_patcher : _patch
   setUp()
-  tearDown()
+  test_base_dir_saved_as_string()
   test_check_version()
   test_cmd()
   test_download_image_sources()
@@ -253,12 +228,23 @@ class "TestRepository" as odoo_env.test_oe.TestRepository {
   test_install2_enterprise()
   test_pull_images()
   test_qa()
+  test_qa_passes_full_module_name()
   test_repo2_clone()
   test_repo_clone()
   test_restore()
+  test_restore_links_postgres_container()
+  test_restore_uses_client_name_not_database()
   test_run_cli()
+  test_run_environment_debug()
+  test_run_environment_prod()
   test_save_multiple_clients()
+  test_server_help()
+  test_stop_environment_debug()
+  test_stop_environment_prod()
   test_update()
+  test_verbose_flag_false()
+  test_verbose_flag_true()
+  test_verbose_prints_command()
 }
 class "WriteConfigFile" as odoo_env.command.WriteConfigFile {
   check_args()
@@ -267,7 +253,6 @@ class "WriteConfigFile" as odoo_env.command.WriteConfigFile {
 }
 odoo_env.command.CloneRepo --|> odoo_env.command.Command
 odoo_env.command.CreateGitignore --|> odoo_env.command.Command
-odoo_env.command.CreateNginxTemplate --|> odoo_env.command.Command
 odoo_env.command.EnsureNetworkCommand --|> odoo_env.command.Command
 odoo_env.command.ExtractSourcesCommand --|> odoo_env.command.Command
 odoo_env.command.MakedirCommand --|> odoo_env.command.Command
@@ -276,6 +261,9 @@ odoo_env.command.PullImage --|> odoo_env.command.Command
 odoo_env.command.PullRepo --|> odoo_env.command.Command
 odoo_env.command.RemovedirCommand --|> odoo_env.command.Command
 odoo_env.command.WriteConfigFile --|> odoo_env.command.Command
+odoo_env.test_environment_manager.TestEnvironmentManager --|> odoo_env.test_helpers.OdooEnvTestCase
+odoo_env.test_image_manager.TestImageManager --|> odoo_env.test_helpers.OdooEnvTestCase
+odoo_env.test_oe.TestRepository --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.client.Client --* odoo_env.managers.backup_manager.BackupManager : client
 odoo_env.client.Client --* odoo_env.managers.image_manager.ImageManager : client
 odoo_env.services.docker_client.DockerClient --* odoo_env.managers.backup_manager.BackupManager : docker_client

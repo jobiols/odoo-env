@@ -83,7 +83,9 @@ class OdooEnv:
             backup_file = get_param(self._args, "backup_file")
             no_deactivate = self._args.no_deactivate
             from_server = self._args.from_prod
-            commands += self.restore(self.client.name, database, backup_file, no_deactivate, from_server)
+            commands += self.restore(
+                self.client.name, database, backup_file, no_deactivate, from_server
+            )
 
         if self._args.create_test_db:
             msg.err("create-test-db is not yet implemented.")
@@ -232,5 +234,3 @@ class OdooEnv:
     @property
     def verbose(self):
         return self._args.verbose
-
-

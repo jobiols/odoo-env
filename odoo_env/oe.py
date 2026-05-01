@@ -176,8 +176,6 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "odoo deactivate -d database",
     )
 
-
-
     parser.add_argument(
         "--restore",
         action="store_true",
@@ -193,7 +191,6 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         action="store_true",
         help="Create database with demo data.",
     )
-
 
     parser.add_argument(
         "--base-dir",

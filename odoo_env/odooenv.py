@@ -82,9 +82,8 @@ class OdooEnv:
             database = get_param(self._args, "database")
             backup_file = get_param(self._args, "backup_file")
             no_deactivate = self._args.no_deactivate
-            from_server = self._args.from_prod
             commands += self.restore(
-                self.client.name, database, backup_file, no_deactivate, from_server
+                self.client.name, database, backup_file, no_deactivate
             )
 
         if self._args.create_test_db:
@@ -157,13 +156,10 @@ class OdooEnv:
         database=False,
         backup_file=False,
         no_deactivate=False,
-        from_server=False,
     ):
-        """Restaurar un backup desde el directorio backup_dir o desde el server de
-        produccion
-        """
+        """Restaurar un backup desde el directorio backup_dir"""
         return BackupManager(self, client_name).restore(
-            database, backup_file, no_deactivate, from_server
+            database, backup_file, no_deactivate
         )
 
     def do_extract_sources(self, client_name):

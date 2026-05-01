@@ -54,16 +54,6 @@ def get_backup_file(args):
     return False
 
 
-def get_prod_backup_file(args):
-    if args.backup_file:
-        if isinstance(args.backup_file, list):
-            return args.backup_file[0]
-        return args.backup_file
-
-    msg.inf("Restoring newest SERVER backup. Use -f to store specific one.")
-    return False
-
-
 def get_param(args, param):
     if param == "client":
         return get_client(args)
@@ -75,8 +65,6 @@ def get_param(args, param):
         return get_module(args)
 
     if param == "backup_file":
-        if args.from_prod:
-            return get_prod_backup_file(args)
         return get_backup_file(args)
 
     if param == "no-deactivate":

@@ -26,7 +26,6 @@ class MockArgs:
             "restore": False,
             "create_test_db": False,
             "no_deactivate": False,
-            "from_prod": False,
             "database": None,
             "module": None,
             "backup_file": None,

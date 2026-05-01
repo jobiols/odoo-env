@@ -166,17 +166,6 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     )
 
     parser.add_argument(
-        "--from-prod",
-        action="store_true",
-        help="Restore backup from production server. Use with --restore. "
-        "it needs the option 'prod_server': 'user@vps-alias' in the manifest"
-        "WARNING: This options may download an exact backup please deactivate"
-        "before use."
-        "You can deactivate a database running odoo with those parameters"
-        "odoo deactivate -d database",
-    )
-
-    parser.add_argument(
         "--restore",
         action="store_true",
         help="Restore a backup into the client database. By default restores "

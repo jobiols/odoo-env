@@ -1,7 +1,94 @@
-from unittest.mock import patch
+from unittest.mock import patch, PropertyMock
 
 from odoo_env.odooenv import OdooEnv
+from odoo_env.managers.environment_manager import EnvironmentManager
 from odoo_env.test_helpers import MockArgs, OdooEnvTestCase
+
+
+class TestDebugMountings(OdooEnvTestCase):
+
+    def _make_em(self, odoo_version: int):
+        options = MockArgs(debug=True, client="test_client")
+        oe = OdooEnv(options)
+        with patch.object(
+            type(oe._client), "numeric_ver", new_callable=PropertyMock, return_value=float(odoo_version)
+        ), patch.object(
+            type(oe._client), "version_dir", new_callable=PropertyMock, return_value=f"/odoo_ar/odoo-{odoo_version}.0/"
+        ):
+            em = EnvironmentManager(oe)
+            em._parent = oe
+            result = em._get_debug_mountings()
+        return result
+
+    def test_odoo14_dist_local_packages(self):
+        result = self._make_em(14)
+        self.assertEqual(
+            result["/odoo_ar/odoo-14.0/dist-local-packages"],
+            {"bind": "/usr/local/lib/python3.9/dist-packages/"},
+        )
+
+    def test_odoo14_dist_packages(self):
+        result = self._make_em(14)
+        self.assertEqual(
+            result["/odoo_ar/odoo-14.0/dist-packages"],
+            {"bind": "/usr/lib/python3/dist-packages"},
+        )
+
+    def test_odoo15_dist_local_packages(self):
+        result = self._make_em(15)
+        self.assertEqual(
+            result["/odoo_ar/odoo-15.0/dist-local-packages"],
+            {"bind": "/usr/local/lib/python3.9/dist-packages/"},
+        )
+
+    def test_odoo16_dist_local_packages(self):
+        result = self._make_em(16)
+        self.assertEqual(
+            result["/odoo_ar/odoo-16.0/dist-local-packages"],
+            {"bind": "/usr/local/lib/python3.9/dist-packages/"},
+        )
+
+    def test_odoo17_dist_local_packages(self):
+        result = self._make_em(17)
+        self.assertEqual(
+            result["/odoo_ar/odoo-17.0/dist-local-packages"],
+            {"bind": "/usr/local/lib/python3.10/dist-packages/"},
+        )
+
+    def test_odoo18_dist_local_packages(self):
+        result = self._make_em(18)
+        self.assertEqual(
+            result["/odoo_ar/odoo-18.0/dist-local-packages"],
+            {"bind": "/usr/local/lib/python3.12/dist-packages/"},
+        )
+
+    def test_odoo19_unchanged(self):
+        result = self._make_em(19)
+        self.assertEqual(
+            result,
+            {
+                "/odoo_ar/odoo-19.0/src": {"bind": "/odoo/odoo-src"},
+                "/odoo_ar/odoo-19.0/site-packages": {
+                    "bind": "/odoo/venv/lib/python3.10/site-packages"
+                },
+            },
+        )
+
+    def test_legacy_11_has_extra_addons(self):
+        result = self._make_em(11)
+        self.assertIn("/odoo_ar/odoo-11.0/extra-addons", result)
+
+    def test_legacy_12_has_extra_addons(self):
+        result = self._make_em(12)
+        self.assertIn("/odoo_ar/odoo-12.0/extra-addons", result)
+
+    def test_legacy_13_has_extra_addons(self):
+        result = self._make_em(13)
+        self.assertIn("/odoo_ar/odoo-13.0/extra-addons", result)
+
+    def test_unknown_version_raises_value_error(self):
+        with self.assertRaises(ValueError):
+            self._make_em(20)
 
 
 class TestEnvironmentManager(OdooEnvTestCase):

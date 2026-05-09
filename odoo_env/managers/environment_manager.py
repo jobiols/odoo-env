@@ -13,6 +13,7 @@ from odoo_env.constants import (
     IN_DIST_PACKAGES,
     IN_EXTRA_ADDONS,
     IN_LOG,
+    ODOO_PYTHON_MAP,
     WDB_IMAGE_16,
     WDB_IMAGE_DEFAULT,
     WDB_IMAGE_NEW,
@@ -391,55 +392,41 @@ class EnvironmentManager:
         }
 
     def _get_debug_mountings(self):
-        # Logic from _add_debug_mountings
         version = self.parent._client.numeric_ver
         cvd = self.parent._client.version_dir
 
-        if version in {14, 15, 16}:
+        py = ODOO_PYTHON_MAP.get(int(version))
+        if py is not None:
             return {
-                f"{cvd}dist-packages": {"bind": "/usr/lib/python3/dist-packages"},
+                f"{cvd}dist-packages": {"bind": IN_DIST_PACKAGES.format("3")},
                 f"{cvd}dist-local-packages": {
-                    "bind": "/usr/local/lib/python3.9/dist-packages/"
+                    "bind": IN_DIST_LOCAL_PACKAGES.format(py) + "/"
                 },
             }
-        if version in {17}:
-            return {
-                f"{cvd}dist-packages": {"bind": "/usr/lib/python3/dist-packages"},
-                f"{cvd}dist-local-packages": {
-                    "bind": "/usr/local/lib/python3.10/dist-packages/"
-                },
-            }
-        if version in {18}:
-            return {
-                f"{cvd}dist-packages": {"bind": "/usr/lib/python3/dist-packages"},
-                f"{cvd}dist-local-packages": {
-                    "bind": "/usr/local/lib/python3.12/dist-packages/"
-                },
-            }
-        if version in {19}:
+        elif version == 19:
             return {
                 f"{cvd}src": {"bind": "/odoo/odoo-src"},
                 f"{cvd}site-packages": {
                     "bind": "/odoo/venv/lib/python3.10/site-packages"
                 },
             }
-
-        # Older versions
-        iea = IN_EXTRA_ADDONS
-        idp = IN_DIST_PACKAGES.format("2")
-        idlp = IN_DIST_LOCAL_PACKAGES.format("2.7")
-        if version in {11, 12}:
-            idp = IN_DIST_PACKAGES.format("3")
-            idlp = IN_DIST_LOCAL_PACKAGES.format("3.5")
-        elif version in {13}:
-            idp = IN_DIST_PACKAGES.format("3")
-            idlp = IN_DIST_LOCAL_PACKAGES.format("3.7")
-
-        return {
-            f"{cvd}dist-packages": {"bind": idp},
-            f"{cvd}dist-local-packages": {"bind": idlp},
-            f"{cvd}extra-addons": {"bind": iea},
-        }
+        elif version < 14:
+            iea = IN_EXTRA_ADDONS
+            idp = IN_DIST_PACKAGES.format("2")
+            idlp = IN_DIST_LOCAL_PACKAGES.format("2.7")
+            if version in {11, 12}:
+                idp = IN_DIST_PACKAGES.format("3")
+                idlp = IN_DIST_LOCAL_PACKAGES.format("3.5")
+            elif version in {13}:
+                idp = IN_DIST_PACKAGES.format("3")
+                idlp = IN_DIST_LOCAL_PACKAGES.format("3.7")
+            return {
+                f"{cvd}dist-packages": {"bind": idp},
+                f"{cvd}dist-local-packages": {"bind": idlp},
+                f"{cvd}extra-addons": {"bind": iea},
+            }
+        else:
+            raise ValueError(f"Unsupported Odoo version: {version}")
 
     def _get_config_environment(self):
         # Logic from set_config_environment

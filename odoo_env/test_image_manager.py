@@ -50,3 +50,34 @@ class TestImageManager(OdooEnvTestCase):
                 c.command and c.command[0] == "mkdir",
                 f"Unexpected mkdir command in non-debug pull_images: {c.command}",
             )
+
+    def test_extract_sources_uses_cp_not_entrypoint(self):
+        self.mock_config_data.return_value["environment"] = "debug"
+        options = MockArgs(debug=True, client="test_client")
+        oe = OdooEnv(options)
+        cmds = oe.pull_images()
+        docker_run_cmds = [c.command for c in cmds if c.command[:2] == ["docker", "run"]]
+        for cmd in docker_run_cmds:
+            self.assertNotIn("--entrypoint", cmd)
+
+    def test_extract_sources_no_extract_sh_reference(self):
+        self.mock_config_data.return_value["environment"] = "debug"
+        options = MockArgs(debug=True, client="test_client")
+        oe = OdooEnv(options)
+        cmds = oe.pull_images()
+        for c in cmds:
+            cmd_str = " ".join(str(t) for t in c.command)
+            self.assertNotIn("extract_", cmd_str)
+
+    def test_extract_sources_uses_two_docker_run_rm_v_commands(self):
+        self.mock_config_data.return_value["environment"] = "debug"
+        options = MockArgs(debug=True, client="test_client")
+        oe = OdooEnv(options)
+        cmds = oe.pull_images()
+        cp_cmds = [
+            c.command for c in cmds
+            if len(c.command) >= 8
+            and c.command[:3] == ["docker", "run", "--rm"]
+            and "cp" in c.command
+        ]
+        self.assertEqual(len(cp_cmds), 2, f"Expected 2 docker cp commands, got: {cp_cmds}")

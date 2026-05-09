@@ -19,3 +19,30 @@ class TestDockerClient(unittest.TestCase):
         result = dc.get_pull_command("some-image:tag")
         self.assertEqual(len(result), 3)
         self.assertEqual(result, ["docker", "pull", "some-image:tag"])
+
+
+class TestGetExtractCommand(unittest.TestCase):
+
+    def setUp(self):
+        self.dc = DockerClient()
+
+    def test_returns_correct_command_shape(self):
+        result = self.dc.get_extract_command("img", "/src", "/host")
+        self.assertEqual(
+            result,
+            ["docker", "run", "--rm", "-v", "/host:/dest", "img", "cp", "-r", "/src/.", "/dest/"],
+        )
+
+    def test_no_entrypoint_flag(self):
+        result = self.dc.get_extract_command("img", "/src", "/host")
+        self.assertNotIn("--entrypoint", result)
+
+    def test_no_interactive_flag(self):
+        result = self.dc.get_extract_command("img", "/src", "/host")
+        self.assertNotIn("-it", result)
+
+    def test_image_token_before_cp(self):
+        result = self.dc.get_extract_command("img", "/src", "/host")
+        img_idx = result.index("img")
+        cp_idx = result.index("cp")
+        self.assertLess(img_idx, cp_idx)

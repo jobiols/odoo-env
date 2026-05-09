@@ -13,7 +13,7 @@ from odoo_env.constants import (
     IN_DIST_PACKAGES,
     IN_EXTRA_ADDONS,
     IN_LOG,
-    ODOO_PYTHON_MAP,
+    ODOO_VERSION_MAP,
     WDB_IMAGE_16,
     WDB_IMAGE_DEFAULT,
     WDB_IMAGE_NEW,
@@ -395,13 +395,11 @@ class EnvironmentManager:
         version = self.parent._client.numeric_ver
         cvd = self.parent._client.version_dir
 
-        py = ODOO_PYTHON_MAP.get(int(version))
-        if py is not None:
+        info = ODOO_VERSION_MAP.get(int(version))
+        if info is not None:
             return {
-                f"{cvd}dist-packages": {"bind": IN_DIST_PACKAGES.format("3")},
-                f"{cvd}dist-local-packages": {
-                    "bind": IN_DIST_LOCAL_PACKAGES.format(py) + "/"
-                },
+                f"{cvd}src": {"bind": info.src},
+                f"{cvd}lib": {"bind": info.lib + "/"},
             }
         elif version == 19:
             return {

@@ -271,31 +271,52 @@ class TestRepository(OdooEnvTestCase):
             client="test_client",
         )
         oe = OdooEnv(options)
-        cmds = oe.pull_images()  # changed from oe.install()
-        extract_cmd = next(
-            (
-                c
-                for c in cmds
-                if c._usr_msg and "Extracting dist-packages" in c._usr_msg
-            ),
+        cmds = oe.pull_images()
+
+        extract_src_cmd = next(
+            (c for c in cmds if c._usr_msg and "Extracting src" in c._usr_msg),
             None,
         )
         self.assertIsNotNone(
-            extract_cmd,
-            "Expected Extracting dist-packages command in pull_images() debug mode",
+            extract_src_cmd,
+            "Expected 'Extracting src' command in pull_images() debug mode",
         )
-        expected = [
+        base = OeConfig().base_dir
+        expected_src = [
             "docker",
             "run",
             "--rm",
-            "-it",
-            "--entrypoint",
-            "/extract_dist-packages.sh",
             "-v",
-            f"{OeConfig().base_dir}odoo-14.0/dist-packages/:/mnt/dist-packages:rw",
+            f"{base}odoo-14.0/src:/dest",
             "jobiols/odoo-jeo:14.0.debug",
+            "cp",
+            "-r",
+            "/usr/lib/python3/dist-packages/odoo/.",
+            "/dest/",
         ]
-        self.assertEqual(extract_cmd.command, expected)
+        self.assertEqual(extract_src_cmd.command, expected_src)
+
+        extract_lib_cmd = next(
+            (c for c in cmds if c._usr_msg and "Extracting lib" in c._usr_msg),
+            None,
+        )
+        self.assertIsNotNone(
+            extract_lib_cmd,
+            "Expected 'Extracting lib' command in pull_images() debug mode",
+        )
+        expected_lib = [
+            "docker",
+            "run",
+            "--rm",
+            "-v",
+            f"{base}odoo-14.0/lib:/dest",
+            "jobiols/odoo-jeo:14.0.debug",
+            "cp",
+            "-r",
+            "/usr/local/lib/python3.9/dist-packages/.",
+            "/dest/",
+        ]
+        self.assertEqual(extract_lib_cmd.command, expected_lib)
 
     def test_check_version(self):
         options = MockArgs(debug=False, client="test_client")
@@ -672,3 +693,30 @@ class TestRepository(OdooEnvTestCase):
             commands.index(["docker", "stop", "wdb"]),
             commands.index(["docker", "rm", "wdb"]),
         )
+
+
+class TestGetPacks(OdooEnvTestCase):
+
+    def _make_oe_with_version(self, version: int):
+        from unittest.mock import PropertyMock
+        options = MockArgs(debug=True, client="test_client")
+        oe = OdooEnv(options)
+        with patch.object(
+            type(oe._client), "numeric_ver",
+            new_callable=PropertyMock,
+            return_value=float(version),
+        ):
+            result = oe.get_packs()
+        return result
+
+    def test_get_packs_v14_returns_src_lib(self):
+        result = self._make_oe_with_version(14)
+        self.assertEqual(result, ["src", "lib"])
+
+    def test_get_packs_v18_returns_src_lib(self):
+        result = self._make_oe_with_version(18)
+        self.assertEqual(result, ["src", "lib"])
+
+    def test_get_packs_v14_not_dist_packages(self):
+        result = self._make_oe_with_version(14)
+        self.assertNotEqual(result, ["dist-packages", "dist-local-packages"])

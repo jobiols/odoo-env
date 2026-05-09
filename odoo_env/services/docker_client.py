@@ -130,6 +130,14 @@ class DockerClient:
     def get_pull_command(self, image: str) -> list[str]:
         return ["docker", "pull", image]
 
+    def get_extract_command(self, image: str, src: str, host_dest: str) -> list[str]:
+        return [
+            "docker", "run", "--rm",
+            "-v", f"{host_dest}:/dest",
+            image,
+            "cp", "-r", f"{src}/.", "/dest/",
+        ]
+
     # ---------- API pública (SIN CAMBIOS) ----------
     # pylint: disable=too-many-arguments
     def get_run_command(

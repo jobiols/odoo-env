@@ -99,3 +99,6 @@ ENV/
 .engram/*.db-wal
 .engram/*.db-shm
 engram-export.json
+# Local Pi runtime state
+.atl/
+.pi/

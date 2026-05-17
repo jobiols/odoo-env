@@ -42,6 +42,22 @@ class ImageManager:
         image = self.client.get_image("odoo").name
         cvd = self.client.version_dir
 
+        # Cleanup legacy host dirs from pre-refactor layout (dist-packages,
+        # dist-local-packages). Uses force=True so it is a no-op on fresh
+        # installs and idempotent on already-migrated ones.
+        for legacy_dir in ("dist-packages", "dist-local-packages"):
+            r_dir = f"{cvd}{legacy_dir}"
+            cmd_list = self.system_client.get_rm_command(
+                r_dir, recursive=True, force=True
+            )
+            ret.append(
+                Command(
+                    self.parent,
+                    command=cmd_list,
+                    usr_msg=f"Removing legacy {r_dir}",
+                )
+            )
+
         for host_dir, _ in targets:
             r_dir = f"{cvd}{host_dir}"
             cmd_list = self.system_client.get_rm_command(r_dir, recursive=True)

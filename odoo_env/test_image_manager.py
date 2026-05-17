@@ -69,6 +69,48 @@ class TestImageManager(OdooEnvTestCase):
             cmd_str = " ".join(str(t) for t in c.command)
             self.assertNotIn("extract_", cmd_str)
 
+    def test_extract_sources_removes_legacy_dist_packages(self):
+        self.mock_config_data.return_value["environment"] = "debug"
+        options = MockArgs(debug=True, client="test_client")
+        oe = OdooEnv(options)
+        cmds = oe.pull_images()
+        rm_cmds = [" ".join(c.command) for c in cmds if "rm" in c.command]
+        self.assertTrue(
+            any("dist-packages" in s and "dist-local" not in s for s in rm_cmds),
+            f"Expected legacy dist-packages cleanup, got: {rm_cmds}",
+        )
+
+    def test_extract_sources_removes_legacy_dist_local_packages(self):
+        self.mock_config_data.return_value["environment"] = "debug"
+        options = MockArgs(debug=True, client="test_client")
+        oe = OdooEnv(options)
+        cmds = oe.pull_images()
+        rm_cmds = [" ".join(c.command) for c in cmds if "rm" in c.command]
+        self.assertTrue(
+            any("dist-local-packages" in s for s in rm_cmds),
+            f"Expected legacy dist-local-packages cleanup, got: {rm_cmds}",
+        )
+
+    def test_extract_sources_legacy_cleanup_uses_force(self):
+        self.mock_config_data.return_value["environment"] = "debug"
+        options = MockArgs(debug=True, client="test_client")
+        oe = OdooEnv(options)
+        cmds = oe.pull_images()
+        legacy_rm_cmds = [
+            c.command
+            for c in cmds
+            if "rm" in c.command
+            and any(
+                "dist-packages" in tok or "dist-local-packages" in tok
+                for tok in c.command
+            )
+        ]
+        self.assertEqual(
+            len(legacy_rm_cmds), 2, f"Expected 2 legacy rm cmds, got: {legacy_rm_cmds}"
+        )
+        for cmd in legacy_rm_cmds:
+            self.assertIn("-f", cmd, f"Legacy cleanup must use -f, got: {cmd}")
+
     def test_extract_sources_uses_two_docker_run_rm_v_commands(self):
         self.mock_config_data.return_value["environment"] = "debug"
         options = MockArgs(debug=True, client="test_client")

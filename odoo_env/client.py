@@ -133,13 +133,18 @@ class Client:
             self.config = manifest.get("config", [])
 
     def get_manifest_from_url(self) -> dict[str, object] | None:
+        url = self._args.install
+        if not (url.startswith("git@") or url.startswith("https://")):
+            msg.err(f"Invalid git URL '{url}'. Must start with 'git@' or 'https://'")
 
         with tempfile.TemporaryDirectory() as tmpdir:
             subprocess.run(
-                ["git", "clone", "--depth", "1", self._args.install, tmpdir], check=True
+                ["git", "clone", "--depth", "1", url, tmpdir], check=True
             )
 
-            manifest, _ = self.get_manifest_from_struct(Path(tmpdir))
+            manifest, manifest_dir = self.get_manifest_from_struct(Path(tmpdir))
+            if manifest and manifest_dir:
+                OeConfig().save_client_path(self._name, manifest_dir)
             return manifest
 
     def get_manifest_from_struct(
@@ -187,7 +192,7 @@ class Client:
         client_path = OeConfig().get_client_path(self._name)
         # No esta en la configuración, verificar si me lo pasan como repositorio
         if not client_path:
-            if self._args.install:
+            if isinstance(self._args.install, str):
                 manifest = self.get_manifest_from_url()
                 if manifest:
                     return manifest

@@ -1,0 +1,242 @@
+"""Tests for Client.get_manifest() and get_manifest_from_url() manifest resolution.
+
+Covers REQ-INSTALL-001 through REQ-INSTALL-007 (install-from-url change).
+"""
+
+import subprocess
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+
+from odoo_env.client import Client
+from odoo_env.config import OeConfig
+from odoo_env.messages import OeError
+from odoo_env.test_helpers import MockArgs
+
+
+BASE_MANIFEST = {
+    "name": "test_client",
+    "version": "14.0.1.0.0",
+    "docker-images": [],
+    "git-repos": [],
+    "env-ver": "2",
+}
+
+
+class TestGetManifest(unittest.TestCase):
+    """Unit tests for Client.get_manifest() and Client.get_manifest_from_url()."""
+
+    def setUp(self):
+        OeConfig.reset()
+
+        # Mock OeConfig config data FIRST so singleton init uses mocked data
+        self.config_data_patcher = patch.object(OeConfig, "_get_config_data")
+        self.mock_config_data = self.config_data_patcher.start()
+        self.mock_config_data.return_value = {
+            "clients": [],
+            "client": "test_client",
+            "environment": "prod",
+            "base_dir": "/odoo_ar/",
+        }
+
+        self.save_config_patcher = patch.object(OeConfig, "_save_config_data")
+        self.mock_save_config = self.save_config_patcher.start()
+
+        # Initialize OeConfig singleton so OeConfig() calls inside
+        # get_manifest() don't fail with "missing required argument: args"
+        OeConfig(MockArgs(debug=False))
+
+        # Mock OeConfig instance methods
+        self.get_client_path_patcher = patch.object(OeConfig, "get_client_path")
+        self.mock_get_client_path = self.get_client_path_patcher.start()
+
+        self.save_client_path_patcher = patch.object(OeConfig, "save_client_path")
+        self.mock_save_client_path = self.save_client_path_patcher.start()
+
+        # Mock subprocess.run to avoid real git operations
+        self.subprocess_patcher = patch("odoo_env.client.subprocess.run")
+        self.mock_subprocess_run = self.subprocess_patcher.start()
+
+        # Mock get_manifest_from_struct to control manifest discovery
+        self.struct_patcher = patch.object(Client, "get_manifest_from_struct")
+        self.mock_get_manifest_from_struct = self.struct_patcher.start()
+
+        # Mock check_common and check_v2 to avoid manifest validation in __init__
+        self.check_common_patcher = patch.object(Client, "check_common")
+        self.mock_check_common = self.check_common_patcher.start()
+
+        self.check_v2_patcher = patch.object(Client, "check_v2")
+        self.mock_check_v2 = self.check_v2_patcher.start()
+
+    def tearDown(self):
+        self.get_client_path_patcher.stop()
+        self.save_client_path_patcher.stop()
+        self.config_data_patcher.stop()
+        self.save_config_patcher.stop()
+        self.subprocess_patcher.stop()
+        self.struct_patcher.stop()
+        self.check_common_patcher.stop()
+        self.check_v2_patcher.stop()
+        OeConfig.reset()
+
+    # ---------- helper ----------
+    def _make_client(self, install, name="test_client"):
+        """Create a Client instance bypassing __init__ to avoid side effects."""
+        client = Client.__new__(Client)
+        client._name = name
+        client._args = MockArgs(install=install, debug=False)
+        return client
+
+    # ==================================================================
+    # Phase 2: RED — failing tests (and regression tests)
+    # ==================================================================
+
+    # --- Task 2.1: REQ-INSTALL-001 — Boolean/None guard ---
+
+    def test_install_bool_skips_url(self):
+        """install=True (bool) MUST NOT trigger get_manifest_from_url."""
+        self.mock_get_client_path.return_value = None
+        self.mock_get_manifest_from_struct.return_value = (
+            BASE_MANIFEST,
+            "/some/path",
+        )
+
+        client = self._make_client(install=True)
+        manifest = client.get_manifest()
+
+        self.mock_subprocess_run.assert_not_called()
+        self.assertIsNotNone(manifest)
+
+    def test_install_none_skips_url(self):
+        """install=None MUST NOT trigger get_manifest_from_url."""
+        self.mock_get_client_path.return_value = None
+        self.mock_get_manifest_from_struct.return_value = (
+            BASE_MANIFEST,
+            "/some/path",
+        )
+
+        client = self._make_client(install=None)
+        manifest = client.get_manifest()
+
+        self.mock_subprocess_run.assert_not_called()
+        self.assertIsNotNone(manifest)
+
+    # --- Task 2.2: REQ-INSTALL-005/007 — Existing client_path guard ---
+
+    def test_existing_client_path_skips_url_bool(self):
+        """Existing client_path MUST skip URL resolution when install=True."""
+        self.mock_get_client_path.return_value = Path("/some/existing/path")
+        self.mock_get_manifest_from_struct.return_value = (
+            BASE_MANIFEST,
+            "/some/existing/path",
+        )
+
+        client = self._make_client(install=True)
+        manifest = client.get_manifest()
+
+        self.mock_subprocess_run.assert_not_called()
+        self.assertTrue(self.mock_get_manifest_from_struct.called)
+        self.assertIsNotNone(manifest)
+
+    def test_existing_client_path_skips_url_str(self):
+        """Existing client_path MUST skip URL resolution even with a string URL."""
+        self.mock_get_client_path.return_value = Path("/some/existing/path")
+        self.mock_get_manifest_from_struct.return_value = (
+            BASE_MANIFEST,
+            "/some/existing/path",
+        )
+
+        client = self._make_client(install="git@github.com:org/repo.git")
+        manifest = client.get_manifest()
+
+        self.mock_subprocess_run.assert_not_called()
+        self.assertTrue(self.mock_get_manifest_from_struct.called)
+        self.assertIsNotNone(manifest)
+
+    # --- Task 2.3: REQ-INSTALL-003 — URL validation ---
+
+    def test_invalid_url_raises_oe_error(self):
+        """Non-git URL MUST raise OeError."""
+        self.mock_get_client_path.return_value = None
+
+        client = self._make_client(install="not-a-url")
+        with self.assertRaises(OeError) as ctx:
+            client.get_manifest_from_url()
+
+        self.assertIn("Invalid git URL", str(ctx.exception))
+        self.assertIn("not-a-url", str(ctx.exception))
+
+    def test_empty_url_raises_oe_error(self):
+        """Empty string URL MUST raise OeError."""
+        self.mock_get_client_path.return_value = None
+
+        client = self._make_client(install="")
+        with self.assertRaises(OeError) as ctx:
+            client.get_manifest_from_url()
+
+        self.assertIn("Invalid git URL", str(ctx.exception))
+
+    # --- Task 2.4: REQ-INSTALL-002/004 — URL success + save_client_path ---
+
+    def test_url_success_saves_client_path(self):
+        """Successful URL clone MUST call save_client_path with the manifest dir."""
+        self.mock_get_client_path.return_value = None
+        self.mock_get_manifest_from_struct.return_value = (
+            BASE_MANIFEST,
+            "/tmp/tmpXXX/repo-name",
+        )
+
+        client = self._make_client(install="https://github.com/org/repo.git")
+        manifest = client.get_manifest_from_url()
+
+        self.mock_subprocess_run.assert_called_once()
+        call_args = self.mock_subprocess_run.call_args[0][0]
+        self.assertEqual(call_args[0], "git")
+        self.assertEqual(call_args[1], "clone")
+        self.assertEqual(call_args[2], "--depth")
+        self.assertEqual(call_args[3], "1")
+        self.assertEqual(call_args[4], "https://github.com/org/repo.git")
+        self.mock_save_client_path.assert_called_once_with(
+            "test_client", "/tmp/tmpXXX/repo-name"
+        )
+        self.assertIsNotNone(manifest)
+
+    def test_url_no_manifest_returns_none(self):
+        """Clone with no manifest MUST return None and NOT save client_path."""
+        self.mock_get_client_path.return_value = None
+        self.mock_get_manifest_from_struct.return_value = (None, None)
+
+        client = self._make_client(install="git@github.com:org/repo.git")
+        manifest = client.get_manifest_from_url()
+
+        self.assertIsNone(manifest)
+        self.mock_save_client_path.assert_not_called()
+
+    def test_url_str_calls_get_manifest_from_url(self):
+        """String install with no client_path MUST forward to get_manifest_from_url."""
+        self.mock_get_client_path.return_value = None
+        self.mock_get_manifest_from_struct.return_value = (
+            BASE_MANIFEST,
+            "/tmp/path",
+        )
+
+        client = self._make_client(install="git@github.com:org/repo.git")
+        manifest = client.get_manifest()
+
+        self.mock_subprocess_run.assert_called()
+        self.assertIsNotNone(manifest)
+
+    # --- Task 2.5: Clone failure propagation ---
+
+    def test_url_clone_failure_propagates(self):
+        """Git clone failure MUST propagate and NOT call save_client_path."""
+        self.mock_get_client_path.return_value = None
+        self.mock_subprocess_run.side_effect = subprocess.CalledProcessError(
+            128, ["git", "clone"]
+        )
+
+        client = self._make_client(install="git@github.com:org/repo.git")
+        with self.assertRaises(subprocess.CalledProcessError):
+            client.get_manifest_from_url()
+
+        self.mock_save_client_path.assert_not_called()

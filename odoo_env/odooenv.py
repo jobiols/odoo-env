@@ -8,6 +8,7 @@ from odoo_env.command import (
 from odoo_env.config import OeConfig
 from odoo_env.deploy_keys import deploy_keys
 from odoo_env.managers.backup_manager import BackupManager
+from pathlib import Path
 from odoo_env.managers.environment_manager import EnvironmentManager
 from odoo_env.managers.image_manager import ImageManager
 from odoo_env.messages import msg
@@ -96,6 +97,25 @@ class OdooEnv:
             if command and command.check():
                 msg.inf(command.usr_msg)
                 command.execute()
+
+        # Si instalamos desde URL, buscar el manifiesto en sources_dir
+        # y guardar el path para futuras ejecuciones.
+        if isinstance(self._args.install, str):
+            self._save_client_path_after_install()
+
+    def _save_client_path_after_install(self):
+        """
+        Después de instalar desde URL, busca recursivamente el
+        __manifest__.py en el directorio de fuentes y guarda el path
+        en la configuración para uso futuro.
+        """
+        sources = Path(self.client.sources_dir)
+        if not sources.exists():
+            return
+
+        manifest, path = Client._discover_manifest_from_path(sources)
+        if manifest and path:
+            OeConfig().save_client_path(self.client.name, path)
 
     def write_config(self):
         """Sobreescribe el odoo.conf config con los datos que vienen en el manifiesto"""

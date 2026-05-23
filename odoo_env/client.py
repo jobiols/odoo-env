@@ -17,12 +17,8 @@ class Client:
         self._name = name or OeConfig().client
         self._args = args
         self._parent = args
-        # self._name = name
-        # self._license = None
         self._images = []
         self._repos = []
-        # self._port = None
-        # self._version = None
 
         # Caso especial para test
         if self._name.startswith(("test_", "test2")):
@@ -30,6 +26,22 @@ class Client:
             path = root / "data"
             manifest = self.get_manifest(path)
             OeConfig().save_client_path(self.name, str(path))
+        elif isinstance(self._args.install, str):
+            # Primera instalación desde URL: clonar repo temporalmente,
+            # extraer el nombre del proyecto del manifiesto y usarlo
+            # como el nuevo cliente default.
+            manifest = self._discover_from_url(self._args.install)[0]
+            if not manifest:
+                msg.err(
+                    f"No valid __manifest__.py found in repository "
+                    f"'{self._args.install}'"
+                )
+            # Cambiar al nombre que declara el manifiesto
+            new_name = manifest.get("name", "").lower().split()[0]
+            if new_name:
+                if new_name != self._name:
+                    self._name = new_name
+                OeConfig().save_client(self._name)
         else:
             manifest = self.get_manifest()
 
@@ -132,8 +144,38 @@ class Client:
         else:
             self.config = manifest.get("config", [])
 
-    def get_manifest_from_url(self) -> dict[str, object] | None:
-        url = self._args.install
+    @staticmethod
+    def _discover_manifest_from_path(
+        path: Path,
+    ) -> tuple[dict[str, object] | None, str | None]:
+        """
+        Recorre recursivamente un directorio buscando __manifest__.py
+        sin validar el nombre del cliente.
+        Devuelve (manifest_dict, path) o (None, None).
+        """
+        if not path.exists():
+            return None, None
+
+        for root, _, files in os.walk(path):
+            if "__manifest__.py" not in files:
+                continue
+
+            manifest_file = Path(root) / "__manifest__.py"
+            manifest = Client.load_manifest(manifest_file)
+
+            if isinstance(manifest, dict) and manifest.get("name") and manifest.get("env-ver"):
+                return manifest, str(manifest_file.parent)
+
+        return None, None
+
+    def _discover_from_url(
+        self, url: str
+    ) -> tuple[dict[str, object] | None, str | None]:
+        """
+        Clona un repositorio temporalmente y extrae el manifiesto
+        sin validar el nombre del cliente.
+        Devuelve (manifest_dict, manifest_dir) o (None, None).
+        """
         if not (url.startswith("git@") or url.startswith("https://")):
             msg.err(f"Invalid git URL '{url}'. Must start with 'git@' or 'https://'")
 
@@ -141,11 +183,20 @@ class Client:
             subprocess.run(
                 ["git", "clone", "--depth", "1", url, tmpdir], check=True
             )
+            return self._discover_manifest_from_path(Path(tmpdir))
 
-            manifest, manifest_dir = self.get_manifest_from_struct(Path(tmpdir))
-            if manifest and manifest_dir:
-                OeConfig().save_client_path(self._name, manifest_dir)
-            return manifest
+    def get_manifest_from_url(self) -> dict[str, object] | None:
+        url = self._args.install
+        if not (
+            isinstance(url, str)
+            and (url.startswith("git@") or url.startswith("https://"))
+        ):
+            msg.err(f"Invalid git URL '{url}'. Must start with 'git@' or 'https://'")
+
+        manifest, manifest_dir = self._discover_from_url(url)
+        if manifest and manifest_dir:
+            OeConfig().save_client_path(self._name, manifest_dir)
+        return manifest
 
     def get_manifest_from_struct(
         self, path: Path

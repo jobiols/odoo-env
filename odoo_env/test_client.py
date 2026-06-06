@@ -58,8 +58,16 @@ class TestGetManifest(unittest.TestCase):
         self.mock_subprocess_run = self.subprocess_patcher.start()
 
         # Mock get_manifest_from_struct to control manifest discovery
+        # (used by get_manifest() — the local/path resolution path).
         self.struct_patcher = patch.object(Client, "get_manifest_from_struct")
         self.mock_get_manifest_from_struct = self.struct_patcher.start()
+
+        # Mock _discover_manifest_from_path to control discovery from a cloned
+        # repo (used by get_manifest_from_url() after the bcf2c8b refactor).
+        self.discover_patcher = patch.object(
+            Client, "_discover_manifest_from_path"
+        )
+        self.mock_discover_manifest_from_path = self.discover_patcher.start()
 
         # Mock check_common and check_v2 to avoid manifest validation in __init__
         self.check_common_patcher = patch.object(Client, "check_common")
@@ -75,6 +83,7 @@ class TestGetManifest(unittest.TestCase):
         self.save_config_patcher.stop()
         self.subprocess_patcher.stop()
         self.struct_patcher.stop()
+        self.discover_patcher.stop()
         self.check_common_patcher.stop()
         self.check_v2_patcher.stop()
         OeConfig.reset()
@@ -181,7 +190,7 @@ class TestGetManifest(unittest.TestCase):
     def test_url_success_saves_client_path(self):
         """Successful URL clone MUST call save_client_path with the manifest dir."""
         self.mock_get_client_path.return_value = None
-        self.mock_get_manifest_from_struct.return_value = (
+        self.mock_discover_manifest_from_path.return_value = (
             BASE_MANIFEST,
             "/tmp/tmpXXX/repo-name",
         )
@@ -204,7 +213,7 @@ class TestGetManifest(unittest.TestCase):
     def test_url_no_manifest_returns_none(self):
         """Clone with no manifest MUST return None and NOT save client_path."""
         self.mock_get_client_path.return_value = None
-        self.mock_get_manifest_from_struct.return_value = (None, None)
+        self.mock_discover_manifest_from_path.return_value = (None, None)
 
         client = self._make_client(install="git@github.com:org/repo.git")
         manifest = client.get_manifest_from_url()
@@ -215,7 +224,7 @@ class TestGetManifest(unittest.TestCase):
     def test_url_str_calls_get_manifest_from_url(self):
         """String install with no client_path MUST forward to get_manifest_from_url."""
         self.mock_get_client_path.return_value = None
-        self.mock_get_manifest_from_struct.return_value = (
+        self.mock_discover_manifest_from_path.return_value = (
             BASE_MANIFEST,
             "/tmp/path",
         )

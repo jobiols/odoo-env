@@ -8,6 +8,8 @@ from odoo_env.command import (
 from odoo_env.config import OeConfig
 from odoo_env.deploy_keys import deploy_keys
 from odoo_env.managers.backup_manager import BackupManager
+import subprocess
+import sys
 from pathlib import Path
 from odoo_env.managers.environment_manager import EnvironmentManager
 from odoo_env.managers.image_manager import ImageManager
@@ -88,7 +90,7 @@ class OdooEnv:
             )
 
         if self._args.create_test_db:
-            msg.err("create-test-db is not yet implemented.")
+            commands += self.create_test_db()
 
         return commands
 
@@ -178,6 +180,105 @@ class OdooEnv:
         return BackupManager(self, client_name).restore(
             database, backup_file, no_deactivate
         )
+
+    def _db_exists(self, database):
+        """Check if a database exists in the postgres container.
+
+        Queries pg_database via docker exec on pg-{client}.
+        Returns True if the database exists.
+        """
+        result = subprocess.run(
+            ["docker", "exec", f"pg-{self.client.name}",
+             "psql", "-U", "odoo", "-tAc",
+             f"SELECT 1 FROM pg_database WHERE datname='{database}'"],
+            capture_output=True, text=True,
+        )
+        return result.returncode == 0 and result.stdout.strip() == "1"
+
+    def _confirm_overwrite(self, database):
+        """Prompt user to confirm overwriting an existing database.
+
+        Returns True on 'y'/'yes', raises OeError on no or non-interactive.
+        """
+        if not sys.stdin.isatty():
+            msg.err(
+                f"Database '{database}' already exists and stdin is not a terminal.\n"
+                "Cannot prompt for confirmation. Drop the database manually or "
+                "run from an interactive terminal."
+            )
+        try:
+            answer = input(
+                f"Database '{database}' already exists. Overwrite? [y/N]: "
+            ).strip().lower()
+        except EOFError:
+            msg.err(
+                f"Database '{database}' already exists and input stream ended.\n"
+                "Cannot prompt for confirmation. Aborting."
+            )
+        return answer in ("y", "yes")
+
+    def create_test_db(self):
+        """Create a throwaway test database for the active client.
+
+        Composes discovery, guard checks, seed restore, and module install
+        into a flat list of Command objects.
+
+        Order: discovery → zero-module guard → db-exists confirm →
+               seed guard → cp → restore → rm → install (-i)
+        """
+        modules = EnvironmentManager.discover_modules_in_cwd()
+        if not modules:
+            msg.err(
+                "No module found in the current directory. "
+                "The current working directory must contain at least one "
+                "subdirectory with an __manifest__.py file."
+            )
+
+        database = f"{self.client.name}_test"
+
+        # Guard: confirm overwrite if target DB already exists
+        if self._db_exists(database):
+            if not self._confirm_overwrite(database):
+                msg.err(
+                    "Aborted by user. Test database was not modified."
+                )
+
+        # Guard: seed database must exist
+        seed_path = Path(self.client.backup_dir) / "bkp_test" / "test.zip"
+        if not seed_path.is_file():
+            msg.err(
+                f"Seed database not found at {seed_path}. "
+                "Cannot create test database."
+            )
+
+        commands = []
+
+        # Step 1: Copy seed to backup_dir
+        backup_dir = Path(self.client.backup_dir)
+        commands.append(Command(
+            self,
+            command=["cp", str(backup_dir / "bkp_test" / "test.zip"),
+                     str(backup_dir / "test.zip")],
+            usr_msg="Copying seed database",
+        ))
+
+        # Step 2: Restore seed into test database
+        commands += BackupManager(self, self.client.name).restore(
+            database=database, backup_file="test.zip", no_deactivate=True
+        )
+
+        # Step 3: Remove temporary copy
+        commands.append(Command(
+            self,
+            command=["rm", str(backup_dir / "test.zip")],
+            usr_msg="Removing temporary seed copy",
+        ))
+
+        # Step 4: Install all discovered modules with -i
+        env_mgr = EnvironmentManager(self)
+        commands += env_mgr._build_module_command(database, modules, "-i")
+
+        return commands
 
     def do_extract_sources(self, client_name):
         """Extrae los fuentes de la imagen debug"""

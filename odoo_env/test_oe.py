@@ -1,5 +1,8 @@
+import builtins
+import sys
 import unittest
-from unittest.mock import patch
+from pathlib import Path
+from unittest.mock import MagicMock, patch, PropertyMock
 
 from odoo_env.command import Command, EnsureNetworkCommand
 from odoo_env.config import OeConfig
@@ -7,6 +10,8 @@ from odoo_env.constants import (
     DBTOOLS_IMAGE,
     WDB_IMAGE_DEFAULT,
 )
+from odoo_env.managers.environment_manager import EnvironmentManager
+from odoo_env.messages import OeError
 from odoo_env.odooenv import OdooEnv
 from odoo_env.repos import GitRepo
 from odoo_env.test_helpers import TEST_CLIENT_MANIFEST, MockArgs, OdooEnvTestCase
@@ -720,3 +725,224 @@ class TestGetPacks(OdooEnvTestCase):
     def test_get_packs_v14_not_dist_packages(self):
         result = self._make_oe_with_version(14)
         self.assertNotEqual(result, ["dist-packages", "dist-local-packages"])
+
+
+class TestCreateTestDb(OdooEnvTestCase):
+    """Tests for the create-test-db feature."""
+
+    # ------- 2.1 discover_modules_in_cwd() tests (RED: method doesn't exist yet) -------
+
+    def _make_mock_entry(self, name, is_dir, has_manifest):
+        """Create a mock Path entry for iterdir."""
+        entry = MagicMock(spec=Path)
+        entry.name = name
+        entry.is_dir.return_value = is_dir
+        manifest_mock = MagicMock()
+        manifest_mock.is_file.return_value = has_manifest
+        entry.__truediv__.return_value = manifest_mock
+        return entry
+
+    def test_discover_modules_finds_manifest_dirs(self):
+        entries = [
+            self._make_mock_entry("module_a", True, True),
+            self._make_mock_entry("module_b", True, True),
+            self._make_mock_entry("not_a_module", True, False),
+            self._make_mock_entry("some_file.txt", False, False),
+        ]
+        with patch("os.getcwd", return_value="/fake/cwd"):
+            with patch("pathlib.Path.iterdir", return_value=entries):
+                result = EnvironmentManager.discover_modules_in_cwd()
+        self.assertEqual(result, ["module_a", "module_b"])
+
+    def test_discover_modules_empty_cwd(self):
+        with patch("os.getcwd", return_value="/fake/cwd"):
+            with patch("pathlib.Path.iterdir", return_value=[]):
+                result = EnvironmentManager.discover_modules_in_cwd()
+        self.assertEqual(result, [])
+
+    def test_discover_modules_ignores_hidden_dirs(self):
+        entries = [
+            self._make_mock_entry(".git", True, False),
+        ]
+        with patch("os.getcwd", return_value="/fake/cwd"):
+            with patch("pathlib.Path.iterdir", return_value=entries):
+                result = EnvironmentManager.discover_modules_in_cwd()
+        self.assertNotIn(".git", result)
+
+    def test_discover_modules_ignores_root_manifest(self):
+        entries = [
+            self._make_mock_entry("__manifest__.py", False, False),
+        ]
+        with patch("os.getcwd", return_value="/fake/cwd"):
+            with patch("pathlib.Path.iterdir", return_value=entries):
+                result = EnvironmentManager.discover_modules_in_cwd()
+        self.assertEqual(result, [])
+
+    def test_discover_modules_does_not_recurse(self):
+        entries = [
+            self._make_mock_entry("module_c", True, True),
+        ]
+        with patch("os.getcwd", return_value="/fake/cwd"):
+            with patch("pathlib.Path.iterdir", return_value=entries):
+                result = EnvironmentManager.discover_modules_in_cwd()
+        self.assertEqual(result, ["module_c"])
+
+    # ------- 2.2 _build_module_command install test (RED: method doesn't exist) -------
+
+    def test_build_module_command_install(self):
+        options = MockArgs(debug=False, client="test_client")
+        oe = OdooEnv(options)
+        env_mgr = EnvironmentManager(oe)
+        result = env_mgr._build_module_command("dimec_test", ["module_a", "module_b"], "-i")
+        self.assertEqual(len(result), 1)
+        cmd = result[0]
+        self.assertIn("-i", cmd.command)
+        self.assertIn("module_a, module_b", cmd.command)
+        self.assertIn("-d", cmd.command)
+        self.assertIn("dimec_test", cmd.command)
+        self.assertIn("--stop-after-init", cmd.command)
+        self.assertIn("--logfile=false", cmd.command)
+        self.assertNotIn("--test-enable", cmd.command)
+        self.assertTrue(cmd.usr_msg.startswith("Installing "))
+        self.assertIn("dimec_test", cmd.usr_msg)
+
+    # ------- 2.3 update() regression test (PASS: baseline before refactor) -------
+
+    def test_update_still_works_after_refactor(self):
+        options = MockArgs(debug=False, client="test_client")
+        oe = OdooEnv(options)
+        result = oe.update("test_client_prod", ["all"])
+        self.assertEqual(len(result), 1)
+        cmd = result[0]
+        self.assertIn("-u", cmd.command)
+        self.assertIn("all", cmd.command)
+        self.assertIn("-d", cmd.command)
+        self.assertIn("test_client_prod", cmd.command)
+        self.assertIn("--stop-after-init", cmd.command)
+        self.assertTrue(cmd.usr_msg.startswith("Performing update of "))
+
+    # ------- 4.1 zero-modules guard (RED: create_test_db doesn't exist) -------
+
+    def test_create_test_db_zero_modules_aborts(self):
+        options = MockArgs(create_test_db=True, client="test_client")
+        oe = OdooEnv(options)
+        with patch.object(EnvironmentManager, "discover_modules_in_cwd", return_value=[]):
+            with patch.object(OdooEnv, "_db_exists", return_value=False) as mock_db_exists:
+                with self.assertRaises(OeError) as ctx:
+                    oe.create_test_db()
+                self.assertIn("No module", str(ctx.exception))
+                mock_db_exists.assert_not_called()
+
+    # ------- 4.2 confirm-yes proceeds (RED) -------
+
+    def test_create_test_db_confirm_yes_proceeds(self):
+        options = MockArgs(create_test_db=True, client="test_client")
+        oe = OdooEnv(options)
+        with patch.object(EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]):
+            with patch.object(OdooEnv, "_db_exists", return_value=True):
+                with patch("sys.stdin.isatty", return_value=True):
+                    with patch("builtins.input", return_value="y"):
+                        with patch.object(Path, "is_file", return_value=True):
+                            result = oe.create_test_db()
+        self.assertGreater(len(result), 0)
+
+    # ------- 4.3 confirm-no aborts (RED) -------
+
+    def test_create_test_db_confirm_no_aborts(self):
+        options = MockArgs(create_test_db=True, client="test_client")
+        oe = OdooEnv(options)
+        with patch.object(EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]):
+            with patch.object(OdooEnv, "_db_exists", return_value=True):
+                with patch("sys.stdin.isatty", return_value=True):
+                    with patch("builtins.input", return_value="n"):
+                        with self.assertRaises(OeError) as ctx:
+                            oe.create_test_db()
+                        self.assertIn("Aborted", str(ctx.exception))
+
+    # ------- 4.4 non-interactive aborts (RED) -------
+
+    def test_create_test_db_non_interactive_aborts(self):
+        options = MockArgs(create_test_db=True, client="test_client")
+        oe = OdooEnv(options)
+        with patch.object(EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]):
+            with patch.object(OdooEnv, "_db_exists", return_value=True):
+                with patch("sys.stdin.isatty", return_value=False):
+                    with self.assertRaises(OeError) as ctx:
+                        oe.create_test_db()
+                    self.assertIn("not a terminal", str(ctx.exception))
+
+    # ------- 4.5 EOFError aborts (RED) -------
+
+    def test_create_test_db_eof_aborts(self):
+        options = MockArgs(create_test_db=True, client="test_client")
+        oe = OdooEnv(options)
+        with patch.object(EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]):
+            with patch.object(OdooEnv, "_db_exists", return_value=True):
+                with patch("sys.stdin.isatty", return_value=True):
+                    with patch("builtins.input", side_effect=EOFError):
+                        with self.assertRaises(OeError) as ctx:
+                            oe.create_test_db()
+                        self.assertIn("input stream ended", str(ctx.exception))
+
+    # ------- 4.6 full command composition (RED) -------
+
+    def test_create_test_db_command_composition(self):
+        from odoo_env.constants import DBTOOLS_IMAGE
+        options = MockArgs(create_test_db=True, client="test_client")
+        oe = OdooEnv(options)
+        backup_dir = "/odoo_ar/odoo-14.0/test_client/backup_dir/"
+        with patch.object(EnvironmentManager, "discover_modules_in_cwd",
+                          return_value=["module_a", "module_b"]):
+            with patch.object(OdooEnv, "_db_exists", return_value=False):
+                with patch.object(type(oe._client), "backup_dir",
+                                  new_callable=PropertyMock,
+                                  return_value=backup_dir):
+                    with patch.object(Path, "is_file", return_value=True):
+                        result = oe.create_test_db()
+
+        self.assertEqual(len(result), 4)
+
+        # Command 0: cp
+        self.assertEqual(result[0].command,
+                         ["cp", f"{backup_dir}bkp_test/test.zip", f"{backup_dir}test.zip"])
+        self.assertIn("Copying seed", result[0].usr_msg)
+
+        # Command 1: restore
+        self.assertIn(DBTOOLS_IMAGE, result[1].command)
+        self.assertIn("ZIPFILE=test.zip", result[1].command)
+        self.assertIn("NEW_DBNAME=test_client_test", result[1].command)
+        self.assertNotIn("DEACTIVATE", result[1].command)
+
+        # Command 2: rm
+        self.assertEqual(result[2].command, ["rm", f"{backup_dir}test.zip"])
+        self.assertIn("Removing temporary", result[2].usr_msg)
+
+        # Command 3: install
+        self.assertIn("-i", result[3].command)
+        self.assertIn("module_a, module_b", result[3].command)
+        self.assertIn("-d", result[3].command)
+        self.assertIn("test_client_test", result[3].command)
+        self.assertIn("--stop-after-init", result[3].command)
+        self.assertNotIn("--test-enable", result[3].command)
+
+    # ------- 4.7 seed-missing aborts (RED) -------
+
+    def test_create_test_db_seed_missing_aborts(self):
+        options = MockArgs(create_test_db=True, client="test_client")
+        oe = OdooEnv(options)
+        with patch.object(EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]):
+            with patch.object(OdooEnv, "_db_exists", return_value=False):
+                with patch.object(Path, "is_file", return_value=False):
+                    with self.assertRaises(OeError) as ctx:
+                        oe.create_test_db()
+                    self.assertIn("Seed", str(ctx.exception))
+
+    # ------- 4.8 dispatch from build_commands (RED: old msg.err still fires) -------
+
+    def test_create_test_db_dispatched_from_build_commands(self):
+        options = MockArgs(create_test_db=True, client="test_client")
+        oe = OdooEnv(options)
+        with patch.object(oe, "create_test_db", return_value=["fake_cmd"]) as mock_ctdb:
+            result = oe.build_commands()
+            mock_ctdb.assert_called_once()
+            self.assertIn("fake_cmd", result)

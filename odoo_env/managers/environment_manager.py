@@ -1,3 +1,6 @@
+import os
+from pathlib import Path
+
 from odoo_env.command import (
     Command,
     EnsureNetworkCommand,
@@ -29,6 +32,20 @@ class EnvironmentManager:
         self._client = parent.client
         self.docker_client = DockerClient()
         self.system_client = SystemClient()
+
+    @staticmethod
+    def discover_modules_in_cwd():
+        """Scan CWD for immediate subdirectories containing __manifest__.py.
+
+        Does NOT recurse into subdirectories.
+        Returns a sorted list of directory names.
+        """
+        cwd = Path(os.getcwd())
+        modules = []
+        for entry in cwd.iterdir():
+            if entry.is_dir() and (entry / "__manifest__.py").is_file():
+                modules.append(entry.name)
+        return sorted(modules)
 
     def install(self):
         ret = []
@@ -318,7 +335,19 @@ class EnvironmentManager:
 
         return ret
 
-    def update(self, database, modules):
+    def _build_module_command(self, database, modules, verb, usr_msg_prefix=None):
+        """Build docker run command for -i (install) or -u (update) modules.
+
+        Extracts the shared scaffolding so both update() and create_test_db()
+        can reuse the same volume, network, and env configuration.
+
+        Args:
+            database: Target database name (e.g., 'dimec_test')
+            modules: List of module names to install/update
+            verb: '-i' for install or '-u' for update
+            usr_msg_prefix: Override the user message prefix.
+                            Defaults to 'Installing' for -i, 'Updating' for -u.
+        """
         ret = []
         volumes = self._get_normal_mountings()
         if self.parent.debug:
@@ -334,17 +363,26 @@ class EnvironmentManager:
             env={"ODOO_CONF": "/dev/null"},
             stop_after_init=True,
             logfile="false",
-            extra_args=["-d", database, "-u", ", ".join(modules)],
+            extra_args=["-d", database, verb, ", ".join(modules)],
         )
+
+        if usr_msg_prefix is None:
+            action = "Installing" if verb == "-i" else "Updating"
+        else:
+            action = usr_msg_prefix
 
         ret.append(
             Command(
                 self.parent,
                 command=cmd_list,
-                usr_msg=f"Performing update of {', '.join(modules)} on database {database}",
+                usr_msg=f"{action} {', '.join(modules)} on database {database}",
             )
         )
         return ret
+
+    def update(self, database, modules):
+        return self._build_module_command(database, modules, "-u",
+                                          usr_msg_prefix="Performing update of")
 
     def qa(self, database, modules_to_test, client_test=False):
         if client_test:

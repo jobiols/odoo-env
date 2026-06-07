@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from odoo_env.command import (
     Command,
@@ -22,12 +23,15 @@ from odoo_env.constants import (
     WDB_IMAGE_NEW,
 )
 from odoo_env.messages import msg
-from odoo_env.services.docker_client import DockerClient
+from odoo_env.services.docker_client import DockerClient, RunSpec
 from odoo_env.services.system import SystemClient
+
+if TYPE_CHECKING:
+    from odoo_env.odooenv import OdooEnv
 
 
 class EnvironmentManager:
-    def __init__(self, parent):
+    def __init__(self, parent: "OdooEnv"):
         self.parent = parent
         self._client = parent.client
         self.docker_client = DockerClient()
@@ -49,12 +53,15 @@ class EnvironmentManager:
 
     def install(self):
         ret = []
-        msg = f"Installing client {OeConfig().client}"
+        step_msg = f"Installing client {OeConfig().client}"
         cmd_list = self.system_client.make_mkdir_command()
 
         ret.append(
             MakedirCommand(
-                self.parent, command=cmd_list, usr_msg=msg, args=OeConfig().base_dir
+                self.parent,
+                command=cmd_list,
+                usr_msg=step_msg,
+                args=OeConfig().base_dir,
             )
         )
 
@@ -79,7 +86,7 @@ class EnvironmentManager:
         ]:
             r_dir = f"{self._client.base_dir}{w_dir}"
             cmd_list = self.system_client.get_chown_command(
-                r_dir, recursive=True, user="1100", group="1100"
+                r_dir, owner="1100:1100", recursive=True
             )
             ret.append(Command(self.parent, command=cmd_list))
 
@@ -138,9 +145,9 @@ class EnvironmentManager:
         # Postgres
         image = self.parent._client.get_image("postgres")
         if not image:
-            msg.err(f"There is no {image.name} image on this project")
+            msg.err("There is no postgres image on this project")
 
-        msg = f"Starting postgres image {image.version}"
+        step_msg = f"Starting postgres image {image.version}"
 
         if image.numeric_ver >= 18:
             volumes = {
@@ -156,29 +163,36 @@ class EnvironmentManager:
         ports = {5432: 5432} if self.parent.debug else None
 
         cmd_list = self.docker_client.get_run_command(
-            image.name,
-            detach=True,
-            ports=ports,
-            env={"POSTGRES_USER": "odoo", "POSTGRES_PASSWORD": "odoo"},
-            restart="unless-stopped",
-            name=f"pg-{self.parent._client.name}",
-            network="odoo-net",
-            volumes=volumes,
+            RunSpec(
+                image.name,
+                detach=True,
+                ports=ports,
+                env={"POSTGRES_USER": "odoo", "POSTGRES_PASSWORD": "odoo"},
+                restart="unless-stopped",
+                name=f"pg-{self.parent._client.name}",
+                network="odoo-net",
+                volumes=volumes,
+            )
         )
-        ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))
+        ret.append(Command(self.parent, command=cmd_list, usr_msg=step_msg))
 
         # Aeroo
         image = self.parent._client.get_image("aeroo")
         if image:
-            msg = "Starting aeroo image"
+            step_msg = "Starting aeroo image"
             cmd_list = self.docker_client.get_run_command(
-                image.name, detach=True, name=image.short_name, restart="always"
+                RunSpec(
+                    image.name,
+                    detach=True,
+                    name=image.short_name,
+                    restart="always",
+                )
             )
-            ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))
+            ret.append(Command(self.parent, command=cmd_list, usr_msg=step_msg))
 
         # WDB
         if self.parent.debug:
-            msg = "Starting wdb image"
+            step_msg = "Starting wdb image"
             wdb_image = WDB_IMAGE_DEFAULT
             if self.parent._client.numeric_ver == 16.0:
                 wdb_image = WDB_IMAGE_16
@@ -186,14 +200,16 @@ class EnvironmentManager:
                 wdb_image = WDB_IMAGE_NEW
 
             cmd_list = self.docker_client.get_run_command(
-                wdb_image,
-                detach=True,
-                ports={1984: 1984},
-                name="wdb",
-                restart="unless-stopped",
-                network="odoo-net",
+                RunSpec(
+                    wdb_image,
+                    detach=True,
+                    ports={1984: 1984},
+                    name="wdb",
+                    restart="unless-stopped",
+                    network="odoo-net",
+                )
             )
-            ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))
+            ret.append(Command(self.parent, command=cmd_list, usr_msg=step_msg))
 
         return ret
 
@@ -243,12 +259,12 @@ class EnvironmentManager:
         ret = []
 
         if write_config:
-            msg = f"Writing config file for client {self.parent._client.name}"
+            step_msg = f"Writing config file for client {self.parent._client.name}"
             detach = False
             interactive = False
             remove = True
         else:
-            msg = (
+            step_msg = (
                 f"Starting Odoo image for client {self.parent._client.name} "
                 "on port {self.parent._client.port}"
             )
@@ -275,9 +291,39 @@ class EnvironmentManager:
         restart = "unless-stopped" if not (self.parent.debug or write_config) else None
         name = self.parent._client.name if not write_config else None
 
+        cmd_list = self.docker_client.get_run_command(
+            RunSpec(
+                self.parent._client.get_image_required("odoo").name,
+                detach=detach,
+                interactive=interactive,
+                remove=remove,
+                name=name,
+                network="odoo-net",
+                ports=ports,
+                volumes=volumes,
+                links=links,
+                restart=restart,
+                env=self._run_client_env(write_config),
+                stop_after_init=write_config,
+                logfile=self._run_client_logfile(),
+                # odoo-bin arg for 19.1+ debug?
+                cmd=(
+                    ["odoo-bin"]
+                    if self.parent.debug and self.parent._client.numeric_ver >= 19.1
+                    else None
+                ),
+                database=self.parent._client.database_default_name,
+            )
+        )
+
+        ret.append(Command(self.parent, command=cmd_list, usr_msg=step_msg))
+
+        return ret
+
+    def _run_client_env(self, write_config):
+        """Arma el dict de environment para el contenedor de odoo."""
         env = {}
         if write_config:
-            # set_config_environment logic
             env.update(self._get_config_environment())
         else:
             env["ODOO_CONF"] = "/dev/null"
@@ -285,42 +331,15 @@ class EnvironmentManager:
         if self.parent.debug:
             env["WDB_SOCKET_SERVER"] = "wdb"
             env["WDB_NO_BROWSER_AUTO_OPEN"] = "True"
+        return env
 
-        image = self.parent._client.get_image("odoo").name
-
-        logfile = None
+    def _run_client_logfile(self):
+        """Determina el logfile de odoo segun modo debug y version."""
         if not self.parent.debug:
-            logfile = "/var/log/odoo/odoo.log"
-        else:
-            if self.parent._client.numeric_ver < 19.1:
-                logfile = "/dev/stdout"
-
-        cmd_list = self.docker_client.get_run_command(
-            image,
-            detach=detach,
-            interactive=interactive,
-            remove=remove,
-            name=name,
-            network="odoo-net",
-            ports=ports,
-            volumes=volumes,
-            links=links,
-            restart=restart,
-            env=env,
-            stop_after_init=write_config,
-            logfile=logfile,
-            # odoo-bin arg for 19.1+ debug?
-            cmd=(
-                ["odoo-bin"]
-                if self.parent.debug and self.parent._client.numeric_ver >= 19.1
-                else None
-            ),
-            database=self.parent._client.database_default_name,
-        )
-
-        ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))
-
-        return ret
+            return "/var/log/odoo/odoo.log"
+        if self.parent._client.numeric_ver < 19.1:
+            return "/dev/stdout"
+        return None
 
     def stop_client(self):
         ret = []
@@ -354,16 +373,18 @@ class EnvironmentManager:
             volumes.update(self._get_debug_mountings())
 
         cmd_list = self.docker_client.get_run_command(
-            self.parent._client.get_image("odoo").name,
-            interactive=True,
-            remove=True,
-            network="odoo-net",
-            volumes=volumes,
-            links={f"pg-{self.parent._client.name}": "db"},
-            env={"ODOO_CONF": "/dev/null"},
-            stop_after_init=True,
-            logfile="false",
-            extra_args=["-d", database, verb, ", ".join(modules)],
+            RunSpec(
+                self.parent._client.get_image_required("odoo").name,
+                interactive=True,
+                remove=True,
+                network="odoo-net",
+                volumes=volumes,
+                links={f"pg-{self.parent._client.name}": "db"},
+                env={"ODOO_CONF": "/dev/null"},
+                stop_after_init=True,
+                logfile="false",
+                extra_args=["-d", database, verb, ", ".join(modules)],
+            )
         )
 
         if usr_msg_prefix is None:
@@ -381,43 +402,41 @@ class EnvironmentManager:
         return ret
 
     def update(self, database, modules):
-        return self._build_module_command(database, modules, "-u",
-                                          usr_msg_prefix="Performing update of")
+        return self._build_module_command(
+            database, modules, "-u", usr_msg_prefix="Performing update of"
+        )
 
-    def qa(self, database, modules_to_test, client_test=False):
-        if client_test:
-            self._client = (
-                client_test  # This is a bit hacky, adapting to existing logic
-            )
-
+    def qa(self, database, modules_to_test):
         ret = []
         volumes = self._get_normal_mountings()
         if self.parent.debug:
             volumes.update(self._get_debug_mountings())
 
         cmd_list = self.docker_client.get_run_command(
-            self.parent._client.get_image("odoo").name,
-            interactive=True,
-            remove=True,
-            network="odoo-net",
-            volumes=volumes,
-            links={f"pg-{self.parent._client.name}": "db"},
-            env={
-                "WDB_SOCKET_SERVER": "wdb",
-                "WDB_NO_BROWSER_AUTO_OPEN": "True",
-                "ODOO_CONF": "/dev/null",
-            },
-            stop_after_init=True,
-            log_level="test",
-            test_enable=True,
-            extra_args=["-d", database, "-u", modules_to_test],
+            RunSpec(
+                self.parent._client.get_image_required("odoo").name,
+                interactive=True,
+                remove=True,
+                network="odoo-net",
+                volumes=volumes,
+                links={f"pg-{self.parent._client.name}": "db"},
+                env={
+                    "WDB_SOCKET_SERVER": "wdb",
+                    "WDB_NO_BROWSER_AUTO_OPEN": "True",
+                    "ODOO_CONF": "/dev/null",
+                },
+                stop_after_init=True,
+                log_level="test",
+                test_enable=True,
+                extra_args=["-d", database, "-u", modules_to_test],
+            )
         )
 
-        msg = (
+        step_msg = (
             f"Performing tests on module {modules_to_test} for client "
             f"{self.parent._client.name} and database {database}"
         )
-        ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))
+        ret.append(Command(self.parent, command=cmd_list, usr_msg=step_msg))
         return ret
 
     def _get_normal_mountings(self):
@@ -439,14 +458,14 @@ class EnvironmentManager:
                 f"{cvd}src": {"bind": info.src},
                 f"{cvd}lib": {"bind": info.lib + "/"},
             }
-        elif version == 19:
+        if version == 19:
             return {
                 f"{cvd}src": {"bind": "/odoo/odoo-src"},
                 f"{cvd}site-packages": {
                     "bind": "/odoo/venv/lib/python3.10/site-packages"
                 },
             }
-        elif version < 14:
+        if version < 14:
             iea = IN_EXTRA_ADDONS
             idp = IN_DIST_PACKAGES.format("2")
             idlp = IN_DIST_LOCAL_PACKAGES.format("2.7")
@@ -461,8 +480,7 @@ class EnvironmentManager:
                 f"{cvd}dist-local-packages": {"bind": idlp},
                 f"{cvd}extra-addons": {"bind": iea},
             }
-        else:
-            raise ValueError(f"Unsupported Odoo version: {version}")
+        raise ValueError(f"Unsupported Odoo version: {version}")
 
     def _get_config_environment(self):
         # Logic from set_config_environment

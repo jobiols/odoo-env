@@ -1,7 +1,7 @@
 from odoo_env.client import Client
 from odoo_env.command import Command
 from odoo_env.constants import DBTOOLS_IMAGE
-from odoo_env.services.docker_client import DockerClient
+from odoo_env.services.docker_client import DockerClient, RunSpec
 
 
 class BackupManager:
@@ -11,7 +11,10 @@ class BackupManager:
         self.docker_client = DockerClient()
 
     def restore(
-        self, database=False, backup_file=False, no_deactivate=False
+        self,
+        database: "str | bool | None" = False,
+        backup_file: "str | bool | None" = False,
+        no_deactivate=False,
     ):
         ret = []
         msg = f"Restoring database {database} "
@@ -28,20 +31,22 @@ class BackupManager:
             f"{self.client.base_dir}data_dir/filestore": {"bind": "/filestore"},
         }
 
-        env = {"NEW_DBNAME": database}
+        env: dict[str, str] = {"NEW_DBNAME": str(database)}
 
         if backup_file:
-            env["ZIPFILE"] = backup_file
+            env["ZIPFILE"] = str(backup_file)
         if not no_deactivate:
             env["DEACTIVATE"] = "True"
 
         cmd_list = self.docker_client.get_run_command(
-            DBTOOLS_IMAGE,
-            remove=True,
-            network="odoo-net",
-            volumes=volumes,
-            env=env,
-            links={f"pg-{self.client.name}": "db"},
+            RunSpec(
+                DBTOOLS_IMAGE,
+                remove=True,
+                network="odoo-net",
+                volumes=volumes,
+                env=env,
+                links={f"pg-{self.client.name}": "db"},
+            )
         )
 
         cmd = Command(self.parent, command=cmd_list, usr_msg=msg)

@@ -39,7 +39,7 @@ class ImageManager:
             )
 
         targets = [("src", info.src), ("lib", info.lib)]
-        image = self.client.get_image("odoo").name
+        image = self.client.get_image_required("odoo").name
         cvd = self.client.version_dir
 
         # Cleanup legacy host dirs from pre-refactor layout (dist-packages,
@@ -61,7 +61,9 @@ class ImageManager:
         for host_dir, _ in targets:
             r_dir = f"{cvd}{host_dir}"
             cmd_list = self.system_client.get_rm_command(r_dir, recursive=True)
-            ret.append(Command(self.parent, command=cmd_list, usr_msg=f"Removing {r_dir}"))
+            ret.append(
+                Command(self.parent, command=cmd_list, usr_msg=f"Removing {r_dir}")
+            )
 
         for host_dir, _ in targets:
             r_dir = f"{cvd}{host_dir}"
@@ -76,7 +78,9 @@ class ImageManager:
         for host_dir, container_src in targets:
             host_dest = f"{cvd}{host_dir}"
             msg = f"Extracting {host_dir} from image {image}"
-            cmd_list = self.docker_client.get_extract_command(image, container_src, host_dest)
+            cmd_list = self.docker_client.get_extract_command(
+                image, container_src, host_dest
+            )
             ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))
 
         for host_dir, _ in targets:
@@ -84,6 +88,10 @@ class ImageManager:
             cmd_list = self.system_client.get_chmod_command(
                 f"{r_dir}/", "o+w", recursive=True, sudo=True
             )
-            ret.append(Command(self.parent, command=cmd_list, usr_msg=f"Making writable {r_dir}"))
+            ret.append(
+                Command(
+                    self.parent, command=cmd_list, usr_msg=f"Making writable {r_dir}"
+                )
+            )
 
         return ret

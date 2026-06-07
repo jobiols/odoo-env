@@ -48,7 +48,7 @@ from odoo_env.messages import msg
 
 
 class GitRepo:
-    def __init__(self, value, branch, options=None):
+    def __init__(self, value, branch):
         """Sintaxis <repo> [<directory>[/<directory>] [-b <branch>] [optios]
         El branch debe estar despues del repo, si no esta se toma el branch
         que viene como parametro, si no viene nada es una excepcion.

@@ -5,6 +5,7 @@ import threading
 import urllib.request
 from datetime import datetime
 from pathlib import Path
+from typing import Any
 
 import yaml
 
@@ -15,10 +16,14 @@ from odoo_env.singleton import SingletonMeta
 
 class OeConfig(metaclass=SingletonMeta):
 
-    def __init__(self, args):
-        # en esta variable guardo toda la data del archivo oe_config.yaml
-        self._args = args
-        self._config_data = self._get_config_data()
+    def __init__(self, args=None):
+        # en esta variable guardo toda la data del archivo oe_config.yaml.
+        # args es opcional: por ser singleton, __init__ solo corre en la primera
+        # construccion (con args reales); las llamadas posteriores OeConfig()
+        # devuelven la instancia cacheada sin re-ejecutar __init__.
+        # args es un argparse.Namespace (atributos dinamicos) -> Any.
+        self._args: Any = args
+        self._config_data: dict[str, Any] = self._get_config_data()
 
     def persist_config(self):
         """Salva en la configuracion los parametros que se declararon como persistentes"""
@@ -65,18 +70,17 @@ class OeConfig(metaclass=SingletonMeta):
         """Archivo de configuración del usuario"""
         return f"{self._user_config_path()}oe_config.yaml"
 
-    def _get_config_data(self):
+    def _get_config_data(self) -> dict[str, Any]:
         """Trae todo el oe_config.yaml como un diccionario"""
-        template = {"clients": []}
+        template: dict[str, Any] = {"clients": []}
 
         try:
-            with open(self._user_config_file()) as config:
+            with open(self._user_config_file(), encoding="utf-8") as config:
                 data = yaml.safe_load(config)
         except FileNotFoundError:
             return template
         except yaml.YAMLError as e:
             msg.err(f"Invalid YAML in {self._user_config_file()}: {e}")
-            return template
 
         # Si está vacío, safe_load devuelve None
         return data or template
@@ -87,7 +91,7 @@ class OeConfig(metaclass=SingletonMeta):
         if not os.path.exists(self._user_config_path()):
             os.makedirs(self._user_config_path())
 
-        with open(self._user_config_file(), "w") as config_file:
+        with open(self._user_config_file(), "w", encoding="utf-8") as config_file:
             yaml.dump(
                 self._config_data,
                 config_file,
@@ -96,10 +100,10 @@ class OeConfig(metaclass=SingletonMeta):
             )
 
     def get_client_path(self, client_name):
-        """Traer el path de un cliente desde el archivo de configuracion, si no esta devuelve None"""
+        """Traer el path de un cliente desde la config; None si no esta."""
 
         # Traer la lista de clientes del archivo de configuracion
-        clients = self._config_data.get("clients")
+        clients = self._config_data.get("clients", [])
 
         path = next((d[client_name] for d in clients if client_name in d), None)
         return Path(path) if path else None
@@ -111,7 +115,7 @@ class OeConfig(metaclass=SingletonMeta):
             return
 
         # obtengo lista de clientes
-        client_list = self._config_data.get("clients")
+        client_list = self._config_data.setdefault("clients", [])
         # agrego el cliente
         client_list.append({client_name: path})
         # salvo la configuracion
@@ -198,5 +202,7 @@ class OeConfig(metaclass=SingletonMeta):
                 msg.warn(
                     "Do it right now before chaos knocks your digital door. Dont risk it."
                 )
-        except Exception:
+        except (OSError, ValueError, KeyError):
+            # OSError cubre urllib.error.URLError; ValueError cubre
+            # json.JSONDecodeError. El chequeo de version es best-effort.
             pass

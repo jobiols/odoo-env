@@ -1,7 +1,7 @@
-from unittest.mock import patch, PropertyMock
+from unittest.mock import PropertyMock, patch
 
-from odoo_env.odooenv import OdooEnv
 from odoo_env.managers.environment_manager import EnvironmentManager
+from odoo_env.odooenv import OdooEnv
 from odoo_env.test_helpers import MockArgs, OdooEnvTestCase
 
 
@@ -10,13 +10,21 @@ class TestDebugMountings(OdooEnvTestCase):
     def _make_em(self, odoo_version: int):
         options = MockArgs(debug=True, client="test_client")
         oe = OdooEnv(options)
-        with patch.object(
-            type(oe._client), "numeric_ver", new_callable=PropertyMock, return_value=float(odoo_version)
-        ), patch.object(
-            type(oe._client), "version_dir", new_callable=PropertyMock, return_value=f"/odoo_ar/odoo-{odoo_version}.0/"
+        with (
+            patch.object(
+                type(oe._client),
+                "numeric_ver",
+                new_callable=PropertyMock,
+                return_value=float(odoo_version),
+            ),
+            patch.object(
+                type(oe._client),
+                "version_dir",
+                new_callable=PropertyMock,
+                return_value=f"/odoo_ar/odoo-{odoo_version}.0/",
+            ),
         ):
             em = EnvironmentManager(oe)
-            em._parent = oe
             result = em._get_debug_mountings()
         return result
 

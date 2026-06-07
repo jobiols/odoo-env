@@ -1,3 +1,5 @@
+from typing import NoReturn
+
 RED = "\033[1;31m"
 
 
@@ -28,22 +30,22 @@ class Msg:
     def yellow_light(string):
         return YELLOW_LIGHT + string + CLEAR
 
-    def run(self, msg):
-        print(self.yellow(msg))
+    def run(self, text):
+        print(self.yellow(text))
 
-    def done(self, msg):
-        print(self.green(msg))
+    def done(self, text):
+        print(self.green(text))
 
-    def err(self, msg):
-        print(self.red(msg))
-        raise OeError(msg)
+    def err(self, text) -> NoReturn:
+        print(self.red(text))
+        raise OeError(text)
 
-    def inf(self, msg):
-        if msg:
-            print(self.yellow_light(msg))
+    def inf(self, text):
+        if text:
+            print(self.yellow_light(text))
 
-    def warn(self, msg):
-        print(self.red(msg))
+    def warn(self, text):
+        print(self.red(text))
 
 
 msg = Msg()

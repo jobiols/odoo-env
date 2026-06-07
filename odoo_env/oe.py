@@ -96,8 +96,10 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         "-Q",
         metavar="MODULES",
         dest="modules_to_test",
-        help="Run the tests. Required parameters: list of modules to test separate by commas (without spaces) e.g. -Q sale,stock."
-        "Optional parameters: -d <database>; if omitted, the default [project]_test database will be used, "
+        help="Run the tests. Required parameters: list of modules to test "
+        "separate by commas (without spaces) e.g. -Q sale,stock."
+        "Optional parameters: -d <database>; if omitted, the default "
+        "[project]_test database will be used, "
         "NOTE: The database used for testing must be created with demo "
         "data and must have admin/admin credentials.",
     )
@@ -204,7 +206,7 @@ def main():
     args = parse_args()
 
     if args.version:
-        # TODO crear un comando para esto
+        # Nota: a futuro esto podria modelarse como un Command propio.
         msg.inf(f"oe version {__version__}")
         sys.exit()
 
@@ -213,12 +215,23 @@ def main():
         conf.persist_config()
         conf.check_version()
 
-        if args.base_dir and not any([
-            args.install, args.run_env, args.pull_images, args.write_config,
-            args.run_cli, args.stop_env, args.stop_cli, args.update,
-            args.deploy_keys, args.modules_to_test, args.server_help,
-            args.restore, args.create_test_db,
-        ]):
+        if args.base_dir and not any(
+            [
+                args.install,
+                args.run_env,
+                args.pull_images,
+                args.write_config,
+                args.run_cli,
+                args.stop_env,
+                args.stop_cli,
+                args.update,
+                args.deploy_keys,
+                args.modules_to_test,
+                args.server_help,
+                args.restore,
+                args.create_test_db,
+            ]
+        ):
             return
 
         oe = OdooEnv(args)

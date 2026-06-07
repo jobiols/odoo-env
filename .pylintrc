@@ -200,7 +200,8 @@ good-names=i,
            k,
            ex,
            Run,
-           _
+           _,
+           maxDiff
 
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted
@@ -307,7 +308,9 @@ ignored-parents=
 max-args=5
 
 # Maximum number of attributes for a class (see R0902).
-max-attributes=7
+# RunSpec (DTO de opciones de docker run, 21 campos) y Client / setUp de tests
+# justifican un umbral mas alto que el default.
+max-attributes=22
 
 # Maximum number of boolean expressions in an if statement (see R0916).
 max-bool-expr=5
@@ -325,7 +328,9 @@ max-parents=7
 max-positional-arguments=5
 
 # Maximum number of public methods for a class (see R0904).
-max-public-methods=20
+# Client (clase de dominio) y las clases de tests superan el default de forma
+# legitima; se sube el umbral en vez de partir clases artificialmente.
+max-public-methods=32
 
 # Maximum number of return / yield for function / method body.
 max-returns=6

@@ -37,13 +37,16 @@ class Client:
                     f"'{self._args.install}'"
                 )
             # Cambiar al nombre que declara el manifiesto
-            new_name = manifest.get("name", "").lower().split()[0]
+            new_name = str(manifest.get("name", "")).lower().split()[0]
             if new_name:
                 if new_name != self._name:
                     self._name = new_name
                 OeConfig().save_client(self._name)
         else:
             manifest = self.get_manifest()
+
+        if not manifest:
+            msg.err(f"No manifest found for client '{self._name}'")
 
         self.check_common(manifest)
 
@@ -163,7 +166,11 @@ class Client:
             manifest_file = Path(root) / "__manifest__.py"
             manifest = Client.load_manifest(manifest_file)
 
-            if isinstance(manifest, dict) and manifest.get("name") and manifest.get("env-ver"):
+            if (
+                isinstance(manifest, dict)
+                and manifest.get("name")
+                and manifest.get("env-ver")
+            ):
                 return manifest, str(manifest_file.parent)
 
         return None, None
@@ -180,9 +187,7 @@ class Client:
             msg.err(f"Invalid git URL '{url}'. Must start with 'git@' or 'https://'")
 
         with tempfile.TemporaryDirectory() as tmpdir:
-            subprocess.run(
-                ["git", "clone", "--depth", "1", url, tmpdir], check=True
-            )
+            subprocess.run(["git", "clone", "--depth", "1", url, tmpdir], check=True)
             return self._discover_manifest_from_path(Path(tmpdir))
 
     def get_manifest_from_url(self) -> dict[str, object] | None:
@@ -262,7 +267,7 @@ class Client:
         return manifest if manifest else None
 
     @staticmethod
-    def load_manifest(filename: str) -> dict[str, object]:
+    def load_manifest(filename: "str | Path") -> dict[str, object]:
         """
         Loads a manifest
         :param filename: absolute filename to manifest
@@ -276,14 +281,14 @@ class Client:
             # Leer todas las líneas no vacías ni comentadas
             text = "\n".join(
                 line
-                for line in path.read_text().splitlines()
+                for line in path.read_text(encoding="utf-8").splitlines()
                 if line.strip() and not line.strip().startswith("#")
             )
 
             # Convertir a dict seguro
             return ast.literal_eval(text)
 
-        except Exception:
+        except (OSError, ValueError, SyntaxError):
             return {"name": "none"}
 
     def image(self, image_name):
@@ -304,6 +309,13 @@ class Client:
             if image.short_name == value:
                 return image
         return False
+
+    def get_image_required(self, value):
+        """Como get_image pero aborta si la imagen no existe en el proyecto."""
+        image = self.get_image(value)
+        if not image:
+            msg.err(f"There is no '{value}' image on this project")
+        return image
 
     @property
     def name(self):

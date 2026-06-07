@@ -13,7 +13,7 @@ def get_client(args):
     client = OeConfig().get_client()
     if client:
         return client
-    msg().err("Need -c option (client name). Process aborted")
+    msg.err("Need -c option (client name). Process aborted")
 
 
 def get_database(args):
@@ -31,7 +31,7 @@ def get_database(args):
             "specify another database."
         )
         return default_database
-    msg().err("Need -c option (client name). Process aborted")
+    msg.err("Need -c option (client name). Process aborted")
 
 
 def get_module(args):
@@ -55,19 +55,17 @@ def get_backup_file(args):
 
 
 def get_param(args, param):
-    if param == "client":
-        return get_client(args)
-
-    if param == "database":
-        return get_database(args)
-
-    if param == "module":
-        return get_module(args)
-
-    if param == "backup_file":
-        return get_backup_file(args)
+    dispatch = {
+        "client": get_client,
+        "database": get_database,
+        "module": get_module,
+        "backup_file": get_backup_file,
+    }
+    handler = dispatch.get(param)
+    if handler:
+        return handler(args)
 
     if param == "no-deactivate":
-        if args.no_deactivate:
-            return args.no_deactivate
-        return False
+        return args.no_deactivate or False
+
+    return None

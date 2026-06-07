@@ -1,3 +1,7 @@
+import subprocess
+import sys
+from pathlib import Path
+
 from odoo_env.client import Client
 from odoo_env.command import (
     CloneRepo,
@@ -8,13 +12,11 @@ from odoo_env.command import (
 from odoo_env.config import OeConfig
 from odoo_env.deploy_keys import deploy_keys
 from odoo_env.managers.backup_manager import BackupManager
-import subprocess
-import sys
-from pathlib import Path
 from odoo_env.managers.environment_manager import EnvironmentManager
 from odoo_env.managers.image_manager import ImageManager
 from odoo_env.messages import msg
 from odoo_env.options import get_param
+from odoo_env.services.docker_client import DockerClient, RunSpec
 
 
 class OdooEnv:
@@ -35,64 +37,53 @@ class OdooEnv:
         self._client = Client(args, name=client_name)
 
     def build_commands(self):
-
+        # Tabla flag -> builder. El orden define el orden de ejecucion.
+        builders = [
+            ("install", self.install),
+            ("run_env", self.run_environment),
+            ("pull_images", self.pull_images),
+            ("write_config", self.write_config),
+            ("run_cli", self.run_client),
+            ("stop_env", self.stop_environment),
+            ("stop_cli", self.stop_client),
+            ("update", self._build_update),
+            ("deploy_keys", self._build_deploy_keys),
+            ("modules_to_test", self._build_qa),
+            ("server_help", self.server_help),
+            ("restore", self._build_restore),
+            ("create_test_db", self.create_test_db),
+        ]
         commands = []
-
-        if self._args.install:
-            commands += self.install()
-
-        if self._args.run_env:
-            commands += self.run_environment()
-
-        if self._args.pull_images:
-            commands += self.pull_images()
-
-        if self._args.write_config:
-            commands += self.write_config()
-
-        if self._args.run_cli:
-            commands += self.run_client()
-
-        if self._args.stop_env:
-            commands += self.stop_environment()
-
-        if self._args.stop_cli:
-            commands += self.stop_client()
-
-        if self._args.update:
-            database = get_param(self._args, "database")
-            if not database:
-                database = self.client.database_default_name
-            # trajendo los modulos definidos en linea de comandos o todos si no hay ninguno
-            modules = get_param(self._args, "module")
-            if not modules:
-                modules = ["all"]
-            commands += self.update(database, modules)
-
-        if self._args.deploy_keys:
-            conf = OeConfig()
-            if not conf.prod:
-                msg.err("Must be in prod mode in order to create deploy keys.")
-            deploy_keys(self, self.client.name)
-
-        if self._args.modules_to_test:
-            commands += self.qa(self._args.modules_to_test)
-
-        if self._args.server_help:
-            commands += self.server_help()
-
-        if self._args.restore:
-            database = get_param(self._args, "database")
-            backup_file = get_param(self._args, "backup_file")
-            no_deactivate = self._args.no_deactivate
-            commands += self.restore(
-                self.client.name, database, backup_file, no_deactivate
-            )
-
-        if self._args.create_test_db:
-            commands += self.create_test_db()
-
+        for flag, builder in builders:
+            if getattr(self._args, flag):
+                commands += builder()
         return commands
+
+    def _build_update(self):
+        database = get_param(self._args, "database")
+        if not database:
+            database = self.client.database_default_name
+        # modulos definidos en linea de comandos o todos si no hay ninguno
+        modules = get_param(self._args, "module")
+        if not modules:
+            modules = ["all"]
+        return self.update(database, modules)
+
+    def _build_deploy_keys(self):
+        conf = OeConfig()
+        if not conf.prod:
+            msg.err("Must be in prod mode in order to create deploy keys.")
+        deploy_keys(self, self.client.name)
+        return []
+
+    def _build_qa(self):
+        return self.qa(self._args.modules_to_test)
+
+    def _build_restore(self):
+        database = get_param(self._args, "database")
+        backup_file = get_param(self._args, "backup_file")
+        no_deactivate = self._args.no_deactivate
+        return self.restore(self.client.name, database, backup_file, no_deactivate)
 
     def execute(self, commands):
         for command in commands:
@@ -137,8 +128,7 @@ class OdooEnv:
         if ver <= 18:
             return ["src", "lib"]
 
-        if ver > 18:
-            return ["src", "site-packages"]
+        return ["src", "site-packages"]
 
     def _process_repos(self):
         """Clone or update repos as needed"""
@@ -172,8 +162,8 @@ class OdooEnv:
     def restore(
         self,
         client_name,
-        database=False,
-        backup_file=False,
+        database: "str | bool | None" = False,
+        backup_file: "str | bool | None" = False,
         no_deactivate=False,
     ):
         """Restaurar un backup desde el directorio backup_dir"""
@@ -188,10 +178,19 @@ class OdooEnv:
         Returns True if the database exists.
         """
         result = subprocess.run(
-            ["docker", "exec", f"pg-{self.client.name}",
-             "psql", "-U", "odoo", "-tAc",
-             f"SELECT 1 FROM pg_database WHERE datname='{database}'"],
-            capture_output=True, text=True,
+            [
+                "docker",
+                "exec",
+                f"pg-{self.client.name}",
+                "psql",
+                "-U",
+                "odoo",
+                "-tAc",
+                f"SELECT 1 FROM pg_database WHERE datname='{database}'",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
         )
         return result.returncode == 0 and result.stdout.strip() == "1"
 
@@ -207,9 +206,11 @@ class OdooEnv:
                 "run from an interactive terminal."
             )
         try:
-            answer = input(
-                f"Database '{database}' already exists. Overwrite? [y/N]: "
-            ).strip().lower()
+            answer = (
+                input(f"Database '{database}' already exists. Overwrite? [y/N]: ")
+                .strip()
+                .lower()
+            )
         except EOFError:
             msg.err(
                 f"Database '{database}' already exists and input stream ended.\n"
@@ -239,9 +240,7 @@ class OdooEnv:
         # Guard: confirm overwrite if target DB already exists
         if self._db_exists(database):
             if not self._confirm_overwrite(database):
-                msg.err(
-                    "Aborted by user. Test database was not modified."
-                )
+                msg.err("Aborted by user. Test database was not modified.")
 
         # Guard: seed database must exist
         seed_path = Path(self.client.backup_dir) / "bkp_test" / "test.zip"
@@ -255,12 +254,17 @@ class OdooEnv:
 
         # Step 1: Copy seed to backup_dir
         backup_dir = Path(self.client.backup_dir)
-        commands.append(Command(
-            self,
-            command=["cp", str(backup_dir / "bkp_test" / "test.zip"),
-                     str(backup_dir / "test.zip")],
-            usr_msg="Copying seed database",
-        ))
+        commands.append(
+            Command(
+                self,
+                command=[
+                    "cp",
+                    str(backup_dir / "bkp_test" / "test.zip"),
+                    str(backup_dir / "test.zip"),
+                ],
+                usr_msg="Copying seed database",
+            )
+        )
 
         # Step 2: Restore seed into test database
         commands += BackupManager(self, self.client.name).restore(
@@ -268,11 +272,13 @@ class OdooEnv:
         )
 
         # Step 3: Remove temporary copy
-        commands.append(Command(
-            self,
-            command=["rm", str(backup_dir / "test.zip")],
-            usr_msg="Removing temporary seed copy",
-        ))
+        commands.append(
+            Command(
+                self,
+                command=["rm", str(backup_dir / "test.zip")],
+                usr_msg="Removing temporary seed copy",
+            )
+        )
 
         # Step 4: Install all discovered modules with -i
         env_mgr = EnvironmentManager(self)
@@ -280,7 +286,7 @@ class OdooEnv:
 
         return commands
 
-    def do_extract_sources(self, client_name):
+    def do_extract_sources(self):
         """Extrae los fuentes de la imagen debug"""
         return ImageManager(self).extract_sources()
 
@@ -306,15 +312,15 @@ class OdooEnv:
         return EnvironmentManager(self).stop_client()
 
     def server_help(self):
-        from odoo_env.services.docker_client import DockerClient
-
         dc = DockerClient()
         cmd_list = dc.get_run_command(
-            self.client.get_image("odoo").name,
-            entrypoint="odoo",
-            remove=True,
-            name="help",
-            cmd=["--help"],
+            RunSpec(
+                self.client.get_image_required("odoo").name,
+                entrypoint="odoo",
+                remove=True,
+                name="help",
+                cmd=["--help"],
+            )
         )
         return [Command(self, command=cmd_list, usr_msg="Getting odoo help")]
 
@@ -325,17 +331,16 @@ class OdooEnv:
         #        self._client = Client(self, client_name)
         return EnvironmentManager(self).update(database, modules)
 
-    def qa(self, modules_to_test, client_test=False):
+    def qa(self, modules_to_test):
         """
         Corre un test especifico, los parametros necesarios son:
 
-        :param client_name: parametro -c
         :param database: parametro -d
-        :param modules: parametro -m (es una lista)
+        :param modules_to_test: parametro -m (es una lista)
         :return: lista con los comandos para correr
         """
         database = f"{self._client.name}_test"
-        return EnvironmentManager(self).qa(database, modules_to_test, client_test)
+        return EnvironmentManager(self).qa(database, modules_to_test)
 
     @property
     def client(self):

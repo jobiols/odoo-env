@@ -7,7 +7,9 @@ class SystemClient:
     def _base_cmd(sudo: bool = False) -> list[str]:
         return ["sudo"] if sudo else []
 
-    def make_mkdir_command(self, path: str = None, parents: bool = True) -> list[str]:
+    def make_mkdir_command(
+        self, path: str | None = None, parents: bool = True
+    ) -> list[str]:
         cmd = self._base_cmd() + ["mkdir"]
         if parents:
             cmd.append("-p")
@@ -26,15 +28,13 @@ class SystemClient:
     def get_chown_command(
         self,
         path: str,
-        user: str = None,
-        group: str = None,
+        owner: str,
         recursive: bool = False,
         sudo: bool = True,
     ) -> list[str]:
         cmd = self._base_cmd(sudo) + ["chown"]
         if recursive:
             cmd.append("-R")
-        owner = f"{user}:{group}"
         cmd.extend([owner, path])
         return cmd
 

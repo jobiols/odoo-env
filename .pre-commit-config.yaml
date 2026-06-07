@@ -41,18 +41,21 @@ repos:
         args: ["--profile", "black", "--filter-files", "--skip-gitignore"]
         exclude: /__init__\.py$
 
-
   - repo: https://github.com/psf/black
     rev: 25.9.0
     hooks:
-     - id: black
-       language_version: python3
+      - id: black
+        language_version: python3
 
   - repo: https://github.com/PyCQA/pylint
     rev: v4.0.4
     hooks:
       - id: pylint
         name: pylint checks
+        # data/ contiene fixtures (manifiestos Odoo que son dicts literales
+        # leidos con ast.literal_eval); no es codigo fuente. pyreverse ya los
+        # ignora con --ignore data.
+        exclude: ^odoo_env/data/
         args:
           - --rcfile=.pylintrc
 

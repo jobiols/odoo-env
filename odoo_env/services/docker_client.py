@@ -1,3 +1,38 @@
+from collections.abc import Mapping
+from dataclasses import dataclass
+
+
+@dataclass
+class RunSpec:
+    """Parametros para construir un `docker run`.
+
+    Agrupa las (muchas) opciones de `docker run` en un solo objeto para
+    mantener la firma de `DockerClient.get_run_command` acotada y tipada.
+    """
+
+    image: str
+    cmd: str | list[str] | None = None
+    detach: bool = False
+    remove: bool = False
+    interactive: bool = False
+    name: str | None = None
+    ports: dict[int, int] | None = None
+    volumes: Mapping[str, dict[str, str] | str] | None = None
+    env: dict[str, str] | None = None
+    links: dict[str, str] | None = None
+    network: str | None = None
+    restart: str | None = None
+    user: str | None = None
+    entrypoint: str | None = None
+    workdir: str | None = None
+    stop_after_init: bool = False
+    logfile: str | None = None
+    log_level: str | None = None
+    test_enable: bool = False
+    extra_args: list[str] | None = None
+    database: str | None = None
+
+
 class DockerClient:
 
     @staticmethod
@@ -6,43 +41,27 @@ class DockerClient:
 
     # ---------- helpers internos ----------
 
-    def _apply_basic_flags(
-        self,
-        cmd: list[str],
-        detach: bool,
-        remove: bool,
-        interactive: bool,
-    ) -> None:
-        if detach:
+    def _apply_basic_flags(self, cmd: list[str], spec: RunSpec) -> None:
+        if spec.detach:
             cmd.append("-d")
-        if remove:
+        if spec.remove:
             cmd.append("--rm")
-        if interactive:
+        if spec.interactive:
             cmd.append("-it")
 
-    # pylint: disable=too-many-arguments
-    def _apply_runtime_options(
-        self,
-        cmd: list[str],
-        name: str | None,
-        network: str | None,
-        restart: str | None,
-        user: str | None,
-        entrypoint: str | None,
-        workdir: str | None,
-    ) -> None:
-        if name:
-            cmd.extend(["--name", name])
-        if network:
-            cmd.extend(["--network", network])
-        if restart:
-            cmd.extend(["--restart", restart])
-        if user:
-            cmd.extend(["--user", user])
-        if entrypoint:
-            cmd.extend(["--entrypoint", entrypoint])
-        if workdir:
-            cmd.extend(["-w", workdir])
+    def _apply_runtime_options(self, cmd: list[str], spec: RunSpec) -> None:
+        if spec.name:
+            cmd.extend(["--name", spec.name])
+        if spec.network:
+            cmd.extend(["--network", spec.network])
+        if spec.restart:
+            cmd.extend(["--restart", spec.restart])
+        if spec.user:
+            cmd.extend(["--user", spec.user])
+        if spec.entrypoint:
+            cmd.extend(["--entrypoint", spec.entrypoint])
+        if spec.workdir:
+            cmd.extend(["-w", spec.workdir])
 
     def _apply_ports(self, cmd: list[str], ports: dict[int, int] | None) -> None:
         if not ports:
@@ -53,7 +72,7 @@ class DockerClient:
     def _apply_volumes(
         self,
         cmd: list[str],
-        volumes: dict[str, dict[str, str] | str] | None,
+        volumes: Mapping[str, dict[str, str] | str] | None,
     ) -> None:
         if not volumes:
             return
@@ -79,36 +98,29 @@ class DockerClient:
         for target, alias in links.items():
             cmd.extend(["--link", f"{target}:{alias}"])
 
-    def _apply_odoo_args(
-        self,
-        cmd: list[str],
-        stop_after_init: bool,
-        logfile: str | None,
-        log_level: str | None,
-        test_enable: bool,
-    ) -> None:
-        if stop_after_init:
+    def _apply_odoo_args(self, cmd: list[str], spec: RunSpec) -> None:
+        if spec.stop_after_init:
             cmd.append("--stop-after-init")
 
-        if logfile is not None:
-            if logfile == "false":
+        if spec.logfile is not None:
+            if spec.logfile == "false":
                 cmd.append("--logfile=false")
             else:
-                cmd.append(f"--logfile={logfile}")
+                cmd.append(f"--logfile={spec.logfile}")
 
-        if log_level:
-            cmd.append(f"--log-level={log_level}")
+        if spec.log_level:
+            cmd.append(f"--log-level={spec.log_level}")
 
-        if test_enable:
+        if spec.test_enable:
             cmd.append("--test-enable")
 
-    def _apply_cmd(self, cmd: list[str], command: str | list[str] | None) -> None:
+    def _apply_cmd(self, cmd_list: list[str], command: str | list[str] | None) -> None:
         if not command:
             return
         if isinstance(command, str):
-            cmd.extend(command.split())
+            cmd_list.extend(command.split())
         else:
-            cmd.extend(command)
+            cmd_list.extend(command)
 
     def _apply_database(self, cmd: list[str], database: str | None) -> None:
         if not database:
@@ -118,13 +130,7 @@ class DockerClient:
     def get_stop_command(self, container_name: str) -> list[str]:
         return ["docker", "stop", container_name]
 
-    def get_rm_command(
-        self,
-        container_name: str,
-        recursive: bool = False,
-        force: bool = False,
-        sudo: bool = True,
-    ) -> list[str]:
+    def get_rm_command(self, container_name: str) -> list[str]:
         return ["docker", "rm", container_name]
 
     def get_pull_command(self, image: str) -> list[str]:
@@ -132,61 +138,39 @@ class DockerClient:
 
     def get_extract_command(self, image: str, src: str, host_dest: str) -> list[str]:
         return [
-            "docker", "run", "--rm",
-            "-v", f"{host_dest}:/dest",
+            "docker",
+            "run",
+            "--rm",
+            "-v",
+            f"{host_dest}:/dest",
             image,
-            "cp", "-r", f"{src}/.", "/dest/",
+            "cp",
+            "-r",
+            f"{src}/.",
+            "/dest/",
         ]
 
-    # ---------- API pública (SIN CAMBIOS) ----------
-    # pylint: disable=too-many-arguments
-    def get_run_command(
-        self,
-        image: str,
-        cmd: str | list[str] | None = None,
-        detach: bool = False,
-        remove: bool = False,
-        interactive: bool = False,
-        name: str | None = None,
-        ports: dict[int, int] | None = None,
-        volumes: dict[str, dict[str, str]] | None = None,
-        env: dict[str, str] | None = None,
-        links: dict[str, str] | None = None,
-        network: str | None = None,
-        restart: str | None = None,
-        user: str | None = None,
-        entrypoint: str | None = None,
-        workdir: str | None = None,
-        stop_after_init: bool = False,
-        logfile: str | None = None,
-        log_level: str | None = None,
-        test_enable: bool = False,
-        extra_args: list[str] | None = None,
-        database: str | None = None,
-        network_alias: str | None = None,  # se deja para compatibilidad
-    ) -> list[str]:
+    # ---------- API pública ----------
 
+    def get_run_command(self, spec: RunSpec) -> list[str]:
         command = self._base_cmd() + ["run"]
 
-        self._apply_basic_flags(command, detach, remove, interactive)
-        self._apply_runtime_options(
-            command, name, network, restart, user, entrypoint, workdir
-        )
-        self._apply_ports(command, ports)
-        self._apply_volumes(command, volumes)
-        self._apply_env(command, env)
-        self._apply_links(command, links)
+        self._apply_basic_flags(command, spec)
+        self._apply_runtime_options(command, spec)
+        self._apply_ports(command, spec.ports)
+        self._apply_volumes(command, spec.volumes)
+        self._apply_env(command, spec.env)
+        self._apply_links(command, spec.links)
 
-        command.append(image)
+        command.append(spec.image)
 
-        self._apply_odoo_args(command, stop_after_init, logfile, log_level, test_enable)
+        self._apply_odoo_args(command, spec)
 
-        if extra_args:
-            command.extend(extra_args)
+        if spec.extra_args:
+            command.extend(spec.extra_args)
 
-        self._apply_cmd(command, cmd)
-
-        self._apply_database(command, database)
+        self._apply_cmd(command, spec.cmd)
+        self._apply_database(command, spec.database)
 
         return command
 

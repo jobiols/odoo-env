@@ -1,8 +1,6 @@
-import builtins
-import sys
-import unittest
+import subprocess
 from pathlib import Path
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, PropertyMock, patch
 
 from odoo_env.command import Command, EnsureNetworkCommand
 from odoo_env.config import OeConfig
@@ -286,6 +284,7 @@ class TestRepository(OdooEnvTestCase):
             extract_src_cmd,
             "Expected 'Extracting src' command in pull_images() debug mode",
         )
+        assert extract_src_cmd is not None
         base = OeConfig().base_dir
         expected_src = [
             "docker",
@@ -309,6 +308,7 @@ class TestRepository(OdooEnvTestCase):
             extract_lib_cmd,
             "Expected 'Extracting lib' command in pull_images() debug mode",
         )
+        assert extract_lib_cmd is not None
         expected_lib = [
             "docker",
             "run",
@@ -349,7 +349,8 @@ class TestRepository(OdooEnvTestCase):
     def test_repo_clone(self):
         repo = GitRepo("https://github.com/jobiols/project.git", "14.0")
         self.assertEqual(
-            repo.clone, "clone --depth 1  -b 14.0 https://github.com/jobiols/project.git"
+            repo.clone,
+            "clone --depth 1  -b 14.0 https://github.com/jobiols/project.git",
         )
 
     def test_repo2_clone(self):
@@ -358,9 +359,8 @@ class TestRepository(OdooEnvTestCase):
 
     def test_ensure_network_skips_when_exists(self):
         """SC-03: check_args() returns False when docker network inspect exits 0."""
-        import subprocess as _subprocess
 
-        mock_parent = unittest.mock.MagicMock()
+        mock_parent = MagicMock()
         mock_parent.verbose = False
 
         cmd = EnsureNetworkCommand(
@@ -370,7 +370,7 @@ class TestRepository(OdooEnvTestCase):
             args="odoo-net",
         )
 
-        mock_result = unittest.mock.MagicMock()
+        mock_result = MagicMock()
         mock_result.returncode = 0
 
         with patch(
@@ -381,15 +381,15 @@ class TestRepository(OdooEnvTestCase):
         self.assertFalse(result)
         mock_run.assert_called_once_with(
             ["docker", "network", "inspect", "odoo-net"],
-            stdout=_subprocess.DEVNULL,
-            stderr=_subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
         )
 
     def test_ensure_network_runs_when_absent(self):
         """SC-04: check_args() returns True when docker network inspect exits non-zero."""
-        import subprocess as _subprocess
 
-        mock_parent = unittest.mock.MagicMock()
+        mock_parent = MagicMock()
         mock_parent.verbose = False
 
         cmd = EnsureNetworkCommand(
@@ -399,7 +399,7 @@ class TestRepository(OdooEnvTestCase):
             args="odoo-net",
         )
 
-        mock_result = unittest.mock.MagicMock()
+        mock_result = MagicMock()
         mock_result.returncode = 1
 
         with patch(
@@ -410,8 +410,9 @@ class TestRepository(OdooEnvTestCase):
         self.assertTrue(result)
         mock_run.assert_called_once_with(
             ["docker", "network", "inspect", "odoo-net"],
-            stdout=_subprocess.DEVNULL,
-            stderr=_subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
         )
 
     def test_server_help(self):
@@ -558,12 +559,12 @@ class TestRepository(OdooEnvTestCase):
 
     def test_verbose_prints_command(self):
         """Command.subprocess_call calls msg.run when verbose=True."""
-        mock_parent = unittest.mock.MagicMock()
+        mock_parent = MagicMock()
         mock_parent.verbose = True
 
         cmd = Command(mock_parent, command=["echo", "hello"])
 
-        mock_result = unittest.mock.MagicMock()
+        mock_result = MagicMock()
         mock_result.returncode = 0
 
         with patch("odoo_env.command.subprocess.run", return_value=mock_result):
@@ -609,6 +610,7 @@ class TestRepository(OdooEnvTestCase):
             None,
         )
         self.assertIsNotNone(restore_cmd, "No se generó comando de restore")
+        assert restore_cmd is not None
         cmd = restore_cmd.command
         self.assertIn("--link", cmd)
         link_index = cmd.index("--link")
@@ -630,12 +632,14 @@ class TestRepository(OdooEnvTestCase):
             None,
         )
         self.assertIsNotNone(restore_cmd, "No se generó comando de restore")
+        assert restore_cmd is not None
         # El volumen de backup debe contener test_client, no test_client_prod
         backup_volume = next(
             (part for part in restore_cmd.command if "backup_dir" in part),
             None,
         )
         self.assertIsNotNone(backup_volume)
+        assert backup_volume is not None
         self.assertIn("test_client", backup_volume)
         self.assertNotIn("test_client_prod", backup_volume)
 
@@ -661,6 +665,7 @@ class TestRepository(OdooEnvTestCase):
             None,
         )
         self.assertIsNotNone(run_cmd, "No se generó comando de test")
+        assert run_cmd is not None
         u_index = run_cmd.index("-u")
         self.assertEqual(run_cmd[u_index + 1], "modulo_a_testear")
 
@@ -703,11 +708,12 @@ class TestRepository(OdooEnvTestCase):
 class TestGetPacks(OdooEnvTestCase):
 
     def _make_oe_with_version(self, version: int):
-        from unittest.mock import PropertyMock
+
         options = MockArgs(debug=True, client="test_client")
         oe = OdooEnv(options)
         with patch.object(
-            type(oe._client), "numeric_ver",
+            type(oe._client),
+            "numeric_ver",
             new_callable=PropertyMock,
             return_value=float(version),
         ):
@@ -793,7 +799,9 @@ class TestCreateTestDb(OdooEnvTestCase):
         options = MockArgs(debug=False, client="test_client")
         oe = OdooEnv(options)
         env_mgr = EnvironmentManager(oe)
-        result = env_mgr._build_module_command("dimec_test", ["module_a", "module_b"], "-i")
+        result = env_mgr._build_module_command(
+            "dimec_test", ["module_a", "module_b"], "-i"
+        )
         self.assertEqual(len(result), 1)
         cmd = result[0]
         self.assertIn("-i", cmd.command)
@@ -826,8 +834,12 @@ class TestCreateTestDb(OdooEnvTestCase):
     def test_create_test_db_zero_modules_aborts(self):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
-        with patch.object(EnvironmentManager, "discover_modules_in_cwd", return_value=[]):
-            with patch.object(OdooEnv, "_db_exists", return_value=False) as mock_db_exists:
+        with patch.object(
+            EnvironmentManager, "discover_modules_in_cwd", return_value=[]
+        ):
+            with patch.object(
+                OdooEnv, "_db_exists", return_value=False
+            ) as mock_db_exists:
                 with self.assertRaises(OeError) as ctx:
                     oe.create_test_db()
                 self.assertIn("No module", str(ctx.exception))
@@ -838,7 +850,9 @@ class TestCreateTestDb(OdooEnvTestCase):
     def test_create_test_db_confirm_yes_proceeds(self):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
-        with patch.object(EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]):
+        with patch.object(
+            EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]
+        ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
                 with patch("sys.stdin.isatty", return_value=True):
                     with patch("builtins.input", return_value="y"):
@@ -851,7 +865,9 @@ class TestCreateTestDb(OdooEnvTestCase):
     def test_create_test_db_confirm_no_aborts(self):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
-        with patch.object(EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]):
+        with patch.object(
+            EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]
+        ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
                 with patch("sys.stdin.isatty", return_value=True):
                     with patch("builtins.input", return_value="n"):
@@ -864,7 +880,9 @@ class TestCreateTestDb(OdooEnvTestCase):
     def test_create_test_db_non_interactive_aborts(self):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
-        with patch.object(EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]):
+        with patch.object(
+            EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]
+        ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
                 with patch("sys.stdin.isatty", return_value=False):
                     with self.assertRaises(OeError) as ctx:
@@ -876,7 +894,9 @@ class TestCreateTestDb(OdooEnvTestCase):
     def test_create_test_db_eof_aborts(self):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
-        with patch.object(EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]):
+        with patch.object(
+            EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]
+        ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
                 with patch("sys.stdin.isatty", return_value=True):
                     with patch("builtins.input", side_effect=EOFError):
@@ -887,24 +907,32 @@ class TestCreateTestDb(OdooEnvTestCase):
     # ------- 4.6 full command composition (RED) -------
 
     def test_create_test_db_command_composition(self):
-        from odoo_env.constants import DBTOOLS_IMAGE
+
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
         backup_dir = "/odoo_ar/odoo-14.0/test_client/backup_dir/"
-        with patch.object(EnvironmentManager, "discover_modules_in_cwd",
-                          return_value=["module_a", "module_b"]):
+        with patch.object(
+            EnvironmentManager,
+            "discover_modules_in_cwd",
+            return_value=["module_a", "module_b"],
+        ):
             with patch.object(OdooEnv, "_db_exists", return_value=False):
-                with patch.object(type(oe._client), "backup_dir",
-                                  new_callable=PropertyMock,
-                                  return_value=backup_dir):
+                with patch.object(
+                    type(oe._client),
+                    "backup_dir",
+                    new_callable=PropertyMock,
+                    return_value=backup_dir,
+                ):
                     with patch.object(Path, "is_file", return_value=True):
                         result = oe.create_test_db()
 
         self.assertEqual(len(result), 4)
 
         # Command 0: cp
-        self.assertEqual(result[0].command,
-                         ["cp", f"{backup_dir}bkp_test/test.zip", f"{backup_dir}test.zip"])
+        self.assertEqual(
+            result[0].command,
+            ["cp", f"{backup_dir}bkp_test/test.zip", f"{backup_dir}test.zip"],
+        )
         self.assertIn("Copying seed", result[0].usr_msg)
 
         # Command 1: restore
@@ -930,7 +958,9 @@ class TestCreateTestDb(OdooEnvTestCase):
     def test_create_test_db_seed_missing_aborts(self):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
-        with patch.object(EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]):
+        with patch.object(
+            EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]
+        ):
             with patch.object(OdooEnv, "_db_exists", return_value=False):
                 with patch.object(Path, "is_file", return_value=False):
                     with self.assertRaises(OeError) as ctx:

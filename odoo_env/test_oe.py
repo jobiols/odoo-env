@@ -819,7 +819,9 @@ class TestCreateTestDb(OdooEnvTestCase):
         self.assertEqual(len(result), 1)
         cmd = result[0]
         self.assertIn("-i", cmd.command)
-        self.assertIn("module_a, module_b", cmd.command)
+        # Odoo -i needs comma WITHOUT space
+        self.assertIn("module_a,module_b", cmd.command)
+        self.assertNotIn("module_a, module_b", cmd.command)
         self.assertIn("-d", cmd.command)
         self.assertIn("dimec_test", cmd.command)
         self.assertIn("--stop-after-init", cmd.command)
@@ -961,7 +963,8 @@ class TestCreateTestDb(OdooEnvTestCase):
 
         # Command 3: install
         self.assertIn("-i", result[3].command)
-        self.assertIn("module_a, module_b", result[3].command)
+        self.assertIn("module_a,module_b", result[3].command)
+        self.assertNotIn("module_a, module_b", result[3].command)
         self.assertIn("-d", result[3].command)
         self.assertIn("test_client_test", result[3].command)
         self.assertIn("--stop-after-init", result[3].command)

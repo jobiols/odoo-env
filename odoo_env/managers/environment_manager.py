@@ -385,7 +385,9 @@ class EnvironmentManager:
                 env={"ODOO_CONF": "/dev/null"},
                 stop_after_init=True,
                 logfile="false",
-                extra_args=["-d", database, verb, ", ".join(modules)],
+                # Odoo's -i/-u expects modules comma-separated WITHOUT spaces;
+                # a leading space after a comma makes the module not be found.
+                extra_args=["-d", database, verb, ",".join(modules)],
             )
         )
 

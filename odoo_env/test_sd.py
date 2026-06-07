@@ -4,7 +4,6 @@ from unittest.mock import patch
 
 from odoo_env import sd
 
-
 SAMPLE_IMAGES = [
     ("odoo:16.0", "aaa111"),
     ("odoo:17.0", "bbb222"),
@@ -61,9 +60,7 @@ class TestFilterImagesByMask(unittest.TestCase):
 class TestGetImages(unittest.TestCase):
 
     def _run_result(self, returncode, stdout="", stderr=""):
-        return SimpleNamespace(
-            returncode=returncode, stdout=stdout, stderr=stderr
-        )
+        return SimpleNamespace(returncode=returncode, stdout=stdout, stderr=stderr)
 
     def test_parses_name_and_id(self):
         stdout = "odoo:16.0 aaa111\njobiols/odoo-19e:latest ccc333\n"
@@ -78,7 +75,9 @@ class TestGetImages(unittest.TestCase):
 
     def test_skips_blank_lines(self):
         with patch.object(
-            sd.subprocess, "run", return_value=self._run_result(0, "\n\nodoo:16.0 aaa\n")
+            sd.subprocess,
+            "run",
+            return_value=self._run_result(0, "\n\nodoo:16.0 aaa\n"),
         ):
             images = sd.get_images()
         self.assertEqual(images, [("odoo:16.0", "aaa")])
@@ -93,9 +92,7 @@ class TestGetImages(unittest.TestCase):
 class TestProcessInputRmdisk(unittest.TestCase):
 
     def test_rmdisk_with_mask_filters_images(self):
-        with patch.object(
-            sd, "get_images", return_value=SAMPLE_IMAGES
-        ):
+        with patch.object(sd, "get_images", return_value=SAMPLE_IMAGES):
             cmd = sd.process_input(["sd", "rmdisk", "odoo*"])
         self.assertEqual(cmd, ["sudo", "docker", "rmi", "-f", "aaa111", "bbb222"])
 
@@ -132,14 +129,20 @@ class TestProcessInputOther(unittest.TestCase):
         cmd = sd.process_input(["sd", "inside", "odoo:16.0"])
         self.assertEqual(
             cmd,
-            ["sudo", "docker", "run", "-it", "--rm", "--entrypoint=/bin/bash", "odoo:16.0"],
+            [
+                "sudo",
+                "docker",
+                "run",
+                "-it",
+                "--rm",
+                "--entrypoint=/bin/bash",
+                "odoo:16.0",
+            ],
         )
 
     def test_attach_builds_exec_command(self):
         cmd = sd.process_input(["sd", "attach", "mycontainer"])
-        self.assertEqual(
-            cmd, ["sudo", "docker", "exec", "-it", "mycontainer", "bash"]
-        )
+        self.assertEqual(cmd, ["sudo", "docker", "exec", "-it", "mycontainer", "bash"])
 
     def test_rmall_with_containers(self):
         with patch.object(sd, "get_container_ids", return_value=["c1", "c2"]):

@@ -56,7 +56,9 @@ class TestImageManager(OdooEnvTestCase):
         options = MockArgs(debug=True, client="test_client")
         oe = OdooEnv(options)
         cmds = oe.pull_images()
-        docker_run_cmds = [c.command for c in cmds if c.command[:2] == ["docker", "run"]]
+        docker_run_cmds = [
+            c.command for c in cmds if c.command[:2] == ["docker", "run"]
+        ]
         for cmd in docker_run_cmds:
             self.assertNotIn("--entrypoint", cmd)
 
@@ -117,9 +119,12 @@ class TestImageManager(OdooEnvTestCase):
         oe = OdooEnv(options)
         cmds = oe.pull_images()
         cp_cmds = [
-            c.command for c in cmds
+            c.command
+            for c in cmds
             if len(c.command) >= 8
             and c.command[:3] == ["docker", "run", "--rm"]
             and "cp" in c.command
         ]
-        self.assertEqual(len(cp_cmds), 2, f"Expected 2 docker cp commands, got: {cp_cmds}")
+        self.assertEqual(
+            len(cp_cmds), 2, f"Expected 2 docker cp commands, got: {cp_cmds}"
+        )

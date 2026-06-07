@@ -4,7 +4,7 @@ class "BackupManager" as odoo_env.managers.backup_manager.BackupManager {
   client
   docker_client
   parent
-  restore(database, backup_file, no_deactivate, from_server)
+  restore(database: 'str | bool | None', backup_file: 'str | bool | None', no_deactivate)
 }
 class "Client" as odoo_env.client.Client {
   backup_dir
@@ -31,11 +31,12 @@ class "Client" as odoo_env.client.Client {
   check_common(manifest)
   check_v2(manifest)
   get_image(value)
+  get_image_required(value)
   get_manifest(path)
   get_manifest_from_struct(path: Path) -> tuple[dict[str, object] | None, str | None]
   get_manifest_from_url() -> dict[str, object] | None
   image(image_name)
-  load_manifest(filename: str) -> dict[str, object]
+  load_manifest(filename: 'str | Path') -> dict[str, object]
   parse_odoo_version(ver: str) -> str
 }
 class "CloneRepo" as odoo_env.command.CloneRepo {
@@ -55,10 +56,11 @@ class "CreateGitignore" as odoo_env.command.CreateGitignore {
   execute()
 }
 class "DockerClient" as odoo_env.services.docker_client.DockerClient {
+  get_extract_command(image: str, src: str, host_dest: str) -> list[str]
   get_network_create_command(network: str) -> list[str]
   get_pull_command(image: str) -> list[str]
-  get_rm_command(container_name: str, recursive: bool, force: bool, sudo: bool) -> list[str]
-  get_run_command(image: str, cmd: str | list[str] | None, detach: bool, remove: bool, interactive: bool, name: str | None, ports: dict[int, int] | None, volumes: dict[str, dict[str, str]] | None, env: dict[str, str] | None, links: dict[str, str] | None, network: str | None, restart: str | None, user: str | None, entrypoint: str | None, workdir: str | None, stop_after_init: bool, logfile: str | None, log_level: str | None, test_enable: bool, extra_args: list[str] | None, database: str | None, network_alias: str | None) -> list[str]
+  get_rm_command(container_name: str) -> list[str]
+  get_run_command(spec: RunSpec) -> list[str]
   get_stop_command(container_name: str) -> list[str]
 }
 class "DockerImage" as odoo_env.images.DockerImage {
@@ -72,10 +74,11 @@ class "EnsureNetworkCommand" as odoo_env.command.EnsureNetworkCommand {
 }
 class "EnvironmentManager" as odoo_env.managers.environment_manager.EnvironmentManager {
   docker_client
-  parent
+  parent : str
   system_client
+  discover_modules_in_cwd()
   install()
-  qa(database, modules_to_test, client_test)
+  qa(database, modules_to_test)
   run_client(write_config)
   run_environment()
   stop_client()
@@ -113,13 +116,13 @@ class "MessageOnly" as odoo_env.command.MessageOnly {
 class "MockArgs" as odoo_env.test_helpers.MockArgs {
 }
 class "Msg" as odoo_env.messages.Msg {
-  done(msg)
-  err(msg)
+  done(text)
+  err(text) -> NoReturn
   green(string)
-  inf(msg)
+  inf(text)
   red(string)
-  run(msg)
-  warn(msg)
+  run(text)
+  warn(text)
   yellow(string)
   yellow_light(string)
 }
@@ -135,13 +138,14 @@ class "OdooEnv" as odoo_env.odooenv.OdooEnv {
   debug
   verbose
   build_commands()
-  do_extract_sources(client_name)
+  create_test_db()
+  do_extract_sources()
   execute(commands)
   get_packs()
   install()
   pull_images()
-  qa(modules_to_test, client_test)
-  restore(client_name, database, backup_file, no_deactivate, from_server)
+  qa(modules_to_test)
+  restore(client_name, database: 'str | bool | None', backup_file: 'str | bool | None', no_deactivate)
   run_client(write_config)
   run_environment()
   server_help()
@@ -160,6 +164,11 @@ class "OdooEnvTestCase" as odoo_env.test_helpers.OdooEnvTestCase {
   save_config_patcher : _patch
   setUp()
   tearDown()
+}
+class "OdooVersionInfo" as odoo_env.constants.OdooVersionInfo {
+  lib : str
+  python : str
+  src : str
 }
 class "OeConfig" as odoo_env.config.OeConfig {
   base_dir
@@ -188,14 +197,74 @@ class "PullRepo" as odoo_env.command.PullRepo {
 class "RemovedirCommand" as odoo_env.command.RemovedirCommand {
   check_args()
 }
+class "RunSpec" as odoo_env.services.docker_client.RunSpec {
+  cmd : str | list[str] | None
+  database : str | None
+  detach : bool
+  entrypoint : str | None
+  env : dict[str, str] | None
+  extra_args : list[str] | None
+  image : str
+  interactive : bool
+  links : dict[str, str] | None
+  log_level : str | None
+  logfile : str | None
+  name : str | None
+  network : str | None
+  ports : dict[int, int] | None
+  remove : bool
+  restart : str | None
+  stop_after_init : bool
+  test_enable : bool
+  user : str | None
+  volumes : Mapping[str, dict[str, str] | str] | None
+  workdir : str | None
+}
 class "SingletonMeta" as odoo_env.singleton.SingletonMeta {
   reset()
 }
 class "SystemClient" as odoo_env.services.system.SystemClient {
   get_chmod_command(path: str, mode: str, recursive: bool, sudo: bool) -> list[str]
-  get_chown_command(path: str, user: str, group: str, recursive: bool, sudo: bool) -> list[str]
+  get_chown_command(path: str, owner: str, recursive: bool, sudo: bool) -> list[str]
   get_rm_command(path: str, recursive: bool, force: bool, sudo: bool) -> list[str]
-  make_mkdir_command(path: str, parents: bool) -> list[str]
+  make_mkdir_command(path: str | None, parents: bool) -> list[str]
+}
+class "TestCreateTestDb" as odoo_env.test_oe.TestCreateTestDb {
+  test_build_module_command_install()
+  test_create_test_db_command_composition()
+  test_create_test_db_confirm_no_aborts()
+  test_create_test_db_confirm_yes_proceeds()
+  test_create_test_db_dispatched_from_build_commands()
+  test_create_test_db_eof_aborts()
+  test_create_test_db_non_interactive_aborts()
+  test_create_test_db_seed_missing_aborts()
+  test_create_test_db_zero_modules_aborts()
+  test_discover_modules_does_not_recurse()
+  test_discover_modules_empty_cwd()
+  test_discover_modules_finds_manifest_dirs()
+  test_discover_modules_ignores_hidden_dirs()
+  test_discover_modules_ignores_root_manifest()
+  test_update_still_works_after_refactor()
+}
+class "TestDebugMountings" as odoo_env.test_environment_manager.TestDebugMountings {
+  test_legacy_11_has_extra_addons()
+  test_legacy_12_has_extra_addons()
+  test_legacy_13_has_extra_addons()
+  test_odoo14_lib_bind_ends_with_slash()
+  test_odoo14_lib_mount()
+  test_odoo14_no_dist_local_packages_key()
+  test_odoo14_no_dist_packages_key()
+  test_odoo14_src_bind_is_odoo_path()
+  test_odoo14_src_mount()
+  test_odoo14_uses_lib_key()
+  test_odoo14_uses_src_key()
+  test_odoo15_lib_mount()
+  test_odoo16_lib_mount()
+  test_odoo17_lib_contains_python310()
+  test_odoo17_lib_mount()
+  test_odoo18_lib_mount()
+  test_odoo19_unchanged()
+  test_unknown_version_raises_value_error()
 }
 class "TestDockerClient" as odoo_env.test_docker_client.TestDockerClient {
   test_get_pull_command_does_not_contain_run()
@@ -208,14 +277,110 @@ class "TestEnvironmentManager" as odoo_env.test_environment_manager.TestEnvironm
   test_install_does_not_reference_dist_dirs()
   test_install_never_calls_extract_sources()
 }
+class "TestFilterImagesByMask" as odoo_env.test_sd.TestFilterImagesByMask {
+  test_empty_image_list()
+  test_exact_full_name()
+  test_no_match_returns_empty()
+  test_plain_text_matches_as_substring()
+  test_plain_text_no_match()
+  test_plain_text_substring_matches_tag_part()
+  test_plain_text_substring_single_image()
+  test_prefix_glob_matches_repository_with_tag()
+  test_question_mark_glob()
+  test_wildcard_both_sides_matches_substring()
+}
+class "TestGetExtractCommand" as odoo_env.test_docker_client.TestGetExtractCommand {
+  dc
+  setUp()
+  test_image_token_before_cp()
+  test_no_entrypoint_flag()
+  test_no_interactive_flag()
+  test_returns_correct_command_shape()
+}
+class "TestGetImages" as odoo_env.test_sd.TestGetImages {
+  test_parses_name_and_id()
+  test_returns_empty_on_error()
+  test_skips_blank_lines()
+}
+class "TestGetManifest" as odoo_env.test_client.TestGetManifest {
+  check_common_patcher : _patch
+  check_v2_patcher : _patch
+  config_data_patcher : _patch
+  discover_patcher : _patch
+  get_client_path_patcher : _patch
+  mock_check_common : AsyncMock, MagicMock, dict
+  mock_check_v2 : AsyncMock, MagicMock, dict
+  mock_config_data : AsyncMock, MagicMock, dict
+  mock_discover_manifest_from_path : AsyncMock, MagicMock, dict
+  mock_get_client_path : AsyncMock, MagicMock, dict
+  mock_get_manifest_from_struct : AsyncMock, MagicMock, dict
+  mock_save_client_path : AsyncMock, MagicMock, dict
+  mock_save_config : AsyncMock, MagicMock, dict
+  mock_subprocess_run : AsyncMock, MagicMock, dict
+  save_client_path_patcher : _patch
+  save_config_patcher : _patch
+  struct_patcher : _patch
+  subprocess_patcher : _patch
+  setUp()
+  tearDown()
+  test_empty_url_raises_oe_error()
+  test_existing_client_path_skips_url_bool()
+  test_existing_client_path_skips_url_str()
+  test_install_bool_skips_url()
+  test_install_none_skips_url()
+  test_invalid_url_raises_oe_error()
+  test_url_clone_failure_propagates()
+  test_url_no_manifest_returns_none()
+  test_url_str_calls_get_manifest_from_url()
+  test_url_success_saves_client_path()
+}
+class "TestGetPacks" as odoo_env.test_oe.TestGetPacks {
+  test_get_packs_v14_not_dist_packages()
+  test_get_packs_v14_returns_src_lib()
+  test_get_packs_v18_returns_src_lib()
+}
 class "TestImageManager" as odoo_env.test_image_manager.TestImageManager {
+  test_extract_sources_legacy_cleanup_uses_force()
+  test_extract_sources_no_extract_sh_reference()
+  test_extract_sources_removes_legacy_dist_local_packages()
+  test_extract_sources_removes_legacy_dist_packages()
+  test_extract_sources_uses_cp_not_entrypoint()
+  test_extract_sources_uses_two_docker_run_rm_v_commands()
   test_pull_images_calls_extract_sources_in_debug_mode()
   test_pull_images_command_starts_with_docker_pull()
   test_pull_images_no_extract_sources_in_non_debug_mode()
   test_pull_images_uses_pull_not_run()
 }
+class "TestOdooVersionMap" as odoo_env.test_constants.TestOdooVersionMap {
+  test_legacy_and_future_keys_absent()
+  test_odoo_python_map_absent()
+  test_odoo_version_info_is_namedtuple()
+  test_version14_lib()
+  test_version14_python()
+  test_version14_src()
+  test_version15_same_as_14()
+  test_version16_same_as_14()
+  test_version17_python310()
+  test_version18_python312()
+}
+class "TestProcessInputOther" as odoo_env.test_sd.TestProcessInputOther {
+  test_attach_builds_exec_command()
+  test_help_returns_none()
+  test_inside_builds_run_command()
+  test_no_params_returns_none()
+  test_passthrough_unknown_command()
+  test_rmall_with_containers()
+}
+class "TestProcessInputRmdisk" as odoo_env.test_sd.TestProcessInputRmdisk {
+  test_old_rmdiskall_is_no_longer_special()
+  test_rmdisk_with_mask_filters_images()
+  test_rmdisk_with_mask_no_match_returns_none()
+  test_rmdisk_without_mask_no_images_returns_none()
+  test_rmdisk_without_mask_removes_all()
+}
 class "TestRepository" as odoo_env.test_oe.TestRepository {
   setUp()
+  test_base_dir_does_not_require_client()
   test_base_dir_saved_as_string()
   test_check_version()
   test_cmd()
@@ -261,14 +426,18 @@ odoo_env.command.PullImage --|> odoo_env.command.Command
 odoo_env.command.PullRepo --|> odoo_env.command.Command
 odoo_env.command.RemovedirCommand --|> odoo_env.command.Command
 odoo_env.command.WriteConfigFile --|> odoo_env.command.Command
+odoo_env.test_environment_manager.TestDebugMountings --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_environment_manager.TestEnvironmentManager --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_image_manager.TestImageManager --|> odoo_env.test_helpers.OdooEnvTestCase
+odoo_env.test_oe.TestCreateTestDb --|> odoo_env.test_helpers.OdooEnvTestCase
+odoo_env.test_oe.TestGetPacks --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_oe.TestRepository --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.client.Client --* odoo_env.managers.backup_manager.BackupManager : client
 odoo_env.client.Client --* odoo_env.managers.image_manager.ImageManager : client
 odoo_env.services.docker_client.DockerClient --* odoo_env.managers.backup_manager.BackupManager : docker_client
 odoo_env.services.docker_client.DockerClient --* odoo_env.managers.environment_manager.EnvironmentManager : docker_client
 odoo_env.services.docker_client.DockerClient --* odoo_env.managers.image_manager.ImageManager : docker_client
+odoo_env.services.docker_client.DockerClient --* odoo_env.test_docker_client.TestGetExtractCommand : dc
 odoo_env.services.system.SystemClient --* odoo_env.managers.environment_manager.EnvironmentManager : system_client
 odoo_env.services.system.SystemClient --* odoo_env.managers.image_manager.ImageManager : system_client
 @enduml

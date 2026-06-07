@@ -10,8 +10,6 @@ package "odoo_env.config" as odoo_env.config {
 }
 package "odoo_env.constants" as odoo_env.constants {
 }
-package "odoo_env.create_database" as odoo_env.create_database {
-}
 package "odoo_env.deploy_keys" as odoo_env.deploy_keys {
 }
 package "odoo_env.images" as odoo_env.images {
@@ -46,6 +44,10 @@ package "odoo_env.services.system" as odoo_env.services.system {
 }
 package "odoo_env.singleton" as odoo_env.singleton {
 }
+package "odoo_env.test_client" as odoo_env.test_client {
+}
+package "odoo_env.test_constants" as odoo_env.test_constants {
+}
 package "odoo_env.test_docker_client" as odoo_env.test_docker_client {
 }
 package "odoo_env.test_environment_manager" as odoo_env.test_environment_manager {
@@ -56,6 +58,8 @@ package "odoo_env.test_image_manager" as odoo_env.test_image_manager {
 }
 package "odoo_env.test_oe" as odoo_env.test_oe {
 }
+package "odoo_env.test_sd" as odoo_env.test_sd {
+}
 odoo_env.client --> odoo_env.config
 odoo_env.client --> odoo_env.images
 odoo_env.client --> odoo_env.messages
@@ -64,8 +68,6 @@ odoo_env.command --> odoo_env.messages
 odoo_env.command --> odoo_env.odoo_conf
 odoo_env.config --> odoo_env.messages
 odoo_env.config --> odoo_env.singleton
-odoo_env.create_database --> odoo_env.client
-odoo_env.create_database --> odoo_env.messages
 odoo_env.deploy_keys --> odoo_env.client
 odoo_env.deploy_keys --> odoo_env.messages
 odoo_env.images --> odoo_env.messages
@@ -82,6 +84,7 @@ odoo_env.managers.environment_manager --> odoo_env.services.system
 odoo_env.managers.image_manager --> odoo_env.client
 odoo_env.managers.image_manager --> odoo_env.command
 odoo_env.managers.image_manager --> odoo_env.config
+odoo_env.managers.image_manager --> odoo_env.constants
 odoo_env.managers.image_manager --> odoo_env.services.docker_client
 odoo_env.managers.image_manager --> odoo_env.services.system
 odoo_env.odoo_conf --> odoo_env
@@ -103,7 +106,14 @@ odoo_env.options --> odoo_env.messages
 odoo_env.repos --> odoo_env.config
 odoo_env.repos --> odoo_env.messages
 odoo_env.services.system --> odoo_env.config
+odoo_env.test_client --> odoo_env.client
+odoo_env.test_client --> odoo_env.config
+odoo_env.test_client --> odoo_env.messages
+odoo_env.test_client --> odoo_env.test_helpers
+odoo_env.test_constants --> odoo_env
+odoo_env.test_constants --> odoo_env.constants
 odoo_env.test_docker_client --> odoo_env.services.docker_client
+odoo_env.test_environment_manager --> odoo_env.managers.environment_manager
 odoo_env.test_environment_manager --> odoo_env.odooenv
 odoo_env.test_environment_manager --> odoo_env.test_helpers
 odoo_env.test_helpers --> odoo_env.config
@@ -112,7 +122,12 @@ odoo_env.test_image_manager --> odoo_env.test_helpers
 odoo_env.test_oe --> odoo_env.command
 odoo_env.test_oe --> odoo_env.config
 odoo_env.test_oe --> odoo_env.constants
+odoo_env.test_oe --> odoo_env.managers.environment_manager
+odoo_env.test_oe --> odoo_env.messages
 odoo_env.test_oe --> odoo_env.odooenv
 odoo_env.test_oe --> odoo_env.repos
 odoo_env.test_oe --> odoo_env.test_helpers
+odoo_env.test_sd --> odoo_env
+odoo_env.test_sd --> odoo_env.sd
+odoo_env.managers.environment_manager ..> odoo_env.odooenv
 @enduml

@@ -30,7 +30,18 @@ class TestGetExtractCommand(unittest.TestCase):
         result = self.dc.get_extract_command("img", "/src", "/host")
         self.assertEqual(
             result,
-            ["docker", "run", "--rm", "-v", "/host:/dest", "img", "cp", "-r", "/src/.", "/dest/"],
+            [
+                "docker",
+                "run",
+                "--rm",
+                "-v",
+                "/host:/dest",
+                "img",
+                "cp",
+                "-r",
+                "/src/.",
+                "/dest/",
+            ],
         )
 
     def test_no_entrypoint_flag(self):

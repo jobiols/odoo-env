@@ -13,7 +13,6 @@ from odoo_env.config import OeConfig
 from odoo_env.messages import OeError
 from odoo_env.test_helpers import MockArgs
 
-
 BASE_MANIFEST = {
     "name": "test_client",
     "version": "14.0.1.0.0",
@@ -64,9 +63,7 @@ class TestGetManifest(unittest.TestCase):
 
         # Mock _discover_manifest_from_path to control discovery from a cloned
         # repo (used by get_manifest_from_url() after the bcf2c8b refactor).
-        self.discover_patcher = patch.object(
-            Client, "_discover_manifest_from_path"
-        )
+        self.discover_patcher = patch.object(Client, "_discover_manifest_from_path")
         self.mock_discover_manifest_from_path = self.discover_patcher.start()
 
         # Mock check_common and check_v2 to avoid manifest validation in __init__

@@ -2,8 +2,8 @@
 
 **Status**: ✅ PASS — with advisory findings
 
-**Date**: 2026-05-23  
-**Executor**: sdd-verify  
+**Date**: 2026-05-23
+**Executor**: sdd-verify
 **Change**: Fix `oe -i` crash when `-i` is passed without URL (boolean `True` conflated with string URL)
 
 ---
@@ -172,8 +172,8 @@ if manifest and manifest_dir:
 
 ### F-001: Dead temp path saved to config (ADVISORY)
 
-**Severity**: ADVISORY  
-**Requirement**: REQ-INSTALL-004 (SHOULD)  
+**Severity**: ADVISORY
+**Requirement**: REQ-INSTALL-004 (SHOULD)
 **ADR**: ADR-002 (acknowledged)
 
 The path saved by `OeConfig().save_client_path()` is inside a `TemporaryDirectory` that is cleaned up immediately after `get_manifest_from_url()` returns. The saved path is a "poison pill":
@@ -190,7 +190,7 @@ The path saved by `OeConfig().save_client_path()` is inside a `TemporaryDirector
 
 ### F-002: No explicit temp-cleanup assertion (MINOR)
 
-**Severity**: MINOR  
+**Severity**: MINOR
 **Requirement**: REQ-INSTALL-006 (MUST)
 
 Neither `test_url_success_saves_client_path` nor `test_url_clone_failure_propagates` explicitly assert that the temporary directory was removed after `get_manifest_from_url()` completes. The cleanup is guaranteed by `tempfile.TemporaryDirectory()` context manager semantics, but no test verifies this contract is preserved.
@@ -199,7 +199,7 @@ Neither `test_url_success_saves_client_path` nor `test_url_clone_failure_propaga
 
 ### F-003: `test_empty_url_raises_oe_error` doesn't verify URL in message (COSMETIC)
 
-**Severity**: COSMETIC  
+**Severity**: COSMETIC
 **Test**: `test_empty_url_raises_oe_error`
 
 The test asserts `assertIn("Invalid git URL", str(ctx.exception))` but doesn't check that the empty URL is included. The message format is `f"Invalid git URL '{url}'"` which would produce `"Invalid git URL ''"` for an empty string — still containing the key phrase. The existing assertion passes but is less strict than `test_invalid_url_raises_oe_error` which checks for the URL `"not-a-url"` specifically.

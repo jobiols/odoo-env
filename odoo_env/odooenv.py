@@ -83,7 +83,37 @@ class OdooEnv:
         database = get_param(self._args, "database")
         backup_file = get_param(self._args, "backup_file")
         no_deactivate = self._args.no_deactivate
+        self._check_backup_available(backup_file)
         return self.restore(self.client.name, database, backup_file, no_deactivate)
+
+    def _check_backup_available(self, backup_file):
+        """
+        Guarda para `oe --restore`: verifica que haya algo para restaurar
+        antes de armar el comando. Sin esto, si backup_dir no existe o esta
+        vacio, el contenedor dbtools explota feo por dentro.
+        """
+        backup_dir = Path(self.client.backup_dir)
+
+        if not backup_dir.is_dir():
+            msg.err(f"Backup directory does not exist: {backup_dir}")
+
+        if backup_file:
+            target = backup_dir / backup_file
+            if not target.is_file():
+                available = sorted(p.name for p in backup_dir.glob("*.zip"))
+                hint = (
+                    "Available backups: " + ", ".join(available)
+                    if available
+                    else "No .zip backups in that directory"
+                )
+                msg.err(f"Backup file not found: {target}\n  {hint}")
+            return
+
+        if not list(backup_dir.glob("*.zip")):
+            msg.err(
+                f"No backup files (*.zip) found in {backup_dir}\n"
+                "  Nothing to restore."
+            )
 
     def execute(self, commands):
         for command in commands:

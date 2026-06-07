@@ -617,7 +617,8 @@ class TestRepository(OdooEnvTestCase):
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
         options = MockArgs(debug=False, client="test_client", restore=True)
         oe = OdooEnv(options)
-        cmds = oe.build_commands()
+        with patch.object(OdooEnv, "_check_backup_available"):
+            cmds = oe.build_commands()
 
         restore_cmd = next(
             (c for c in cmds if DBTOOLS_IMAGE in c.command),
@@ -639,7 +640,8 @@ class TestRepository(OdooEnvTestCase):
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
         options = MockArgs(debug=False, client="test_client", restore=True)
         oe = OdooEnv(options)
-        cmds = oe.build_commands()
+        with patch.object(OdooEnv, "_check_backup_available"):
+            cmds = oe.build_commands()
 
         restore_cmd = next(
             (c for c in cmds if DBTOOLS_IMAGE in c.command),

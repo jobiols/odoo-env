@@ -422,6 +422,13 @@ class "TestRepository" as odoo_env.test_oe.TestRepository {
   test_verbose_flag_true()
   test_verbose_prints_command()
 }
+class "TestRestoreBackupGuard" as odoo_env.test_backup_guard.TestRestoreBackupGuard {
+  test_empty_backup_dir_raises()
+  test_missing_backup_dir_raises()
+  test_newest_restore_passes_when_zip_present()
+  test_specific_backup_file_missing_raises_with_available()
+  test_specific_backup_file_present_passes()
+}
 class "TestValidateManifestKeys" as odoo_env.test_client.TestValidateManifestKeys {
   test_all_odoo_env_keys_are_accepted()
   test_full_real_world_manifest_passes()
@@ -446,6 +453,7 @@ odoo_env.command.PullImage --|> odoo_env.command.Command
 odoo_env.command.PullRepo --|> odoo_env.command.Command
 odoo_env.command.RemovedirCommand --|> odoo_env.command.Command
 odoo_env.command.WriteConfigFile --|> odoo_env.command.Command
+odoo_env.test_backup_guard.TestRestoreBackupGuard --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_environment_manager.TestDebugMountings --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_environment_manager.TestEnvironmentManager --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_image_manager.TestImageManager --|> odoo_env.test_helpers.OdooEnvTestCase

@@ -44,6 +44,8 @@ package "odoo_env.services.system" as odoo_env.services.system {
 }
 package "odoo_env.singleton" as odoo_env.singleton {
 }
+package "odoo_env.test_backup_guard" as odoo_env.test_backup_guard {
+}
 package "odoo_env.test_client" as odoo_env.test_client {
 }
 package "odoo_env.test_constants" as odoo_env.test_constants {
@@ -106,6 +108,9 @@ odoo_env.options --> odoo_env.messages
 odoo_env.repos --> odoo_env.config
 odoo_env.repos --> odoo_env.messages
 odoo_env.services.system --> odoo_env.config
+odoo_env.test_backup_guard --> odoo_env.messages
+odoo_env.test_backup_guard --> odoo_env.odooenv
+odoo_env.test_backup_guard --> odoo_env.test_helpers
 odoo_env.test_client --> odoo_env.client
 odoo_env.test_client --> odoo_env.config
 odoo_env.test_client --> odoo_env.messages

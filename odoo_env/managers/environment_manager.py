@@ -17,6 +17,7 @@ from odoo_env.constants import (
     IN_DIST_PACKAGES,
     IN_EXTRA_ADDONS,
     IN_LOG,
+    ODOO_V14_DEBUG_MOUNTS,
     ODOO_VERSION_MAP,
     WDB_IMAGE_16,
     WDB_IMAGE_DEFAULT,
@@ -451,6 +452,13 @@ class EnvironmentManager:
     def _get_debug_mountings(self):
         version = self.parent._client.numeric_ver
         cvd = self.parent._client.version_dir
+
+        if version == 14:
+            # Layout .deb viejo: dist-packages entero (ver ODOO_V14_DEBUG_MOUNTS).
+            return {
+                f"{cvd}{host}": {"bind": bind}
+                for host, bind in ODOO_V14_DEBUG_MOUNTS.items()
+            }
 
         info = ODOO_VERSION_MAP.get(int(version))
         if info is not None:

@@ -277,12 +277,16 @@ class TestRepository(OdooEnvTestCase):
         cmds = oe.pull_images()
 
         extract_src_cmd = next(
-            (c for c in cmds if c._usr_msg and "Extracting src" in c._usr_msg),
+            (
+                c
+                for c in cmds
+                if c._usr_msg and "Extracting dist-packages" in c._usr_msg
+            ),
             None,
         )
         self.assertIsNotNone(
             extract_src_cmd,
-            "Expected 'Extracting src' command in pull_images() debug mode",
+            "Expected 'Extracting dist-packages' command in pull_images() debug mode",
         )
         assert extract_src_cmd is not None
         base = OeConfig().base_dir
@@ -290,36 +294,46 @@ class TestRepository(OdooEnvTestCase):
             "docker",
             "run",
             "--rm",
-            "-v",
-            f"{base}odoo-14.0/src:/dest",
-            "jobiols/odoo-jeo:14.0.debug",
+            "--user",
+            "root",
+            "--entrypoint",
             "cp",
-            "-r",
-            "/usr/lib/python3/dist-packages/odoo/.",
-            "/dest/",
+            "-v",
+            f"{base}odoo-14.0/dist-packages:/oe-extract-dest",
+            "jobiols/odoo-jeo:14.0.debug",
+            "-a",
+            "/usr/lib/python3/dist-packages/.",
+            "/oe-extract-dest/",
         ]
         self.assertEqual(extract_src_cmd.command, expected_src)
 
         extract_lib_cmd = next(
-            (c for c in cmds if c._usr_msg and "Extracting lib" in c._usr_msg),
+            (
+                c
+                for c in cmds
+                if c._usr_msg and "Extracting dist-local-packages" in c._usr_msg
+            ),
             None,
         )
         self.assertIsNotNone(
             extract_lib_cmd,
-            "Expected 'Extracting lib' command in pull_images() debug mode",
+            "Expected 'Extracting dist-local-packages' command in debug mode",
         )
         assert extract_lib_cmd is not None
         expected_lib = [
             "docker",
             "run",
             "--rm",
-            "-v",
-            f"{base}odoo-14.0/lib:/dest",
-            "jobiols/odoo-jeo:14.0.debug",
+            "--user",
+            "root",
+            "--entrypoint",
             "cp",
-            "-r",
+            "-v",
+            f"{base}odoo-14.0/dist-local-packages:/oe-extract-dest",
+            "jobiols/odoo-jeo:14.0.debug",
+            "-a",
             "/usr/local/lib/python3.9/dist-packages/.",
-            "/dest/",
+            "/oe-extract-dest/",
         ]
         self.assertEqual(extract_lib_cmd.command, expected_lib)
 

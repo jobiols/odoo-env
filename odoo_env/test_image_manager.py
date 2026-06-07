@@ -51,16 +51,21 @@ class TestImageManager(OdooEnvTestCase):
                 f"Unexpected mkdir command in non-debug pull_images: {c.command}",
             )
 
-    def test_extract_sources_uses_cp_not_entrypoint(self):
+    def test_extract_run_always_uses_entrypoint_cp(self):
+        # El extract NO debe arrancar odoo. Si usa `docker run`, DEBE ser con
+        # `--entrypoint cp` (reemplaza el entrypoint de odoo por cp).
         self.mock_config_data.return_value["environment"] = "debug"
         options = MockArgs(debug=True, client="test_client")
         oe = OdooEnv(options)
         cmds = oe.pull_images()
-        docker_run_cmds = [
-            c.command for c in cmds if c.command[:2] == ["docker", "run"]
-        ]
-        for cmd in docker_run_cmds:
-            self.assertNotIn("--entrypoint", cmd)
+        run_cmds = [c.command for c in cmds if c.command[:2] == ["docker", "run"]]
+        for cmd in run_cmds:
+            self.assertIn(
+                "--entrypoint",
+                cmd,
+                f"docker run en extract debe usar --entrypoint cp: {cmd}",
+            )
+            self.assertEqual(cmd[cmd.index("--entrypoint") + 1], "cp")
 
     def test_extract_sources_no_extract_sh_reference(self):
         self.mock_config_data.return_value["environment"] = "debug"
@@ -71,26 +76,27 @@ class TestImageManager(OdooEnvTestCase):
             cmd_str = " ".join(str(t) for t in c.command)
             self.assertNotIn("extract_", cmd_str)
 
-    def test_extract_sources_removes_legacy_dist_packages(self):
+    def test_extract_sources_removes_legacy_src(self):
+        # v14 vuelve al layout viejo: el dir legacy a limpiar pasa a ser src.
         self.mock_config_data.return_value["environment"] = "debug"
         options = MockArgs(debug=True, client="test_client")
         oe = OdooEnv(options)
         cmds = oe.pull_images()
         rm_cmds = [" ".join(c.command) for c in cmds if "rm" in c.command]
         self.assertTrue(
-            any("dist-packages" in s and "dist-local" not in s for s in rm_cmds),
-            f"Expected legacy dist-packages cleanup, got: {rm_cmds}",
+            any(tok.rstrip("/").endswith("/src") for s in rm_cmds for tok in s.split()),
+            f"Expected legacy src cleanup, got: {rm_cmds}",
         )
 
-    def test_extract_sources_removes_legacy_dist_local_packages(self):
+    def test_extract_sources_removes_legacy_lib(self):
         self.mock_config_data.return_value["environment"] = "debug"
         options = MockArgs(debug=True, client="test_client")
         oe = OdooEnv(options)
         cmds = oe.pull_images()
         rm_cmds = [" ".join(c.command) for c in cmds if "rm" in c.command]
         self.assertTrue(
-            any("dist-local-packages" in s for s in rm_cmds),
-            f"Expected legacy dist-local-packages cleanup, got: {rm_cmds}",
+            any(tok.rstrip("/").endswith("/lib") for s in rm_cmds for tok in s.split()),
+            f"Expected legacy lib cleanup, got: {rm_cmds}",
         )
 
     def test_extract_sources_legacy_cleanup_uses_force(self):
@@ -103,7 +109,7 @@ class TestImageManager(OdooEnvTestCase):
             for c in cmds
             if "rm" in c.command
             and any(
-                "dist-packages" in tok or "dist-local-packages" in tok
+                tok.rstrip("/").endswith("/src") or tok.rstrip("/").endswith("/lib")
                 for tok in c.command
             )
         ]
@@ -113,18 +119,22 @@ class TestImageManager(OdooEnvTestCase):
         for cmd in legacy_rm_cmds:
             self.assertIn("-f", cmd, f"Legacy cleanup must use -f, got: {cmd}")
 
-    def test_extract_sources_uses_two_docker_run_rm_v_commands(self):
+    def test_extract_uses_entrypoint_cp_per_target(self):
+        # v14 extrae 2 targets (dist-packages + dist-local-packages): un
+        # `docker run --entrypoint cp` por cada uno, sin create/cp/rm.
         self.mock_config_data.return_value["environment"] = "debug"
         options = MockArgs(debug=True, client="test_client")
         oe = OdooEnv(options)
         cmds = oe.pull_images()
-        cp_cmds = [
+        extract_runs = [
             c.command
             for c in cmds
-            if len(c.command) >= 8
-            and c.command[:3] == ["docker", "run", "--rm"]
-            and "cp" in c.command
+            if c.command[:2] == ["docker", "run"] and "--entrypoint" in c.command
         ]
+        creates = [c.command for c in cmds if c.command[:2] == ["docker", "create"]]
+        docker_cps = [c.command for c in cmds if c.command[:2] == ["docker", "cp"]]
         self.assertEqual(
-            len(cp_cmds), 2, f"Expected 2 docker cp commands, got: {cp_cmds}"
+            len(extract_runs), 2, f"expected 2 entrypoint-cp runs: {extract_runs}"
         )
+        self.assertEqual(creates, [], f"must not use docker create: {creates}")
+        self.assertEqual(docker_cps, [], f"must not use docker cp: {docker_cps}")

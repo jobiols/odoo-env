@@ -1,7 +1,7 @@
 from odoo_env.client import Client
 from odoo_env.command import Command
 from odoo_env.config import OeConfig
-from odoo_env.constants import ODOO_VERSION_MAP
+from odoo_env.constants import ODOO_V14_DEBUG_MOUNTS, ODOO_VERSION_MAP
 from odoo_env.services.docker_client import DockerClient
 from odoo_env.services.system import SystemClient
 
@@ -29,23 +29,36 @@ class ImageManager:
             ret.extend(self.extract_sources())
         return ret
 
-    def extract_sources(self):
-        ret = []
-        version = int(self.client.numeric_ver)
+    @staticmethod
+    def _resolve_extract_targets(version):
+        """Devuelve (targets, legacy_dirs) segun la tecnica de la version.
+
+        v14 usa el layout .deb viejo (dist-packages entero); 15-18 usan el
+        layout src/lib de ODOO_VERSION_MAP. legacy_dirs son los dirs host del
+        OTRO layout, que se limpian al extraer.
+        """
+        if version == 14:
+            return list(ODOO_V14_DEBUG_MOUNTS.items()), ("src", "lib")
         info = ODOO_VERSION_MAP.get(version)
         if info is None:
             raise ValueError(
                 f"extract_sources is only supported for Odoo v14-18, got v{version}"
             )
+        return (
+            [("src", info.src), ("lib", info.lib)],
+            ("dist-packages", "dist-local-packages"),
+        )
 
-        targets = [("src", info.src), ("lib", info.lib)]
+    def extract_sources(self):
+        ret = []
+        version = int(self.client.numeric_ver)
+        targets, legacy_dirs = self._resolve_extract_targets(version)
         image = self.client.get_image_required("odoo").name
         cvd = self.client.version_dir
 
-        # Cleanup legacy host dirs from pre-refactor layout (dist-packages,
-        # dist-local-packages). Uses force=True so it is a no-op on fresh
-        # installs and idempotent on already-migrated ones.
-        for legacy_dir in ("dist-packages", "dist-local-packages"):
+        # Cleanup legacy host dirs del layout que NO usa esta version. Usa
+        # force=True para ser idempotente / no-op en instalaciones limpias.
+        for legacy_dir in legacy_dirs:
             r_dir = f"{cvd}{legacy_dir}"
             cmd_list = self.system_client.get_rm_command(
                 r_dir, recursive=True, force=True
@@ -75,13 +88,23 @@ class ImageManager:
             cmd_list = self.system_client.get_chmod_command(r_dir, "og+w", sudo=True)
             ret.append(Command(self.parent, command=cmd_list))
 
+        # Sacar los fuentes de la imagen SIN arrancar odoo: `docker run
+        # --entrypoint cp` reemplaza el entrypoint de odoo por `cp`, asi que
+        # odoo no arranca. El `cp -a` corre DENTRO del contenedor y preserva
+        # los symlinks tal cual (docker cp validaba symlinks que escapan del
+        # arbol y rompia, p.ej., con babel/global.dat).
         for host_dir, container_src in targets:
             host_dest = f"{cvd}{host_dir}"
-            msg = f"Extracting {host_dir} from image {image}"
-            cmd_list = self.docker_client.get_extract_command(
+            cmd_list = self.docker_client.get_extract_cp_command(
                 image, container_src, host_dest
             )
-            ret.append(Command(self.parent, command=cmd_list, usr_msg=msg))
+            ret.append(
+                Command(
+                    self.parent,
+                    command=cmd_list,
+                    usr_msg=f"Extracting {host_dir} from image {image}",
+                )
+            )
 
         for host_dir, _ in targets:
             r_dir = f"{cvd}{host_dir}"

@@ -28,18 +28,19 @@ class TestDebugMountings(OdooEnvTestCase):
             result = em._get_debug_mountings()
         return result
 
-    def test_odoo14_lib_mount(self):
+    def test_odoo14_dist_packages_mount(self):
+        """v14 (.deb) monta el dist-packages ENTERO, no solo odoo/."""
         result = self._make_em(14)
         self.assertEqual(
-            result["/odoo_ar/odoo-14.0/lib"],
-            {"bind": "/usr/local/lib/python3.9/dist-packages/"},
+            result["/odoo_ar/odoo-14.0/dist-packages"],
+            {"bind": "/usr/lib/python3/dist-packages"},
         )
 
-    def test_odoo14_src_mount(self):
+    def test_odoo14_dist_local_packages_mount(self):
         result = self._make_em(14)
         self.assertEqual(
-            result["/odoo_ar/odoo-14.0/src"],
-            {"bind": "/usr/lib/python3/dist-packages/odoo"},
+            result["/odoo_ar/odoo-14.0/dist-local-packages"],
+            {"bind": "/usr/local/lib/python3.9/dist-packages/"},
         )
 
     def test_odoo15_lib_mount(self):
@@ -98,35 +99,34 @@ class TestDebugMountings(OdooEnvTestCase):
         with self.assertRaises(ValueError):
             self._make_em(20)
 
-    def test_odoo14_uses_src_key(self):
+    def test_odoo14_uses_dist_packages_keys(self):
         result = self._make_em(14)
-        self.assertIn("/odoo_ar/odoo-14.0/src", result)
+        self.assertIn("/odoo_ar/odoo-14.0/dist-packages", result)
+        self.assertIn("/odoo_ar/odoo-14.0/dist-local-packages", result)
 
-    def test_odoo14_uses_lib_key(self):
+    def test_odoo14_does_not_use_src_lib_keys(self):
+        # El layout src/lib + /odoo rompia v14 (tapaba odoo con un dir vacio).
         result = self._make_em(14)
-        self.assertIn("/odoo_ar/odoo-14.0/lib", result)
-
-    def test_odoo14_no_dist_packages_key(self):
-        result = self._make_em(14)
-        self.assertNotIn("/odoo_ar/odoo-14.0/dist-packages", result)
-
-    def test_odoo14_no_dist_local_packages_key(self):
-        result = self._make_em(14)
-        self.assertNotIn("/odoo_ar/odoo-14.0/dist-local-packages", result)
+        self.assertNotIn("/odoo_ar/odoo-14.0/src", result)
+        self.assertNotIn("/odoo_ar/odoo-14.0/lib", result)
 
     def test_odoo17_lib_contains_python310(self):
         result = self._make_em(17)
         lib_bind = result.get("/odoo_ar/odoo-17.0/lib", {}).get("bind", "")
         self.assertIn("python3.10", lib_bind)
 
-    def test_odoo14_src_bind_is_odoo_path(self):
+    def test_odoo14_core_bind_is_whole_dist_packages(self):
+        # El core se monta entero, NO solo .../odoo.
         result = self._make_em(14)
-        src_bind = result.get("/odoo_ar/odoo-14.0/src", {}).get("bind", "")
-        self.assertEqual(src_bind, "/usr/lib/python3/dist-packages/odoo")
+        bind = result["/odoo_ar/odoo-14.0/dist-packages"]["bind"]
+        self.assertEqual(bind, "/usr/lib/python3/dist-packages")
+        self.assertFalse(bind.endswith("/odoo"))
 
     def test_odoo14_lib_bind_ends_with_slash(self):
         result = self._make_em(14)
-        lib_bind = result.get("/odoo_ar/odoo-14.0/lib", {}).get("bind", "")
+        lib_bind = result.get("/odoo_ar/odoo-14.0/dist-local-packages", {}).get(
+            "bind", ""
+        )
         self.assertTrue(lib_bind.endswith("/"))
 
 

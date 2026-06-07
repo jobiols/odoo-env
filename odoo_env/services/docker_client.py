@@ -136,18 +136,36 @@ class DockerClient:
     def get_pull_command(self, image: str) -> list[str]:
         return ["docker", "pull", image]
 
-    def get_extract_command(self, image: str, src: str, host_dest: str) -> list[str]:
+    def get_extract_cp_command(
+        self,
+        image: str,
+        container_src: str,
+        host_dest: str,
+        mount: str = "/oe-extract-dest",
+    ) -> list[str]:
+        """Copia `container_src` de la imagen al host SIN arrancar odoo.
+
+        Usa `docker run --entrypoint cp`: reemplaza el entrypoint de odoo por
+        `cp`, asi que odoo NO arranca. El `cp -a` corre DENTRO del contenedor
+        y preserva los symlinks tal cual. (`docker cp`, en cambio, valida los
+        symlinks que escapan del arbol copiado y rompe con, p.ej.,
+        `babel/global.dat -> ../../../../share/python-babel-localedata/...`).
+        El dir host se monta en `mount` y se copia el CONTENIDO de src (src/.).
+        """
         return [
             "docker",
             "run",
             "--rm",
-            "-v",
-            f"{host_dest}:/dest",
-            image,
+            "--user",
+            "root",
+            "--entrypoint",
             "cp",
-            "-r",
-            f"{src}/.",
-            "/dest/",
+            "-v",
+            f"{host_dest}:{mount}",
+            image,
+            "-a",
+            f"{container_src.rstrip('/')}/.",
+            f"{mount}/",
         ]
 
     # ---------- API pública ----------

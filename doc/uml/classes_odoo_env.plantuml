@@ -56,7 +56,7 @@ class "CreateGitignore" as odoo_env.command.CreateGitignore {
   execute()
 }
 class "DockerClient" as odoo_env.services.docker_client.DockerClient {
-  get_extract_command(image: str, src: str, host_dest: str) -> list[str]
+  get_extract_cp_command(image: str, container_src: str, host_dest: str, mount: str) -> list[str]
   get_network_create_command(network: str) -> list[str]
   get_pull_command(image: str) -> list[str]
   get_rm_command(container_name: str) -> list[str]
@@ -229,6 +229,16 @@ class "SystemClient" as odoo_env.services.system.SystemClient {
   get_rm_command(path: str, recursive: bool, force: bool, sudo: bool) -> list[str]
   make_mkdir_command(path: str | None, parents: bool) -> list[str]
 }
+class "TestClientDebugFollowsPersistedEnvironment" as odoo_env.test_client.TestClientDebugFollowsPersistedEnvironment {
+  config_data_patcher : _patch
+  mock_config_data : AsyncMock, MagicMock, dict
+  mock_save_config : AsyncMock, MagicMock, dict
+  save_config_patcher : _patch
+  setUp()
+  tearDown()
+  test_debug_false_when_persisted_environment_is_prod()
+  test_debug_true_when_persisted_environment_is_debug()
+}
 class "TestCreateTestDb" as odoo_env.test_oe.TestCreateTestDb {
   test_build_module_command_install()
   test_create_test_db_command_composition()
@@ -250,14 +260,12 @@ class "TestDebugMountings" as odoo_env.test_environment_manager.TestDebugMountin
   test_legacy_11_has_extra_addons()
   test_legacy_12_has_extra_addons()
   test_legacy_13_has_extra_addons()
+  test_odoo14_core_bind_is_whole_dist_packages()
+  test_odoo14_dist_local_packages_mount()
+  test_odoo14_dist_packages_mount()
+  test_odoo14_does_not_use_src_lib_keys()
   test_odoo14_lib_bind_ends_with_slash()
-  test_odoo14_lib_mount()
-  test_odoo14_no_dist_local_packages_key()
-  test_odoo14_no_dist_packages_key()
-  test_odoo14_src_bind_is_odoo_path()
-  test_odoo14_src_mount()
-  test_odoo14_uses_lib_key()
-  test_odoo14_uses_src_key()
+  test_odoo14_uses_dist_packages_keys()
   test_odoo15_lib_mount()
   test_odoo16_lib_mount()
   test_odoo17_lib_contains_python310()
@@ -277,6 +285,15 @@ class "TestEnvironmentManager" as odoo_env.test_environment_manager.TestEnvironm
   test_install_does_not_reference_dist_dirs()
   test_install_never_calls_extract_sources()
 }
+class "TestExtractCpCommand" as odoo_env.test_docker_client.TestExtractCpCommand {
+  dc
+  setUp()
+  test_extract_cp_command_shape()
+  test_extract_cp_copies_dir_contents_not_dir()
+  test_extract_cp_mounts_host_dest()
+  test_extract_cp_preserves_symlinks_with_archive_flag()
+  test_extract_cp_replaces_entrypoint_with_cp()
+}
 class "TestFilterImagesByMask" as odoo_env.test_sd.TestFilterImagesByMask {
   test_empty_image_list()
   test_exact_full_name()
@@ -288,14 +305,6 @@ class "TestFilterImagesByMask" as odoo_env.test_sd.TestFilterImagesByMask {
   test_prefix_glob_matches_repository_with_tag()
   test_question_mark_glob()
   test_wildcard_both_sides_matches_substring()
-}
-class "TestGetExtractCommand" as odoo_env.test_docker_client.TestGetExtractCommand {
-  dc
-  setUp()
-  test_image_token_before_cp()
-  test_no_entrypoint_flag()
-  test_no_interactive_flag()
-  test_returns_correct_command_shape()
 }
 class "TestGetImages" as odoo_env.test_sd.TestGetImages {
   test_parses_name_and_id()
@@ -340,12 +349,12 @@ class "TestGetPacks" as odoo_env.test_oe.TestGetPacks {
   test_get_packs_v18_returns_src_lib()
 }
 class "TestImageManager" as odoo_env.test_image_manager.TestImageManager {
+  test_extract_run_always_uses_entrypoint_cp()
   test_extract_sources_legacy_cleanup_uses_force()
   test_extract_sources_no_extract_sh_reference()
-  test_extract_sources_removes_legacy_dist_local_packages()
-  test_extract_sources_removes_legacy_dist_packages()
-  test_extract_sources_uses_cp_not_entrypoint()
-  test_extract_sources_uses_two_docker_run_rm_v_commands()
+  test_extract_sources_removes_legacy_lib()
+  test_extract_sources_removes_legacy_src()
+  test_extract_uses_entrypoint_cp_per_target()
   test_pull_images_calls_extract_sources_in_debug_mode()
   test_pull_images_command_starts_with_docker_pull()
   test_pull_images_no_extract_sources_in_non_debug_mode()
@@ -355,10 +364,11 @@ class "TestOdooVersionMap" as odoo_env.test_constants.TestOdooVersionMap {
   test_legacy_and_future_keys_absent()
   test_odoo_python_map_absent()
   test_odoo_version_info_is_namedtuple()
-  test_version14_lib()
-  test_version14_python()
-  test_version14_src()
-  test_version15_same_as_14()
+  test_v14_debug_mounts_dist_local_packages()
+  test_v14_debug_mounts_has_no_src_lib()
+  test_v14_debug_mounts_whole_dist_packages()
+  test_version14_not_in_version_map()
+  test_version15_layout()
   test_version16_same_as_14()
   test_version17_python310()
   test_version18_python312()
@@ -437,7 +447,7 @@ odoo_env.client.Client --* odoo_env.managers.image_manager.ImageManager : client
 odoo_env.services.docker_client.DockerClient --* odoo_env.managers.backup_manager.BackupManager : docker_client
 odoo_env.services.docker_client.DockerClient --* odoo_env.managers.environment_manager.EnvironmentManager : docker_client
 odoo_env.services.docker_client.DockerClient --* odoo_env.managers.image_manager.ImageManager : docker_client
-odoo_env.services.docker_client.DockerClient --* odoo_env.test_docker_client.TestGetExtractCommand : dc
+odoo_env.services.docker_client.DockerClient --* odoo_env.test_docker_client.TestExtractCpCommand : dc
 odoo_env.services.system.SystemClient --* odoo_env.managers.environment_manager.EnvironmentManager : system_client
 odoo_env.services.system.SystemClient --* odoo_env.managers.image_manager.ImageManager : system_client
 @enduml

@@ -8,7 +8,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from odoo_env.client import Client
+from odoo_env.client import ODOO_ENV_KEYS, Client
 from odoo_env.config import OeConfig
 from odoo_env.messages import OeError
 from odoo_env.test_helpers import MockArgs
@@ -293,3 +293,99 @@ class TestClientDebugFollowsPersistedEnvironment(unittest.TestCase):
     def test_debug_false_when_persisted_environment_is_prod(self):
         client = self._client_with_persisted_env("prod")
         self.assertFalse(client.debug)
+
+
+class TestValidateManifestKeys(unittest.TestCase):
+    """Tests for Client.validate_manifest_keys() — typo guard on manifest keys."""
+
+    def test_valid_manifest_passes(self):
+        manifest = {
+            "name": "test_client",
+            "version": "14.0.1.0.0",
+            "depends": ["sale"],
+            "data": [],
+            "config": ["workers = 5"],
+            "config-local": ["workers = 0"],
+            "git-repos": [],
+            "docker-images": [],
+            "odoo-license": "CE",
+            "env-ver": "2",
+            "port": "8069",
+        }
+        # No debe lanzar
+        Client.validate_manifest_keys(manifest, "test_client")
+
+    def test_typo_underscore_instead_of_hyphen_raises_with_suggestion(self):
+        manifest = {"name": "c", "config_local": ["workers = 0"]}
+        with self.assertRaises(OeError) as ctx:
+            Client.validate_manifest_keys(manifest, "c")
+        self.assertIn("config_local", str(ctx.exception))
+        self.assertIn("config-local", str(ctx.exception))
+
+    def test_typo_git_repos_underscore_raises_with_suggestion(self):
+        manifest = {"name": "c", "git_repos": []}
+        with self.assertRaises(OeError) as ctx:
+            Client.validate_manifest_keys(manifest, "c")
+        self.assertIn("git-repos", str(ctx.exception))
+
+    def test_unknown_key_raises_not_recognized(self):
+        manifest = {"name": "c", "totally_made_up_xyz": 1}
+        with self.assertRaises(OeError) as ctx:
+            Client.validate_manifest_keys(manifest, "c")
+        self.assertIn("totally_made_up_xyz", str(ctx.exception))
+        self.assertIn("not a recognized", str(ctx.exception))
+
+    def test_standard_odoo_keys_pass(self):
+        manifest = {
+            "name": "c",
+            "summary": "x",
+            "author": "y",
+            "category": "Tools",
+            "installable": True,
+            "application": False,
+            "auto_install": False,
+            "external_dependencies": {},
+        }
+        Client.validate_manifest_keys(manifest, "c")
+
+    def test_full_real_world_manifest_passes(self):
+        """Manifiesto real completo (las 10 claves oe + claves Odoo) NO debe fallar."""
+        manifest = {
+            # claves estandar de Odoo
+            "name": "dimec",
+            "version": "17.0.1.0.0",
+            "category": "Tools",
+            "summary": "Customizacion dimec",
+            "author": "jeo Software",
+            "website": "https://github.com/jobiols/odoo-env",
+            "license": "AGPL-3",
+            "depends": ["sale_management", "account"],
+            "installable": True,
+            "application": False,
+            # las 10 claves especificas de oe
+            "env-ver": "2",
+            "odoo-license": "EE",
+            "port": "8069",
+            "longpolling_port": "8072",
+            "prod_server": "ubuntu@my-server",
+            "config": ["admin_passwd = secret", "proxy_mode = True", "workers = 2"],
+            "config-local": ["admin_passwd = admin", "workers = 0"],
+            "git-repos": [
+                "git@github.com:quilsoft-org/cl-dimec.git",
+                "git@github.com:quilsoft-org/dimec.git -b main",
+                "https://github.com/ingadhoc/odoo-argentina.git sub_l10n-ar/odoo-argentina",
+            ],
+            "docker-images": [
+                "odoo jobiols/odoo-ent:17.0e",
+                "postgres postgres:14.13-alpine",
+            ],
+            "external_dependencies": {"python": ["requests", "openpyxl"]},
+        }
+        # No debe lanzar
+        Client.validate_manifest_keys(manifest, "dimec")
+
+    def test_all_odoo_env_keys_are_accepted(self):
+        """Cada una de las 10 claves oe debe ser aceptada individualmente."""
+        for key in ODOO_ENV_KEYS:
+            with self.subTest(key=key):
+                Client.validate_manifest_keys({"name": "c", key: "x"}, "c")

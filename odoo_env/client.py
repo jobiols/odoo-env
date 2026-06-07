@@ -1,4 +1,5 @@
 import ast
+import difflib
 import os
 import subprocess
 import tempfile
@@ -8,6 +9,78 @@ from odoo_env.config import OeConfig
 from odoo_env.images import DockerImage
 from odoo_env.messages import msg
 from odoo_env.repos import GitRepo
+
+# Claves especificas de odoo-env (las que oe lee del manifiesto).
+# Si se escriben mal, oe falla en silencio usando el default.
+ODOO_ENV_KEYS = frozenset(
+    {
+        "config",
+        "config-local",
+        "git-repos",
+        "docker-images",
+        "odoo-license",
+        "env-ver",
+        "port",
+        "longpolling_port",
+        "external_dependencies",
+        "prod_server",
+    }
+)
+
+# Claves estandar de un __manifest__.py de Odoo (el manifiesto es doble:
+# vale como modulo Odoo y como manifiesto odoo-env). Se aceptan para no
+# marcar como invalidas claves legitimas de Odoo.
+ODOO_STANDARD_KEYS = frozenset(
+    {
+        "name",
+        "version",
+        "description",
+        "author",
+        "website",
+        "license",
+        "category",
+        "depends",
+        "data",
+        "demo",
+        "demo_xml",
+        "init_xml",
+        "update_xml",
+        "test",
+        "css",
+        "js",
+        "qweb",
+        "images",
+        "application",
+        "auto_install",
+        "installable",
+        "summary",
+        "sequence",
+        "bootstrap",
+        "web",
+        "web_icon",
+        "pre_init_hook",
+        "post_init_hook",
+        "post_load",
+        "uninstall_hook",
+        "assets",
+        "cloc_exclude",
+        "live_test_url",
+        "maintainer",
+        "maintainers",
+        "contributors",
+        "support",
+        "price",
+        "currency",
+        "countries",
+        "complexity",
+        "icon",
+        "active",
+        "excludes",
+    }
+)
+
+# Union de todas las claves validas que puede tener el manifiesto.
+VALID_MANIFEST_KEYS = ODOO_ENV_KEYS | ODOO_STANDARD_KEYS
 
 
 class Client:
@@ -112,7 +185,32 @@ class Client:
 
         return f"{major}.{minor}"
 
+    @staticmethod
+    def validate_manifest_keys(manifest, name):
+        """
+        Verifica que todas las claves del manifiesto sean validas (claves
+        odoo-env o claves estandar de Odoo). Aborta con una sugerencia si
+        encuentra una clave desconocida; asi un typo como 'config_local'
+        no falla en silencio usando el default.
+        """
+        candidates = sorted(VALID_MANIFEST_KEYS)
+        errors = []
+        for key in manifest:
+            if key in VALID_MANIFEST_KEYS:
+                continue
+            match = difflib.get_close_matches(key, candidates, n=1, cutoff=0.6)
+            if match:
+                errors.append(f"  '{key}' is not valid, did you mean '{match[0]}'?")
+            else:
+                errors.append(f"  '{key}' is not a recognized manifest key")
+
+        if errors:
+            msg.err(f"Invalid keyword(s) in manifest '{name}':\n" + "\n".join(errors))
+
     def check_common(self, manifest):
+        # Validar que no haya claves mal escritas (typos que fallan en silencio)
+        self.validate_manifest_keys(manifest, self._name)
+
         # Puertos
         self._port = manifest.get("port", 8069)
         self._longpolling_port = manifest.get("longpolling_port", 8072)

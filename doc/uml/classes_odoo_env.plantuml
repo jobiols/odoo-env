@@ -38,6 +38,7 @@ class "Client" as odoo_env.client.Client {
   image(image_name)
   load_manifest(filename: 'str | Path') -> dict[str, object]
   parse_odoo_version(ver: str) -> str
+  validate_manifest_keys(manifest, name)
 }
 class "CloneRepo" as odoo_env.command.CloneRepo {
   check_args()
@@ -420,6 +421,15 @@ class "TestRepository" as odoo_env.test_oe.TestRepository {
   test_verbose_flag_false()
   test_verbose_flag_true()
   test_verbose_prints_command()
+}
+class "TestValidateManifestKeys" as odoo_env.test_client.TestValidateManifestKeys {
+  test_all_odoo_env_keys_are_accepted()
+  test_full_real_world_manifest_passes()
+  test_standard_odoo_keys_pass()
+  test_typo_git_repos_underscore_raises_with_suggestion()
+  test_typo_underscore_instead_of_hyphen_raises_with_suggestion()
+  test_unknown_key_raises_not_recognized()
+  test_valid_manifest_passes()
 }
 class "WriteConfigFile" as odoo_env.command.WriteConfigFile {
   check_args()

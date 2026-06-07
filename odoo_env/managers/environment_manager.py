@@ -267,7 +267,7 @@ class EnvironmentManager:
         else:
             step_msg = (
                 f"Starting Odoo image for client {self.parent._client.name} "
-                "on port {self.parent._client.port}"
+                f"on port {self.parent._client.port}"
             )
             detach = not self.parent.debug
             interactive = self.parent.debug
@@ -313,7 +313,8 @@ class EnvironmentManager:
                     if self.parent.debug and self.parent._client.numeric_ver >= 19.1
                     else None
                 ),
-                database=self.parent._client.database_default_name,
+                # No -d: `oe -r` arranca Odoo sin fijar base para poder
+                # loguearse a cualquier base de datos.
             )
         )
 

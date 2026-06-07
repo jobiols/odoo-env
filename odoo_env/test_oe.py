@@ -184,8 +184,6 @@ class TestRepository(OdooEnvTestCase):
             "pg-test_client:db",
             "jobiols/odoo-jeo:14.0",
             "--logfile=/var/log/odoo/odoo.log",
-            "-d",
-            "test_client_prod",
         ]
         self.assertEqual(cmds[0].command, command)
 

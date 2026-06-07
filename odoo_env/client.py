@@ -16,7 +16,6 @@ class Client:
     def __init__(self, args, name=None):
         self._name = name or OeConfig().client
         self._args = args
-        self._parent = args
         self._images = []
         self._repos = []
 
@@ -408,7 +407,12 @@ class Client:
 
     @property
     def debug(self):
-        return self._parent.debug
+        # Sigue el environment PERSISTIDO (oe_config.yaml), no el flag
+        # transitorio --debug. --debug solo persiste environment=debug; una
+        # vez seteado, comandos como `oe -w` (sin --debug) deben seguir en
+        # modo debug. Consistente con OdooEnv.debug y con el resto de esta
+        # clase (lineas que ya usan OeConfig().debug).
+        return OeConfig().debug
 
     @property
     def prod_server(self):

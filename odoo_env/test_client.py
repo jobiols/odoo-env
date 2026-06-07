@@ -246,3 +246,50 @@ class TestGetManifest(unittest.TestCase):
             client.get_manifest_from_url()
 
         self.mock_save_client_path.assert_not_called()
+
+
+class TestClientDebugFollowsPersistedEnvironment(unittest.TestCase):
+    """client.debug debe seguir el environment PERSISTIDO (oe_config.yaml),
+    no el flag transitorio --debug de la invocacion actual.
+
+    --debug solo PERSISTE environment=debug; una vez seteado, `oe -w` (sin
+    --debug) debe seguir corriendo en debug (workers=0, etc.).
+    """
+
+    def setUp(self):
+        OeConfig.reset()
+        self.config_data_patcher = patch.object(OeConfig, "_get_config_data")
+        self.mock_config_data = self.config_data_patcher.start()
+        self.save_config_patcher = patch.object(OeConfig, "_save_config_data")
+        self.mock_save_config = self.save_config_patcher.start()
+
+    def tearDown(self):
+        self.config_data_patcher.stop()
+        self.save_config_patcher.stop()
+        OeConfig.reset()
+
+    def _client_with_persisted_env(self, environment):
+        self.mock_config_data.return_value = {
+            "clients": [],
+            "client": "test_client",
+            "environment": environment,
+            "base_dir": "/odoo_ar/",
+        }
+        # invocacion SIN --debug (p.ej. `oe -w`)
+        OeConfig(MockArgs(debug=False))
+        client = Client.__new__(Client)
+        client._name = "test_client"
+        client._args = MockArgs(debug=False)
+        return client
+
+    def test_debug_true_when_persisted_environment_is_debug(self):
+        client = self._client_with_persisted_env("debug")
+        self.assertTrue(
+            client.debug,
+            "client.debug debe ser True si environment persistido == debug, "
+            "aunque la invocacion no traiga --debug",
+        )
+
+    def test_debug_false_when_persisted_environment_is_prod(self):
+        client = self._client_with_persisted_env("prod")
+        self.assertFalse(client.debug)

@@ -34,6 +34,8 @@ package "odoo_env.options" as odoo_env.options {
 }
 package "odoo_env.qa" as odoo_env.qa {
 }
+package "odoo_env.qa.__main__" as odoo_env.qa.__main__ {
+}
 package "odoo_env.qa.config" as odoo_env.qa.config {
 }
 package "odoo_env.qa.failures" as odoo_env.qa.failures {
@@ -111,12 +113,18 @@ odoo_env.odooenv --> odoo_env.managers.environment_manager
 odoo_env.odooenv --> odoo_env.managers.image_manager
 odoo_env.odooenv --> odoo_env.messages
 odoo_env.odooenv --> odoo_env.options
+odoo_env.odooenv --> odoo_env.qa.config
+odoo_env.odooenv --> odoo_env.qa.runner
 odoo_env.odooenv --> odoo_env.services.docker_client
 odoo_env.oe --> odoo_env.config
 odoo_env.oe --> odoo_env.messages
 odoo_env.oe --> odoo_env.odooenv
 odoo_env.options --> odoo_env.config
 odoo_env.options --> odoo_env.messages
+odoo_env.qa.__main__ --> odoo_env.client
+odoo_env.qa.__main__ --> odoo_env.config
+odoo_env.qa.__main__ --> odoo_env.qa.config
+odoo_env.qa.__main__ --> odoo_env.qa.runner
 odoo_env.qa.runner --> odoo_env.constants
 odoo_env.qa.runner --> odoo_env.qa.config
 odoo_env.qa.runner --> odoo_env.qa.failures
@@ -149,7 +157,9 @@ odoo_env.test_oe --> odoo_env.messages
 odoo_env.test_oe --> odoo_env.odooenv
 odoo_env.test_oe --> odoo_env.repos
 odoo_env.test_oe --> odoo_env.test_helpers
+odoo_env.test_qa --> odoo_env.odooenv
 odoo_env.test_qa --> odoo_env.qa
+odoo_env.test_qa --> odoo_env.qa.__main__
 odoo_env.test_qa --> odoo_env.qa.config
 odoo_env.test_qa --> odoo_env.qa.failures
 odoo_env.test_qa --> odoo_env.qa.runner

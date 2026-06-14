@@ -41,5 +41,25 @@ Phases 5–6 of tasks.md.
 
 **Note**: Minor #3 (KeyboardInterrupt) and Minor #5 (extra volumes) are documented but deferred.
 
-## PR3 — CLI + `oe --test-all` — pending (phase 7)
+## PR3 — CLI + `oe --test-all` ✅ (complete, not yet committed)
+
+Phase 7 of tasks.md.
+
+| File | Status |
+|------|--------|
+| `odoo_env/qa/__main__.py` | added — CLI entrypoint (`python -m odoo_env.qa`, resolves Client from oe config, calls TestRunner) |
+| `odoo_env/command.py` | extended — `TestAllCommand` (REQ-QA-010) |
+| `odoo_env/odooenv.py` | extended — `_build_test_all` dispatcher using `RunnerConfig.from_oe` + `TestRunner` |
+| `odoo_env/oe.py` | extended — `--test-all` flag + guard list update (was missing in `--base-dir` guard) |
+| `odoo_env/test_helpers.py` | extended — `"test_all": False` default in MockArgs |
+| `odoo_env/test_qa.py` | extended — 4 new tests (CLITests + OeIntegrationTests) |
+
+**Evidence**: 46 QA OK, suite 191 OK, `pre-commit` green.
+
+**Fresh review** (run ad7209f8): 1 blocker fixed:
+- Blocker: `oe --base-dir /path --test-all` silently exited → added `test_all` to the guard list in `oe.py`.
+- Made OeIntegrationTests machine-independent (mock `config.OeConfig` + `Client` instead of `odooenv.OeConfig`).
+
+**Deviation**: `TestAllCommand.execute()` does not signal test failures via exit code (consistent with existing `-Q` behavior; exit code is handled by `python -m odoo_env.qa`).
+
 ## PR4 — CI template + docs — pending (phases 8–9)

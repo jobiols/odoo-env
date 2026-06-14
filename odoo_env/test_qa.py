@@ -13,6 +13,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+import odoo_env.qa.__main__ as qa_main
+from odoo_env.odooenv import OdooEnv
 from odoo_env.qa import failures, threshold
 from odoo_env.qa.config import RunnerConfig
 from odoo_env.qa.runner import TestRunner
@@ -423,6 +425,107 @@ class ThresholdEnforcementTests(unittest.TestCase):
         self._write_floor(30)
         runner = self._make_runner()
         self.assertTrue(runner.check_threshold())  # 30 >= 20
+
+
+class CLITests(unittest.TestCase):
+    """REQ-QA-007 — CLI entrypoint (ADR 1)."""
+
+    def setUp(self):
+        self._orig_cwd = os.getcwd()
+        self._tmp = Path(tempfile.mkdtemp())
+        os.chdir(str(self._tmp))
+
+    def tearDown(self):
+        os.chdir(self._orig_cwd)
+        shutil.rmtree(self._tmp, ignore_errors=True)
+
+    @patch("odoo_env.qa.runner.TestRunner.run_all")
+    @patch("odoo_env.qa.runner.TestRunner.generate_report")
+    @patch("odoo_env.qa.__main__._oe_client")
+    def test_cli_exit_zero_on_success(self, mock_client, mock_report, mock_run):
+        mock_client.return_value = RunnerConfigTests._fake_client()
+        mock_run.return_value = True
+        mock_report.return_value = True
+        self.assertEqual(qa_main.main(), 0)
+
+    @patch("odoo_env.qa.runner.TestRunner.run_all")
+    @patch("odoo_env.qa.__main__._oe_client")
+    def test_cli_exit_nonzero_on_failure(self, mock_client, mock_run):
+        mock_client.return_value = RunnerConfigTests._fake_client()
+        mock_run.return_value = False
+        self.assertNotEqual(qa_main.main(), 0)
+
+
+class OeIntegrationTests(unittest.TestCase):
+    """REQ-QA-010 — oe --test-all flag without breaking -Q (ADR 1)."""
+
+    @patch("odoo_env.odooenv.TestRunner")
+    @patch("odoo_env.config.OeConfig")
+    @patch("odoo_env.odooenv.Client")
+    def test_test_all_dispatches_to_runner(
+        self, mock_client_cls, mock_cfg, mock_runner_cls
+    ):
+        mock_cfg.return_value.debug = False
+        mock_cfg.return_value.get_client.return_value = "dimec"
+        mock_client_cls.return_value = RunnerConfigTests._fake_client()
+        args = MagicMock()
+        args.client = "dimec"
+        args.test_all = True
+        for flag in (
+            "install",
+            "run_env",
+            "pull_images",
+            "write_config",
+            "run_cli",
+            "stop_env",
+            "stop_cli",
+            "update",
+            "deploy_keys",
+            "modules_to_test",
+            "server_help",
+            "restore",
+            "create_test_db",
+        ):
+            setattr(args, flag, False)
+
+        oe = OdooEnv(args)
+        commands = oe.build_commands()
+        self.assertTrue(mock_runner_cls.called)
+        self.assertIsNotNone(commands)
+
+    @patch("odoo_env.odooenv.TestRunner")
+    @patch("odoo_env.config.OeConfig")
+    @patch("odoo_env.odooenv.Client")
+    def test_dash_q_uses_original_qa_method(
+        self, mock_client_cls, mock_cfg, mock_runner_cls
+    ):
+        mock_cfg.return_value.debug = False
+        mock_cfg.return_value.get_client.return_value = "dimec"
+        mock_client_cls.return_value = RunnerConfigTests._fake_client()
+        args = MagicMock()
+        args.client = "dimec"
+        args.modules_to_test = ["sale", "stock"]
+        for flag in (
+            "install",
+            "run_env",
+            "pull_images",
+            "write_config",
+            "run_cli",
+            "stop_env",
+            "stop_cli",
+            "update",
+            "deploy_keys",
+            "server_help",
+            "restore",
+            "create_test_db",
+            "test_all",
+        ):
+            setattr(args, flag, False)
+
+        oe = OdooEnv(args)
+        commands = oe.build_commands()
+        self.assertFalse(mock_runner_cls.called)
+        self.assertIsInstance(commands, list)
 
 
 if __name__ == "__main__":

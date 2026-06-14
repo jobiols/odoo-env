@@ -7,6 +7,7 @@ from odoo_env.command import (
     CloneRepo,
     Command,
     PullRepo,
+    TestAllCommand,
     WriteConfigFile,
 )
 from odoo_env.config import OeConfig
@@ -16,6 +17,8 @@ from odoo_env.managers.environment_manager import EnvironmentManager
 from odoo_env.managers.image_manager import ImageManager
 from odoo_env.messages import msg
 from odoo_env.options import get_param
+from odoo_env.qa.config import RunnerConfig
+from odoo_env.qa.runner import TestRunner
 from odoo_env.services.docker_client import DockerClient, RunSpec
 
 
@@ -52,6 +55,7 @@ class OdooEnv:
             ("server_help", self.server_help),
             ("restore", self._build_restore),
             ("create_test_db", self.create_test_db),
+            ("test_all", self._build_test_all),
         ]
         commands = []
         for flag, builder in builders:
@@ -85,6 +89,12 @@ class OdooEnv:
         no_deactivate = self._args.no_deactivate
         self._check_backup_available(backup_file)
         return self.restore(self.client.name, database, backup_file, no_deactivate)
+
+    def _build_test_all(self):
+        config = RunnerConfig.from_oe(self._client)
+        runner = TestRunner(config)
+        cmd = TestAllCommand(self, runner=runner)
+        return [cmd]
 
     def _check_backup_available(self, backup_file):
         """

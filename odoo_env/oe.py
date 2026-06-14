@@ -184,6 +184,12 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     )
 
     parser.add_argument(
+        "--test-all",
+        action="store_true",
+        help="Run all module tests with coverage and enforce the coverage threshold.",
+    )
+
+    parser.add_argument(
         "--base-dir",
         dest="base_dir",
         help="Set the root directory where all client environments are stored "
@@ -230,6 +236,7 @@ def main():
                 args.server_help,
                 args.restore,
                 args.create_test_db,
+                args.test_all,
             ]
         ):
             return

@@ -258,3 +258,21 @@ class MessageOnly(Command):
 
     def execute(self):
         """Este metodo debe sobreescribirse en las subclases"""
+
+
+class TestAllCommand(Command):
+    """Runs the full test+coverage engine (REQ-QA-010).
+
+    Delegates to ``TestRunner`` instead of a shell subprocess.
+    """
+
+    def __init__(self, parent, runner):
+        super().__init__(
+            parent,
+            usr_msg="Running all module tests with coverage",
+        )
+        self._runner = runner
+
+    def execute(self):
+        self._runner.run_all()
+        self._runner.generate_report()

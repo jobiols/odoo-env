@@ -151,17 +151,17 @@ Chain strategy: chained (4 PRs)
 
 ### 7.1 CLI entrypoint
 
-- [ ] 7.1.1 RED: `test_cli_builds_config_from_oe` — `python -m odoo_env.qa` path builds `RunnerConfig.from_oe` without explicit client/version
-- [ ] 7.1.2 RED: `test_cli_exit_nonzero_on_failure` — runner failure → CLI exit != 0
-- [ ] 7.1.3 Run — expect FAIL; GREEN implement `odoo_env/qa/__main__.py`; Run — expect PASS
+- [x] 7.1.1 RED: `test_cli_builds_config_from_oe` — `python -m odoo_env.qa` path builds `RunnerConfig.from_oe` without explicit client/version
+- [x] 7.1.2 RED: `test_cli_exit_nonzero_on_failure` — runner failure → CLI exit != 0
+- [x] 7.1.3 Run — expect FAIL; GREEN implement `odoo_env/qa/__main__.py`; Run — expect PASS
 - **REQ coverage**: REQ-QA-007
 - **Design reference**: ADR 1
 
 ### 7.2 oe --test-all flag (without breaking -Q)
 
-- [ ] 7.2.1 RED: `test_oe_test_all_dispatches_to_runner` — new flag in `oe.py`, dispatched in `odooenv.build_commands()` → delegates to `TestRunner`
-- [ ] 7.2.2 RED: `test_oe_dash_q_unchanged` — `-Q sale,stock` still uses existing `qa()` single-run path
-- [ ] 7.2.3 Run — expect FAIL; GREEN implement; Run — expect PASS
+- [x] 7.2.1 RED: `test_oe_test_all_dispatches_to_runner` — new flag in `oe.py`, dispatched in `odooenv.build_commands()` → delegates to `TestRunner`
+- [x] 7.2.2 RED: `test_oe_dash_q_unchanged` — `-Q sale,stock` still uses existing `qa()` single-run path
+- [x] 7.2.3 Run — expect FAIL; GREEN implement; Run — expect PASS
 - **REQ coverage**: REQ-QA-010
 - **Design reference**: ADR 1
 

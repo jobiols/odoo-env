@@ -25,6 +25,7 @@ class MockArgs:
             "server_help": False,
             "restore": False,
             "create_test_db": False,
+            "test_all": False,
             "no_deactivate": False,
             "database": None,
             "module": None,

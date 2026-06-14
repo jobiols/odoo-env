@@ -6,6 +6,12 @@ class "BackupManager" as odoo_env.managers.backup_manager.BackupManager {
   parent
   restore(database: 'str | bool | None', backup_file: 'str | bool | None', no_deactivate)
 }
+class "CLITests" as odoo_env.test_qa.CLITests {
+  setUp()
+  tearDown()
+  test_cli_exit_nonzero_on_failure(mock_client, mock_run)
+  test_cli_exit_zero_on_success(mock_client, mock_report, mock_run)
+}
 class "Client" as odoo_env.client.Client {
   backup_dir
   base_dir
@@ -144,6 +150,8 @@ class "MessageOnly" as odoo_env.command.MessageOnly {
 }
 class "MockArgs" as odoo_env.test_helpers.MockArgs {
 }
+class "MockArgs" as odoo_env.qa.__main__.MockArgs {
+}
 class "Msg" as odoo_env.messages.Msg {
   done(text)
   err(text) -> NoReturn
@@ -216,6 +224,10 @@ class "OeConfig" as odoo_env.config.OeConfig {
   save_environment(environment)
 }
 class "<color:red>OeError</color>" as odoo_env.messages.OeError {
+}
+class "OeIntegrationTests" as odoo_env.test_qa.OeIntegrationTests {
+  test_dash_q_uses_original_qa_method(mock_client_cls, mock_cfg, mock_runner_cls)
+  test_test_all_dispatches_to_runner(mock_client_cls, mock_cfg, mock_runner_cls)
 }
 class "PullImage" as odoo_env.command.PullImage {
   check_args()
@@ -294,6 +306,9 @@ class "SystemClient" as odoo_env.services.system.SystemClient {
   get_chown_command(path: str, owner: str, recursive: bool, sudo: bool) -> list[str]
   get_rm_command(path: str, recursive: bool, force: bool, sudo: bool) -> list[str]
   make_mkdir_command(path: str | None, parents: bool) -> list[str]
+}
+class "TestAllCommand" as odoo_env.command.TestAllCommand {
+  execute()
 }
 class "TestClientDebugFollowsPersistedEnvironment" as odoo_env.test_client.TestClientDebugFollowsPersistedEnvironment {
   config_data_patcher : _patch
@@ -546,6 +561,7 @@ odoo_env.command.MessageOnly --|> odoo_env.command.Command
 odoo_env.command.PullImage --|> odoo_env.command.Command
 odoo_env.command.PullRepo --|> odoo_env.command.Command
 odoo_env.command.RemovedirCommand --|> odoo_env.command.Command
+odoo_env.command.TestAllCommand --|> odoo_env.command.Command
 odoo_env.command.WriteConfigFile --|> odoo_env.command.Command
 odoo_env.test_backup_guard.TestRestoreBackupGuard --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_environment_manager.TestDebugMountings --|> odoo_env.test_helpers.OdooEnvTestCase

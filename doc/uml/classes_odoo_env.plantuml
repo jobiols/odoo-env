@@ -52,9 +52,26 @@ class "Command" as odoo_env.command.Command {
   execute()
   subprocess_call(cmd, check, capture)
 }
+class "CommandCompositionTests" as odoo_env.test_qa.CommandCompositionTests {
+  test_coverage_cmd_includes_test_enable_and_stop_after_init()
+  test_coverage_cmd_passes_explicit_db_args()
+  test_coverage_cmd_sets_cov_file_env()
+  test_coverage_cmd_uses_install_verb()
+  test_coverage_cmd_wraps_with_entrypoint_bash()
+  test_module_cmd_includes_network_and_link()
+  test_plain_cmd_has_tests_and_db()
+  test_plain_cmd_no_coverage_when_disabled()
+}
 class "CreateGitignore" as odoo_env.command.CreateGitignore {
   check_args()
   execute()
+}
+class "DiscoveryTests" as odoo_env.test_qa.DiscoveryTests {
+  setUp()
+  tearDown()
+  test_discover_does_not_recurse()
+  test_discover_empty_returns_empty_list()
+  test_discovers_modules_with_manifest_and_tests()
 }
 class "DockerClient" as odoo_env.services.docker_client.DockerClient {
   get_extract_cp_command(image: str, container_src: str, host_dest: str, mount: str) -> list[str]
@@ -88,6 +105,17 @@ class "EnvironmentManager" as odoo_env.managers.environment_manager.EnvironmentM
 }
 class "ExtractSourcesCommand" as odoo_env.command.ExtractSourcesCommand {
   check_args()
+}
+class "FailureDetectionTests" as odoo_env.test_qa.FailureDetectionTests {
+  is_error_line
+  setUp()
+  test_clean_line_is_false()
+  test_detects_error_line()
+  test_detects_fail_line()
+  test_error_without_word_is_false()
+  test_fail_without_word_is_false()
+  test_ignores_non_test_colon_lines()
+  test_strips_ansi_before_match()
 }
 class "GitRepo" as odoo_env.repos.GitRepo {
   branch
@@ -198,6 +226,23 @@ class "PullRepo" as odoo_env.command.PullRepo {
 class "RemovedirCommand" as odoo_env.command.RemovedirCommand {
   check_args()
 }
+class "ReportTests" as odoo_env.test_qa.ReportTests {
+  config
+  setUp()
+  tearDown()
+  test_report_includes_combine_and_fail_under(mock_run)
+  test_report_includes_omit_patterns(mock_run)
+  test_report_produces_xml_json_html(mock_run)
+  test_report_returns_false_on_failure(mock_run)
+}
+class "RunAllTests" as odoo_env.test_qa.RunAllTests {
+  config
+  setUp()
+  test_run_all_all_pass(mock_popen, mock_disc)
+  test_run_all_no_modules(mock_disc)
+  test_run_all_stops_on_fail_line(mock_popen, mock_disc)
+  test_run_all_stops_on_nonzero_exit(mock_popen, mock_disc)
+}
 class "RunSpec" as odoo_env.services.docker_client.RunSpec {
   cmd : str | list[str] | None
   database : str | None
@@ -220,6 +265,26 @@ class "RunSpec" as odoo_env.services.docker_client.RunSpec {
   user : str | None
   volumes : Mapping[str, dict[str, str] | str] | None
   workdir : str | None
+}
+class "RunnerConfig" as odoo_env.qa.config.RunnerConfig {
+  base_dir : str
+  client : str
+  coverage : bool
+  db_name : str
+  image : str
+  needs_with_demo_flag : bool
+  network : str
+  numeric_ver : float
+  omit : list[str]
+  version : str
+  from_oe(client) -> 'RunnerConfig'
+}
+class "RunnerConfigTests" as odoo_env.test_qa.RunnerConfigTests {
+  test_defaults()
+  test_from_oe_resolves_fields()
+  test_needs_with_demo_flag_false_at_18_boundary()
+  test_needs_with_demo_flag_false_for_le18()
+  test_needs_with_demo_flag_true_for_ge19()
 }
 class "SingletonMeta" as odoo_env.singleton.SingletonMeta {
   reset()
@@ -429,6 +494,14 @@ class "TestRestoreBackupGuard" as odoo_env.test_backup_guard.TestRestoreBackupGu
   test_specific_backup_file_missing_raises_with_available()
   test_specific_backup_file_present_passes()
 }
+class "TestRunner" as odoo_env.qa.runner.TestRunner {
+  config
+  docker_client
+  check_threshold() -> bool
+  discover_test_modules() -> list[str]
+  generate_report() -> bool
+  run_all() -> bool
+}
 class "TestValidateManifestKeys" as odoo_env.test_client.TestValidateManifestKeys {
   test_all_odoo_env_keys_are_accepted()
   test_full_real_world_manifest_passes()
@@ -437,6 +510,27 @@ class "TestValidateManifestKeys" as odoo_env.test_client.TestValidateManifestKey
   test_typo_underscore_instead_of_hyphen_raises_with_suggestion()
   test_unknown_key_raises_not_recognized()
   test_valid_manifest_passes()
+}
+class "ThresholdEnforcementTests" as odoo_env.test_qa.ThresholdEnforcementTests {
+  config
+  setUp()
+  tearDown()
+  test_check_threshold_master_missing_defaults_20(mock_co)
+  test_check_threshold_passes_when_equal(mock_co)
+  test_check_threshold_rejects_lower(mock_co)
+}
+class "ThresholdTests" as odoo_env.test_qa.ThresholdTests {
+  root : Path
+  threshold
+  setUp()
+  test_ratchet_accepts_equal()
+  test_ratchet_accepts_higher()
+  test_ratchet_rejects_lower()
+  test_read_floor_default_when_missing()
+  test_read_floor_from_file()
+  test_read_floor_ignores_whitespace()
+  test_read_floor_raises_on_malformed()
+  test_read_floor_rejects_out_of_range()
 }
 class "WriteConfigFile" as odoo_env.command.WriteConfigFile {
   check_args()
@@ -460,12 +554,17 @@ odoo_env.test_image_manager.TestImageManager --|> odoo_env.test_helpers.OdooEnvT
 odoo_env.test_oe.TestCreateTestDb --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_oe.TestGetPacks --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_oe.TestRepository --|> odoo_env.test_helpers.OdooEnvTestCase
+odoo_env.qa.runner.TestRunner --> odoo_env.services.docker_client.DockerClient : docker_client
 odoo_env.client.Client --* odoo_env.managers.backup_manager.BackupManager : client
 odoo_env.client.Client --* odoo_env.managers.image_manager.ImageManager : client
+odoo_env.qa.config.RunnerConfig --* odoo_env.test_qa.ReportTests : config
+odoo_env.qa.config.RunnerConfig --* odoo_env.test_qa.RunAllTests : config
+odoo_env.qa.config.RunnerConfig --* odoo_env.test_qa.ThresholdEnforcementTests : config
 odoo_env.services.docker_client.DockerClient --* odoo_env.managers.backup_manager.BackupManager : docker_client
 odoo_env.services.docker_client.DockerClient --* odoo_env.managers.environment_manager.EnvironmentManager : docker_client
 odoo_env.services.docker_client.DockerClient --* odoo_env.managers.image_manager.ImageManager : docker_client
 odoo_env.services.docker_client.DockerClient --* odoo_env.test_docker_client.TestExtractCpCommand : dc
 odoo_env.services.system.SystemClient --* odoo_env.managers.environment_manager.EnvironmentManager : system_client
 odoo_env.services.system.SystemClient --* odoo_env.managers.image_manager.ImageManager : system_client
+odoo_env.qa.config.RunnerConfig --o odoo_env.qa.runner.TestRunner : config
 @enduml

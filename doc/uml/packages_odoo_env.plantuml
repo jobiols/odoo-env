@@ -32,6 +32,16 @@ package "odoo_env.oe" as odoo_env.oe {
 }
 package "odoo_env.options" as odoo_env.options {
 }
+package "odoo_env.qa" as odoo_env.qa {
+}
+package "odoo_env.qa.config" as odoo_env.qa.config {
+}
+package "odoo_env.qa.failures" as odoo_env.qa.failures {
+}
+package "odoo_env.qa.runner" as odoo_env.qa.runner {
+}
+package "odoo_env.qa.threshold" as odoo_env.qa.threshold {
+}
 package "odoo_env.repos" as odoo_env.repos {
 }
 package "odoo_env.sd" as odoo_env.sd {
@@ -59,6 +69,8 @@ package "odoo_env.test_helpers" as odoo_env.test_helpers {
 package "odoo_env.test_image_manager" as odoo_env.test_image_manager {
 }
 package "odoo_env.test_oe" as odoo_env.test_oe {
+}
+package "odoo_env.test_qa" as odoo_env.test_qa {
 }
 package "odoo_env.test_sd" as odoo_env.test_sd {
 }
@@ -105,6 +117,11 @@ odoo_env.oe --> odoo_env.messages
 odoo_env.oe --> odoo_env.odooenv
 odoo_env.options --> odoo_env.config
 odoo_env.options --> odoo_env.messages
+odoo_env.qa.runner --> odoo_env.constants
+odoo_env.qa.runner --> odoo_env.qa.config
+odoo_env.qa.runner --> odoo_env.qa.failures
+odoo_env.qa.runner --> odoo_env.qa.threshold
+odoo_env.qa.runner --> odoo_env.services.docker_client
 odoo_env.repos --> odoo_env.config
 odoo_env.repos --> odoo_env.messages
 odoo_env.services.system --> odoo_env.config
@@ -132,6 +149,11 @@ odoo_env.test_oe --> odoo_env.messages
 odoo_env.test_oe --> odoo_env.odooenv
 odoo_env.test_oe --> odoo_env.repos
 odoo_env.test_oe --> odoo_env.test_helpers
+odoo_env.test_qa --> odoo_env.qa
+odoo_env.test_qa --> odoo_env.qa.config
+odoo_env.test_qa --> odoo_env.qa.failures
+odoo_env.test_qa --> odoo_env.qa.runner
+odoo_env.test_qa --> odoo_env.qa.threshold
 odoo_env.test_sd --> odoo_env
 odoo_env.test_sd --> odoo_env.sd
 odoo_env.managers.environment_manager ..> odoo_env.odooenv

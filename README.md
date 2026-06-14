@@ -69,6 +69,10 @@ Functionality
     -Q repo              Run the tests. Required parameters: -m <module name>. Optional parameters: -d <database>; if omitted, the
                         default test database will be used, which is [client]_test. NOTE: The database used for testing must be
                         created with demo data and must have admin/admin credentials.
+    --test-all           Run all module tests in the current repository with coverage measurement.
+                        Enforces the coverage threshold defined in .coverage-threshold.
+                        Can be called directly from CI via `python -m odoo_env.qa`.
+                        See `templates/ci/` for a GitHub Actions workflow template.
     -f BACKUP_FILE       Filename to restore. Used with --restore. To get the name of this file issue a --backup-list command.If
                         ommited the newest file will be restored
     -H, --server-help    Show odoo server help, it shows the help from the odoo imagedeclared in the cliente manifest
@@ -80,6 +84,7 @@ Functionality
     --restore            Restores a backup. it uses last backup and restores to default database. You can change the backup file to
                         restore with -f option and change database name -d option
     --create-test-db     Create database with demo data.
+    --test-all           Run all module tests with coverage and enforce the coverage threshold.
     --force-create       Force database creation.
     --base-dir BASE_DIR  Set default base-dir This option is persistent.
 
@@ -87,6 +92,32 @@ Installation
 ------------
     sudo pipx install odoo-env
     see proyect in https://pypi.org/project/odoo-env/
+
+CI/CD — Automated test + coverage
+----------------------------------
+This project ships a test runner and a GitHub Actions template for running
+all Odoo module tests with coverage on a **self-hosted runner**.
+
+**Quick start (client repo):**
+
+1. Copy ``templates/ci/tests.yml`` → ``.github/workflows/tests.yml``
+2. Copy ``templates/ci/.coverage-threshold`` → repo root (default: ``20``)
+3. Copy ``templates/ci/README-badge.md`` snippet into ``README.md``
+4. Edit the ``env.CLIENT`` variable in the workflow
+5. Ensure the self-hosted runner has Docker, ``odoo-env`` installed, and
+   the Odoo debug image pulled
+
+**What it does:**
+
+- On every Pull Request: runs all module tests with ``coverage``,
+  detects test failures, enforces the coverage threshold (ratchet: can
+  only go up), and blocks the merge on failure.
+- On push to ``master``/``main``: regenerates the coverage badge
+  (``coverage.svg``) and commits it.
+
+**Manual invocation:** ``python -m odoo_env.qa`` from your client repo
+(requires ``pg-<client>`` and the test DB ``<client>_test`` already
+provisioned).
 
 Changelog
 ---------

@@ -62,4 +62,18 @@ Phase 7 of tasks.md.
 
 **Deviation**: `TestAllCommand.execute()` does not signal test failures via exit code (consistent with existing `-Q` behavior; exit code is handled by `python -m odoo_env.qa`).
 
-## PR4 — CI template + docs — pending (phases 8–9)
+## PR4 — CI template + docs ✅ (complete, not yet committed)
+
+Phases 8–9 of tasks.md.
+
+| File | Status |
+|------|--------|
+| `templates/ci/tests.yml` | added — GitHub Actions workflow template (PR gate + badge) |
+| `templates/ci/.coverage-threshold` | added — default floor (20) |
+| `templates/ci/README-badge.md` | added — badge snippet |
+| `odoo_env/qa/ratchet_guard.py` | added — standalone ratchet guard script for CI |
+| `README.md` | extended — --test-all docs + CI/CD section |
+
+**Evidence**: suite 191 OK, `pre-commit` green.
+
+## Change complete — all 4 PRs delivered

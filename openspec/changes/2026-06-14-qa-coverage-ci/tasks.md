@@ -171,10 +171,10 @@ Chain strategy: chained (4 PRs)
 
 ### 8.1 Workflow + threshold + badge template
 
-- [ ] 8.1.1 Create `templates/ci/tests.yml` — triggers `pull_request` (gate + ratchet guard) and `push: [master]` (badge); `runs-on: [self-hosted]`; steps: checkout → ensure `odoo-net` + `pg-<client>` → `actions/cache` seed (key=image tag) → provision thin seed (miss) / restore (hit) → `python -m odoo_env.qa` → upload `htmlcov` → (master) `genbadge` `coverage.svg` + commit
-- [ ] 8.1.2 Create `templates/ci/.coverage-threshold` with `20`
-- [ ] 8.1.3 Create `templates/ci/README-badge.md` snippet referencing `coverage.svg`
-- [ ] 8.1.4 Validate workflow YAML syntax (lint/parse)
+- [x] 8.1.1 Create `templates/ci/tests.yml` — triggers `pull_request` (gate + ratchet guard) and `push: [master]` (badge); `runs-on: [self-hosted]`; steps: checkout → ensure `odoo-net` + `pg-<client>` → `actions/cache` seed (key=image tag) → provision thin seed (miss) / restore (hit) → `python -m odoo_env.qa` → upload `htmlcov` → (master) `genbadge` `coverage.svg` + commit
+- [x] 8.1.2 Create `templates/ci/.coverage-threshold` with `20`
+- [x] 8.1.3 Create `templates/ci/README-badge.md` snippet referencing `coverage.svg`
+- [x] 8.1.4 Validate workflow YAML syntax (lint/parse)
 - **REQ coverage**: REQ-QA-008, REQ-QA-009, REQ-QA-006 (ratchet guard step)
 - **Design reference**: ADR 6, ADR 7, ADR 8
 
@@ -184,12 +184,12 @@ Chain strategy: chained (4 PRs)
 
 ### 9.1 Documentation
 
-- [ ] 9.1.1 Document the engine + CLI in `README.md` / `docs/` (how `oe --test-all` works)
-- [ ] 9.1.2 Document client-repo adoption of the CI template (copy `templates/ci/*`, set labels, threshold)
+- [x] 9.1.1 Document the engine + CLI in `README.md` / `docs/` (how `oe --test-all` works)
+- [x] 9.1.2 Document client-repo adoption of the CI template (copy `templates/ci/*`, set labels, threshold)
 
 ### 9.2 Verification
 
-- [ ] 9.2.1 Run full suite: `PYTHONPATH=/home/jobiols/tmp/odoo-env /home/jobiols/tmp/odoo-env/venv/bin/python -m unittest discover -s odoo_env -p 'test_*.py'` — all green
-- [ ] 9.2.2 `pre-commit run -a` clean (black/pylint/type-checker)
-- [ ] 9.2.3 Manual e2e on **dimec 17.0e**: PR gate fails on a broken test; coverage gate fails below floor; badge updates on master
+- [x] 9.2.1 Run full suite: `PYTHONPATH=/home/jobiols/tmp/odoo-env /home/jobiols/tmp/odoo-env/venv/bin/python -m unittest discover -s odoo_env -p 'test_*.py'` — all green
+- [x] 9.2.2 `pre-commit run -a` clean (black/pylint/type-checker)
+- [x] 9.2.3 Manual e2e on **dimec 17.0e**: PR gate fails on a broken test; coverage gate fails below floor; badge updates on master
 - **REQ coverage**: all

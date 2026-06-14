@@ -40,6 +40,8 @@ package "odoo_env.qa.config" as odoo_env.qa.config {
 }
 package "odoo_env.qa.failures" as odoo_env.qa.failures {
 }
+package "odoo_env.qa.ratchet_guard" as odoo_env.qa.ratchet_guard {
+}
 package "odoo_env.qa.runner" as odoo_env.qa.runner {
 }
 package "odoo_env.qa.threshold" as odoo_env.qa.threshold {
@@ -125,6 +127,7 @@ odoo_env.qa.__main__ --> odoo_env.client
 odoo_env.qa.__main__ --> odoo_env.config
 odoo_env.qa.__main__ --> odoo_env.qa.config
 odoo_env.qa.__main__ --> odoo_env.qa.runner
+odoo_env.qa.ratchet_guard --> odoo_env.qa.threshold
 odoo_env.qa.runner --> odoo_env.constants
 odoo_env.qa.runner --> odoo_env.qa.config
 odoo_env.qa.runner --> odoo_env.qa.failures

@@ -179,9 +179,16 @@ class TestRunner:
         cv_file = self._coverage_file
         db_name = self.config.db_name
 
-        # DB connection args injected manually because the coverage
-        # wrapper (bash -c) skips the regular Odoo entrypoint.
-        db_args = (
+        # DB connection args injected manually because the coverage wrapper
+        # overrides the image entrypoint (entrypoint="bash") and therefore
+        # skips entry_point.sh, which is what normally resolves these params.
+        #
+        # ${DB_ENV_POSTGRES_USER/PASSWORD} are NOT hardcoded credentials: they
+        # are env vars injected by Docker's legacy --link (pg-<client>:db) and
+        # read at runtime inside the container. The ":-odoo" fallback mirrors
+        # the image default (entry_point.sh uses the same 'odoo' default), so
+        # this only ever applies to the local test database, never production.
+        db_args = (  # nosec B105 B106 - dev/test default, mirrors image entrypoint
             "--db_host=db "
             "--db_port=5432 "
             '--db_user="${DB_ENV_POSTGRES_USER:-odoo}" '
@@ -201,6 +208,7 @@ class TestRunner:
         spec = RunSpec(
             image=self.config.image,
             interactive=True,
+            tty=False,
             remove=True,
             network=self.config.network,
             volumes=self._normal_volumes,
@@ -216,6 +224,7 @@ class TestRunner:
         spec = RunSpec(
             image=self.config.image,
             interactive=True,
+            tty=False,
             remove=True,
             network=self.config.network,
             volumes=self._normal_volumes,

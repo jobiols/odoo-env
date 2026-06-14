@@ -15,6 +15,7 @@ class RunSpec:
     detach: bool = False
     remove: bool = False
     interactive: bool = False
+    tty: bool = True
     name: str | None = None
     ports: dict[int, int] | None = None
     volumes: Mapping[str, dict[str, str] | str] | None = None
@@ -47,7 +48,7 @@ class DockerClient:
         if spec.remove:
             cmd.append("--rm")
         if spec.interactive:
-            cmd.append("-it")
+            cmd.append("-it" if spec.tty else "-i")
 
     def _apply_runtime_options(self, cmd: list[str], spec: RunSpec) -> None:
         if spec.name:

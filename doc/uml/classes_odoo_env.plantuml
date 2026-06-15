@@ -34,6 +34,7 @@ class "Client" as odoo_env.client.Client {
   sources_dir
   version
   version_dir
+  build_repo_url(client_name: str) -> str
   check_common(manifest)
   check_v2(manifest)
   get_image(value)
@@ -212,16 +213,27 @@ class "OeConfig" as odoo_env.config.OeConfig {
   client
   config_data
   debug
+  organization
   prod
   check_version()
   get_client()
   get_client_path(client_name)
   get_environment()
+  get_organization()
   persist_config()
   save_base_dir(value)
   save_client(client)
   save_client_path(client_name, path)
   save_environment(environment)
+  save_organization(value)
+}
+class "OeConfigPatchTestCase" as odoo_env.test_helpers.OeConfigPatchTestCase {
+  config_data_patcher : _patch
+  mock_config_data : AsyncMock, MagicMock, dict
+  mock_save_config : AsyncMock, MagicMock, dict
+  save_config_patcher : _patch
+  setUp()
+  tearDown()
 }
 class "<color:red>OeError</color>" as odoo_env.messages.OeError {
 }
@@ -274,6 +286,7 @@ class "RunSpec" as odoo_env.services.docker_client.RunSpec {
   restart : str | None
   stop_after_init : bool
   test_enable : bool
+  tty : bool
   user : str | None
   volumes : Mapping[str, dict[str, str] | str] | None
   workdir : str | None
@@ -309,6 +322,14 @@ class "SystemClient" as odoo_env.services.system.SystemClient {
 }
 class "TestAllCommand" as odoo_env.command.TestAllCommand {
   execute()
+}
+class "TestBuildRepoUrl" as odoo_env.test_client.TestBuildRepoUrl {
+  test_build_url_configured_org()
+  test_build_url_default_org()
+  test_build_url_lowercases_name()
+  test_build_url_rejects_empty()
+  test_build_url_rejects_slash()
+  test_build_url_rejects_space()
 }
 class "TestClientDebugFollowsPersistedEnvironment" as odoo_env.test_client.TestClientDebugFollowsPersistedEnvironment {
   config_data_patcher : _patch
@@ -413,12 +434,15 @@ class "TestGetManifest" as odoo_env.test_client.TestGetManifest {
   subprocess_patcher : _patch
   setUp()
   tearDown()
-  test_empty_url_raises_oe_error()
+  test_client_name_builds_canonical_url()
+  test_empty_install_raises()
   test_existing_client_path_skips_url_bool()
   test_existing_client_path_skips_url_str()
+  test_full_git_url_used_verbatim()
+  test_full_https_url_used_verbatim()
   test_install_bool_skips_url()
   test_install_none_skips_url()
-  test_invalid_url_raises_oe_error()
+  test_non_url_string_builds_canonical_url()
   test_url_clone_failure_propagates()
   test_url_no_manifest_returns_none()
   test_url_str_calls_get_manifest_from_url()
@@ -453,6 +477,18 @@ class "TestOdooVersionMap" as odoo_env.test_constants.TestOdooVersionMap {
   test_version16_same_as_14()
   test_version17_python310()
   test_version18_python312()
+}
+class "TestOrganizationConfig" as odoo_env.test_config.TestOrganizationConfig {
+  test_org_default_when_missing_persists()
+  test_org_read_from_config()
+  test_persist_config_saves_org_flag()
+  test_save_organization_noop_when_unchanged()
+  test_save_organization_persists()
+}
+class "TestParseArgs" as odoo_env.test_oe_args.TestParseArgs {
+  test_help_shows_client_metavar_and_org()
+  test_install_name_parsed()
+  test_org_flag_parsed()
 }
 class "TestProcessInputOther" as odoo_env.test_sd.TestProcessInputOther {
   test_attach_builds_exec_command()
@@ -564,6 +600,8 @@ odoo_env.command.RemovedirCommand --|> odoo_env.command.Command
 odoo_env.command.TestAllCommand --|> odoo_env.command.Command
 odoo_env.command.WriteConfigFile --|> odoo_env.command.Command
 odoo_env.test_backup_guard.TestRestoreBackupGuard --|> odoo_env.test_helpers.OdooEnvTestCase
+odoo_env.test_client.TestBuildRepoUrl --|> odoo_env.test_helpers.OeConfigPatchTestCase
+odoo_env.test_config.TestOrganizationConfig --|> odoo_env.test_helpers.OeConfigPatchTestCase
 odoo_env.test_environment_manager.TestDebugMountings --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_environment_manager.TestEnvironmentManager --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_image_manager.TestImageManager --|> odoo_env.test_helpers.OdooEnvTestCase

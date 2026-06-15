@@ -1,6 +1,7 @@
 """Tests for Client.get_manifest() and get_manifest_from_url() manifest resolution.
 
-Covers REQ-INSTALL-001 through REQ-INSTALL-007 (install-from-url change).
+Covers REQ-INSTALL-001 through REQ-INSTALL-010 (install-from-url and
+install-by-client-name changes).
 """
 
 import subprocess
@@ -11,7 +12,7 @@ from unittest.mock import patch
 from odoo_env.client import ODOO_ENV_KEYS, Client
 from odoo_env.config import OeConfig
 from odoo_env.messages import OeError
-from odoo_env.test_helpers import MockArgs
+from odoo_env.test_helpers import MockArgs, OeConfigPatchTestCase
 
 BASE_MANIFEST = {
     "name": "test_client",
@@ -159,28 +160,71 @@ class TestGetManifest(unittest.TestCase):
         self.assertTrue(self.mock_get_manifest_from_struct.called)
         self.assertIsNotNone(manifest)
 
-    # --- Task 2.3: REQ-INSTALL-003 — URL validation ---
+    # --- Task 2.3/2.4: REQ-INSTALL-003 — input resolution and validation ---
 
-    def test_invalid_url_raises_oe_error(self):
-        """Non-git URL MUST raise OeError."""
+    def test_non_url_string_builds_canonical_url(self):
+        """A bare name (non-URL) MUST build the canonical URL, not raise."""
         self.mock_get_client_path.return_value = None
+        self.mock_discover_manifest_from_path.return_value = (
+            BASE_MANIFEST,
+            "/tmp/path",
+        )
 
         client = self._make_client(install="not-a-url")
-        with self.assertRaises(OeError) as ctx:
-            client.get_manifest_from_url()
+        client.get_manifest_from_url()
 
-        self.assertIn("Invalid git URL", str(ctx.exception))
-        self.assertIn("not-a-url", str(ctx.exception))
+        clone_arg = self.mock_subprocess_run.call_args[0][0][4]
+        self.assertEqual(clone_arg, "git@github.com:quilsoft-org/cl-not-a-url.git")
 
-    def test_empty_url_raises_oe_error(self):
-        """Empty string URL MUST raise OeError."""
+    def test_full_git_url_used_verbatim(self):
+        """A git@ URL MUST be used verbatim as clone source."""
+        self.mock_get_client_path.return_value = None
+        self.mock_discover_manifest_from_path.return_value = (
+            BASE_MANIFEST,
+            "/tmp/path",
+        )
+
+        client = self._make_client(install="git@github.com:org/repo.git")
+        client.get_manifest_from_url()
+
+        clone_arg = self.mock_subprocess_run.call_args[0][0][4]
+        self.assertEqual(clone_arg, "git@github.com:org/repo.git")
+
+    def test_full_https_url_used_verbatim(self):
+        """An https:// URL MUST be used verbatim as clone source."""
+        self.mock_get_client_path.return_value = None
+        self.mock_discover_manifest_from_path.return_value = (
+            BASE_MANIFEST,
+            "/tmp/path",
+        )
+
+        client = self._make_client(install="https://github.com/org/repo.git")
+        client.get_manifest_from_url()
+
+        clone_arg = self.mock_subprocess_run.call_args[0][0][4]
+        self.assertEqual(clone_arg, "https://github.com/org/repo.git")
+
+    def test_client_name_builds_canonical_url(self):
+        """A bare client name MUST build git@github.com:<org>/cl-<name>.git."""
+        self.mock_get_client_path.return_value = None
+        self.mock_discover_manifest_from_path.return_value = (
+            BASE_MANIFEST,
+            "/tmp/path",
+        )
+
+        client = self._make_client(install="labutic")
+        client.get_manifest_from_url()
+
+        clone_arg = self.mock_subprocess_run.call_args[0][0][4]
+        self.assertEqual(clone_arg, "git@github.com:quilsoft-org/cl-labutic.git")
+
+    def test_empty_install_raises(self):
+        """Empty string install MUST raise OeError."""
         self.mock_get_client_path.return_value = None
 
         client = self._make_client(install="")
-        with self.assertRaises(OeError) as ctx:
+        with self.assertRaises(OeError):
             client.get_manifest_from_url()
-
-        self.assertIn("Invalid git URL", str(ctx.exception))
 
     # --- Task 2.4: REQ-INSTALL-002/004 — URL success + save_client_path ---
 
@@ -246,6 +290,50 @@ class TestGetManifest(unittest.TestCase):
             client.get_manifest_from_url()
 
         self.mock_save_client_path.assert_not_called()
+
+
+class TestBuildRepoUrl(OeConfigPatchTestCase):
+    """Tests for Client.build_repo_url() canonical URL builder.
+
+    Covers REQ-INSTALL-008 (canonical URL) and REQ-INSTALL-010
+    (client-name validation and lowercase normalization).
+    """
+
+    def test_build_url_default_org(self):
+        self._start({"clients": []})
+        self.assertEqual(
+            Client.build_repo_url("labutic"),
+            "git@github.com:quilsoft-org/cl-labutic.git",
+        )
+
+    def test_build_url_configured_org(self):
+        self._start({"clients": [], "organization": "acme-org"})
+        self.assertEqual(
+            Client.build_repo_url("labutic"),
+            "git@github.com:acme-org/cl-labutic.git",
+        )
+
+    def test_build_url_lowercases_name(self):
+        self._start({"clients": []})
+        self.assertEqual(
+            Client.build_repo_url("Labutic"),
+            "git@github.com:quilsoft-org/cl-labutic.git",
+        )
+
+    def test_build_url_rejects_space(self):
+        self._start({"clients": []})
+        with self.assertRaises(OeError):
+            Client.build_repo_url("foo bar")
+
+    def test_build_url_rejects_slash(self):
+        self._start({"clients": []})
+        with self.assertRaises(OeError):
+            Client.build_repo_url("foo/bar")
+
+    def test_build_url_rejects_empty(self):
+        self._start({"clients": []})
+        with self.assertRaises(OeError):
+            Client.build_repo_url("")
 
 
 class TestClientDebugFollowsPersistedEnvironment(unittest.TestCase):

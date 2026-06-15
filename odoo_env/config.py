@@ -40,6 +40,9 @@ class OeConfig(metaclass=SingletonMeta):
         if self._args.base_dir:
             self.save_base_dir(self._args.base_dir)
 
+        if getattr(self._args, "org", None):
+            self.save_organization(self._args.org)
+
     @property
     def client(self):
         """Traer el nombre del cliente"""
@@ -52,6 +55,10 @@ class OeConfig(metaclass=SingletonMeta):
     @property
     def base_dir(self):
         return self._config_data.get("base_dir", "/odoo_ar/")
+
+    @property
+    def organization(self):
+        return self.get_organization()
 
     @property
     def debug(self):
@@ -145,6 +152,27 @@ class OeConfig(metaclass=SingletonMeta):
             return
 
         self._config_data["environment"] = environment
+        self._save_config_data()
+
+    def get_organization(self):
+        """Traer la organizacion de GitHub usada para armar las URLs canonicas.
+
+        Si la clave no esta en el config, persiste y devuelve el default
+        'quilsoft-org'.
+        """
+        org = self._config_data.get("organization")
+        if org:
+            return org
+        self._config_data["organization"] = "quilsoft-org"
+        self._save_config_data()
+        return "quilsoft-org"
+
+    def save_organization(self, value):
+        """Salvar la organizacion (no-op si no cambia)."""
+        if self._config_data.get("organization") == value:
+            return
+
+        self._config_data["organization"] = value
         self._save_config_data()
 
     def save_base_dir(self, value):

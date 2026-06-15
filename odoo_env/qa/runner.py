@@ -182,7 +182,7 @@ class TestRunner:
         # DB connection args injected manually because the coverage wrapper
         # overrides the image entrypoint (entrypoint="bash") and therefore
         # skips entry_point.sh, which is what normally resolves these params.
-        #
+
         # ${DB_ENV_POSTGRES_USER/PASSWORD} are NOT hardcoded credentials: they
         # are env vars injected by Docker's legacy --link (pg-<client>:db) and
         # read at runtime inside the container. The ":-odoo" fallback mirrors

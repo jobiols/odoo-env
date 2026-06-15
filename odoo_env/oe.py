@@ -21,12 +21,21 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         dest="install",
         nargs="?",
         const=True,
-        metavar="REPO_URL",
+        metavar="CLIENT",
         help=(
-            "Install environment / update repositories. If no URL is provided, repositories are "
-            "taken from the manifest. Optionally, a repository URL can be provided for the first "
-            "intallation, e.g. oe -i git@github.com:org/repo.git"
+            "Install environment / update repositories. With no value, repositories are "
+            "taken from the manifest. Pass a CLIENT name to build the canonical repo URL "
+            "git@github.com:<org>/cl-<client>.git for the first installation "
+            "(e.g. oe -i labutic). A full git URL (git@... or https://...) is also accepted."
         ),
+    )
+
+    parser.add_argument(
+        "--org",
+        dest="org",
+        help="Set the GitHub organization used to build canonical repo URLs "
+        "(e.g. quilsoft-org). This parameter is persistent. Defaults to "
+        "quilsoft-org when unset.",
     )
 
     parser.add_argument(
@@ -221,7 +230,7 @@ def main():
         conf.persist_config()
         conf.check_version()
 
-        if args.base_dir and not any(
+        if (args.base_dir or args.org) and not any(
             [
                 args.install,
                 args.run_env,

@@ -12,6 +12,7 @@ class MockArgs:
             "prod": False,
             "client": None,
             "base_dir": None,
+            "org": None,
             "install": False,
             "run_env": False,
             "pull_images": False,
@@ -34,6 +35,30 @@ class MockArgs:
         for k, v in defaults.items():
             if k not in self.__dict__:
                 setattr(self, k, v)
+
+
+class OeConfigPatchTestCase(unittest.TestCase):
+    """Base test case that patches OeConfig config IO.
+
+    Subclasses call ``self._start(config_data)`` to set the config dict for a
+    given test; it returns the freshly built OeConfig singleton.
+    """
+
+    def setUp(self):
+        OeConfig.reset()
+        self.config_data_patcher = patch.object(OeConfig, "_get_config_data")
+        self.mock_config_data = self.config_data_patcher.start()
+        self.save_config_patcher = patch.object(OeConfig, "_save_config_data")
+        self.mock_save_config = self.save_config_patcher.start()
+
+    def tearDown(self):
+        self.config_data_patcher.stop()
+        self.save_config_patcher.stop()
+        OeConfig.reset()
+
+    def _start(self, config_data):
+        self.mock_config_data.return_value = config_data
+        return OeConfig(MockArgs(debug=False))
 
 
 TEST_CLIENT_MANIFEST = {

@@ -102,7 +102,8 @@ class Client:
             # Primera instalación desde URL: clonar repo temporalmente,
             # extraer el nombre del proyecto del manifiesto y usarlo
             # como el nuevo cliente default.
-            manifest = self._discover_from_url(self._args.install)[0]
+            url = self._resolve_install_url(self._args.install)
+            manifest = self._discover_from_url(url)[0]
             if not manifest:
                 msg.err(
                     f"No valid __manifest__.py found in repository "
@@ -272,6 +273,40 @@ class Client:
 
         return None, None
 
+    @staticmethod
+    def _is_full_git_url(value: str) -> bool:
+        """True si el valor ya es una URL git completa (git@ o https://)."""
+        return isinstance(value, str) and value.startswith(("git@", "https://"))
+
+    @staticmethod
+    def build_repo_url(client_name: str) -> str:
+        """Arma la URL canonica del repo a partir del nombre del cliente.
+
+        Patron fijo: git@github.com:<organization>/cl-<client>.git
+        El prefijo 'cl-' es fijo. La organizacion se resuelve via OeConfig
+        (--org / config / default 'quilsoft-org'). El nombre se valida
+        (sin espacios ni '/') y se normaliza a minusculas.
+        """
+        name = client_name.strip() if isinstance(client_name, str) else ""
+        if not name or " " in name or "/" in name:
+            msg.err(
+                f"Invalid client name '{client_name}'. It must be a simple "
+                "name without spaces or '/'."
+            )
+        name = name.lower()
+        org = OeConfig().get_organization()
+        return f"git@github.com:{org}/cl-{name}.git"
+
+    def _resolve_install_url(self, value: str) -> str:
+        """Resuelve el valor de -i a una URL git.
+
+        Si ya es una URL completa la devuelve tal cual; si es un nombre de
+        cliente arma la URL canonica.
+        """
+        if self._is_full_git_url(value):
+            return value
+        return self.build_repo_url(value)
+
     def _discover_from_url(
         self, url: str
     ) -> tuple[dict[str, object] | None, str | None]:
@@ -288,11 +323,11 @@ class Client:
             return self._discover_manifest_from_path(Path(tmpdir))
 
     def get_manifest_from_url(self) -> dict[str, object] | None:
-        url = self._args.install
-        if not (
-            isinstance(url, str)
-            and (url.startswith("git@") or url.startswith("https://"))
-        ):
+        if not isinstance(self._args.install, str) or not self._args.install:
+            msg.err(f"Invalid install argument '{self._args.install}'.")
+
+        url = self._resolve_install_url(self._args.install)
+        if not self._is_full_git_url(url):
             msg.err(f"Invalid git URL '{url}'. Must start with 'git@' or 'https://'")
 
         manifest, manifest_dir = self._discover_from_url(url)

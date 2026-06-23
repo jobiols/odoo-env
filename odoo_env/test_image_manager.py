@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+from odoo_env.managers.image_manager import ImageManager
 from odoo_env.odooenv import OdooEnv
 from odoo_env.test_helpers import MockArgs, OdooEnvTestCase
 
@@ -118,6 +119,37 @@ class TestImageManager(OdooEnvTestCase):
         )
         for cmd in legacy_rm_cmds:
             self.assertIn("-f", cmd, f"Legacy cleanup must use -f, got: {cmd}")
+
+    # ── v19 _resolve_extract_targets ──────────────────────────────
+
+    def test_v19_resolve_targets_odoo_src_and_site_packages(self):
+        targets, legacy = ImageManager._resolve_extract_targets(19)
+        self.assertEqual(
+            targets,
+            [
+                ("src", "/odoo/odoo-src"),
+                ("site-packages", "/odoo/venv/lib/python3.10/site-packages"),
+            ],
+        )
+
+    def test_v19_legacy_dirs_clean_all_other_layouts(self):
+        _, legacy = ImageManager._resolve_extract_targets(19)
+        self.assertCountEqual(
+            legacy,
+            ("dist-packages", "dist-local-packages", "lib"),
+        )
+
+    def test_v19_not_in_odoo_version_map(self):
+        """v19 tiene layout propio; NO debe ir en ODOO_VERSION_MAP."""
+        from odoo_env.constants import ODOO_VERSION_MAP
+        self.assertNotIn(19, ODOO_VERSION_MAP)
+
+    def test_v19_rejects_versions_beyond_19(self):
+        with self.assertRaises(ValueError) as ctx:
+            ImageManager._resolve_extract_targets(20)
+        self.assertIn("v14-19", str(ctx.exception))
+
+    # ── existing tests ────────────────────────────────────────────
 
     def test_extract_uses_entrypoint_cp_per_target(self):
         # v14 extrae 2 targets (dist-packages + dist-local-packages): un

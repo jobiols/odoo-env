@@ -39,10 +39,18 @@ class ImageManager:
         """
         if version == 14:
             return list(ODOO_V14_DEBUG_MOUNTS.items()), ("src", "lib")
+        if version == 19:
+            return (
+                [
+                    ("src", "/odoo/odoo-src"),
+                    ("site-packages", "/odoo/venv/lib/python3.10/site-packages"),
+                ],
+                ("dist-packages", "dist-local-packages", "lib"),
+            )
         info = ODOO_VERSION_MAP.get(version)
         if info is None:
             raise ValueError(
-                f"extract_sources is only supported for Odoo v14-18, got v{version}"
+                f"extract_sources is only supported for Odoo v14-19, got v{version}"
             )
         return (
             [("src", info.src), ("lib", info.lib)],

@@ -3,9 +3,13 @@
 ## Purpose
 
 Defines the behavior of the `oe --create-test-db` command, which creates a
-throwaway test database for the current project by restoring an empty seed
-database and installing all project modules found in the current working
-directory. No tests are executed.
+throwaway test database for the active client by restoring an empty seed
+database and installing all custom modules found in the client's own
+modules repository (`sources_dir/<client>/` — as opposed to `cl-<client>/`,
+which holds the extended-manifest/environment module, or any other
+dependency repo under `sources_dir/`). The command can be invoked from any
+directory; it never depends on the process's current working directory. No
+tests are executed.
 
 ## Requirements
 
@@ -25,19 +29,23 @@ name from `~/.config/oe/oe_config.yaml` and MUST target the database named
 
 ---
 
-### Requirement: REQ-CTDB-002 — Module discovery (CWD only, all modules)
+### Requirement: REQ-CTDB-002 — Module discovery (client's modules repo, all modules)
 
-The system MUST discover Odoo modules by scanning the current working
-directory's **immediate** subdirectories. Every immediate subdirectory that
-contains an `__manifest__.py` file MUST be treated as a module. The system MUST
-collect **all** such modules without filtering by `tests/` folders or any other
-criterion. The system MUST NOT scan beyond the immediate children of the current
-working directory.
+The system MUST discover Odoo modules by scanning the **immediate**
+subdirectories of the client's own modules repository, `Client.custom_modules_dir`
+(`sources_dir/<client>/` — the repo cloned under the bare client name, as
+distinct from `cl-<client>/`). This directory is derived from the active
+client, never from the process's current working directory, so the command
+gives the same result regardless of where it is invoked from. Every
+immediate subdirectory that contains an `__manifest__.py` file MUST be
+treated as a module. The system MUST collect **all** such modules without
+filtering by `tests/` folders or any other criterion. The system MUST NOT
+scan beyond the immediate children of `custom_modules_dir`.
 
-#### Scenario: Discovers all module directories in CWD
+#### Scenario: Discovers all module directories in the client's modules repo
 
-- GIVEN the current working directory contains subdirectories `module_a/`,
-  `module_b/`, and `not_a_module/`
+- GIVEN `custom_modules_dir` contains subdirectories `module_a/`, `module_b/`,
+  and `not_a_module/`
 - AND `module_a/__manifest__.py` and `module_b/__manifest__.py` exist
 - AND `not_a_module/` does not contain `__manifest__.py`
 - WHEN module discovery runs
@@ -45,19 +53,29 @@ working directory.
 
 #### Scenario: Modules with tests/ folders are included
 
-- GIVEN the current working directory contains `module_x/` with
-  `__manifest__.py` and a `tests/` subdirectory
+- GIVEN `custom_modules_dir` contains `module_x/` with `__manifest__.py` and
+  a `tests/` subdirectory
 - WHEN module discovery runs
 - THEN `module_x` MUST be in the collected module list
 
 #### Scenario: Nested subdirectories are not scanned
 
-- GIVEN the current working directory contains `module_c/` with
+- GIVEN `custom_modules_dir` contains `module_c/` with
   `module_c/__manifest__.py`
 - AND `module_c/extra/` also contains `extra/__manifest__.py`
 - WHEN module discovery runs
 - THEN only `module_c` MUST be in the collected module list
 - AND `extra` MUST NOT appear
+
+#### Scenario: Invocation directory never affects discovery
+
+- GIVEN the active client is `dimec`
+- AND the process's current working directory is unrelated to `dimec`
+  (e.g. `/tmp` or any other repository's checkout)
+- WHEN `oe --create-test-db` is invoked
+- THEN module discovery MUST scan `dimec`'s `custom_modules_dir`
+- AND the result MUST be identical to running the command from inside
+  `custom_modules_dir` itself
 
 ---
 
@@ -122,14 +140,14 @@ builder pattern used by `EnvironmentManager.update()`, but MUST emit `-i`
 
 ### Requirement: REQ-CTDB-005 — Edge case: no modules found
 
-If module discovery finds **zero** modules (no immediate subdirectory of the
-current working directory contains `__manifest__.py`), the system MUST abort
+If module discovery finds **zero** modules (no immediate subdirectory of
+`custom_modules_dir` contains `__manifest__.py`), the system MUST abort
 with a clear, human-readable error message. The system MUST NOT proceed to the
 restore step. The system MUST NOT invoke docker.
 
-#### Scenario: Aborts before restore when CWD has no module dirs
+#### Scenario: Aborts before restore when custom_modules_dir has no module dirs
 
-- GIVEN the current working directory contains no immediate subdirectories with
+- GIVEN `custom_modules_dir` contains no immediate subdirectories with
   `__manifest__.py`
 - WHEN `oe --create-test-db` is invoked
 - THEN the system MUST emit an error message indicating no modules were found
@@ -191,14 +209,14 @@ destructive step (restore or install), and that the seed restore completes
 
 #### Scenario: No modules aborts before restore
 
-- GIVEN the current working directory contains no modules
+- GIVEN `custom_modules_dir` contains no modules
 - WHEN `oe --create-test-db` is invoked
 - THEN the abort for "no modules found" MUST be raised before any file copy,
   restore, or docker invocation
 
 #### Scenario: Restore completes before install
 
-- GIVEN the current working directory contains at least one module
+- GIVEN `custom_modules_dir` contains at least one module
 - WHEN `oe --create-test-db` is invoked
 - THEN the seed restore MUST complete successfully before the docker install
   command is issued
@@ -215,13 +233,14 @@ implemented in this change:
 - **No tests/-folder filtering**: all modules are installed regardless of
   whether they have a `tests/` directory.
 - **No `-m` override**: there is no flag or parameter to specify a directory
-  other than the current working directory for module discovery.
+  other than the client's `custom_modules_dir` for module discovery.
 - **No git-repos derivation**: module discovery does not parse
   `__manifest__.py` `git-repos` keys, nor does it derive modules from the
   project manifest.
 - **No dependency repo installation**: localization repos (`sub_*`), the
-  `cl-<client>` definition repo, and any repos under `sources/` that are not
-  the CWD are never installed.
-- **No extra base modules**: only the modules discovered in CWD are installed;
-  the system does not add any hardcoded base or core modules beyond what Odoo
-  resolves from the module dependency graph.
+  `cl-<client>` environment/manifest repo, and any other repo under
+  `sources/` besides `custom_modules_dir` (`sources/<client>/`) are never
+  installed.
+- **No extra base modules**: only the modules discovered in `custom_modules_dir`
+  are installed; the system does not add any hardcoded base or core modules
+  beyond what Odoo resolves from the module dependency graph.

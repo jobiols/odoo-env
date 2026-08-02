@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -40,15 +39,14 @@ class EnvironmentManager:
         self.system_client = SystemClient()
 
     @staticmethod
-    def discover_modules_in_cwd():
-        """Scan CWD for immediate subdirectories containing __manifest__.py.
+    def discover_modules_in(base_dir):
+        """Scan *base_dir* for immediate subdirectories containing __manifest__.py.
 
         Does NOT recurse into subdirectories.
         Returns a sorted list of directory names.
         """
-        cwd = Path(os.getcwd())
         modules = []
-        for entry in cwd.iterdir():
+        for entry in Path(base_dir).iterdir():
             if entry.is_dir() and (entry / "__manifest__.py").is_file():
                 modules.append(entry.name)
         return sorted(modules)

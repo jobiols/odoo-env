@@ -272,12 +272,13 @@ class OdooEnv:
         Order: discovery → zero-module guard → seed guard →
                db-exists confirm → cp → restore → rm → install (-i)
         """
-        modules = EnvironmentManager.discover_modules_in_cwd()
+        modules_dir = self.client.custom_modules_dir
+        modules = EnvironmentManager.discover_modules_in(modules_dir)
         if not modules:
             msg.err(
-                "No module found in the current directory. "
-                "The current working directory must contain at least one "
-                "subdirectory with an __manifest__.py file."
+                f"No module found in '{modules_dir}'. "
+                "That directory must contain at least one subdirectory "
+                "with an __manifest__.py file."
             )
 
         database = f"{self.client.name}_test"

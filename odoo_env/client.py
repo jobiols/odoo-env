@@ -529,6 +529,18 @@ class Client:
         return self.base_dir + "sources/"
 
     @property
+    def custom_modules_dir(self):
+        """Donde viven los modulos customizados del cliente (no el repo cl-).
+
+        Bajo sources_dir cuelgan varios repos: cl-<cliente> (el manifiesto
+        extendido/env) y <cliente> (a secas) con los modulos customizados
+        que se instalan/testean.
+
+        Ejemplo: /odoo_ar/odoo-13.0/clientname/sources/clientname/
+        """
+        return f"{self.sources_dir}{self._name}/"
+
+    @property
     def psql_dir(self):
         """Ejemplo: /odoo_ar/odoo-13.0/clientname/postgresql/"""
         return self.base_dir + "postgresql/"

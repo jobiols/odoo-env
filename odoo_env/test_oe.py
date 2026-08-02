@@ -1017,6 +1017,55 @@ class TestCreateTestDb(OdooEnvTestCase):
                         oe.create_test_db()
                     self.assertIn("Seed", str(ctx.exception))
 
+    # ------- 4.9 staging-collision guard: never silently clobbers an
+    # existing backup that happens to be named test.zip; prompts instead -------
+
+    def test_create_test_db_staging_collision_confirm_yes_proceeds(self):
+        """Si el usuario confirma, sí puede pisar el test.zip existente."""
+        options = MockArgs(create_test_db=True, client="test_client")
+        oe = OdooEnv(options)
+        with patch.object(
+            EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]
+        ):
+            with patch.object(OdooEnv, "_db_exists", return_value=False):
+                with patch.object(Path, "is_file", return_value=True):
+                    with patch.object(Path, "exists", return_value=True):
+                        with patch("sys.stdin.isatty", return_value=True):
+                            with patch("builtins.input", return_value="y"):
+                                result = oe.create_test_db()
+        self.assertGreater(len(result), 0)
+
+    def test_create_test_db_staging_collision_confirm_no_aborts(self):
+        """Si el usuario NO confirma, aborta sin tocar el archivo existente."""
+        options = MockArgs(create_test_db=True, client="test_client")
+        oe = OdooEnv(options)
+        with patch.object(
+            EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]
+        ):
+            with patch.object(OdooEnv, "_db_exists", return_value=False):
+                with patch.object(Path, "is_file", return_value=True):
+                    with patch.object(Path, "exists", return_value=True):
+                        with patch("sys.stdin.isatty", return_value=True):
+                            with patch("builtins.input", return_value="n"):
+                                with self.assertRaises(OeError) as ctx:
+                                    oe.create_test_db()
+                                self.assertIn("Aborted", str(ctx.exception))
+
+    def test_create_test_db_staging_collision_non_interactive_aborts(self):
+        """Sin terminal interactiva no se puede confirmar: aborta, no pisa."""
+        options = MockArgs(create_test_db=True, client="test_client")
+        oe = OdooEnv(options)
+        with patch.object(
+            EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]
+        ):
+            with patch.object(OdooEnv, "_db_exists", return_value=False):
+                with patch.object(Path, "is_file", return_value=True):
+                    with patch.object(Path, "exists", return_value=True):
+                        with patch("sys.stdin.isatty", return_value=False):
+                            with self.assertRaises(OeError) as ctx:
+                                oe.create_test_db()
+                            self.assertIn("not a terminal", str(ctx.exception))
+
     # ------- 4.8 dispatch from build_commands (RED: old msg.err still fires) -------
 
     def test_create_test_db_dispatched_from_build_commands(self):

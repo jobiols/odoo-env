@@ -234,26 +234,24 @@ class OdooEnv:
         )
         return result.returncode == 0 and result.stdout.strip() == "1"
 
-    def _confirm_overwrite(self, database):
-        """Prompt user to confirm overwriting an existing database.
+    def _confirm_overwrite(self, subject):
+        """Prompt user to confirm overwriting an existing database or file.
 
         Returns True on 'y'/'yes', raises OeError on no or non-interactive.
         """
         if not sys.stdin.isatty():
             msg.err(
-                f"Database '{database}' already exists and stdin is not a terminal.\n"
-                "Cannot prompt for confirmation. Drop the database manually or "
+                f"{subject} already exists and stdin is not a terminal.\n"
+                "Cannot prompt for confirmation. Remove/rename it manually or "
                 "run from an interactive terminal."
             )
         try:
             answer = (
-                input(f"Database '{database}' already exists. Overwrite? [y/N]: ")
-                .strip()
-                .lower()
+                input(f"{subject} already exists. Overwrite? [y/N]: ").strip().lower()
             )
         except EOFError:
             msg.err(
-                f"Database '{database}' already exists and input stream ended.\n"
+                f"{subject} already exists and input stream ended.\n"
                 "Cannot prompt for confirmation. Aborting."
             )
         return answer in ("y", "yes")
@@ -279,7 +277,7 @@ class OdooEnv:
 
         # Guard: confirm overwrite if target DB already exists
         if self._db_exists(database):
-            if not self._confirm_overwrite(database):
+            if not self._confirm_overwrite(f"Database '{database}'"):
                 msg.err("Aborted by user. Test database was not modified.")
 
         # Guard: seed database must exist
@@ -294,6 +292,16 @@ class OdooEnv:
 
         # Step 1: Copy seed to backup_dir
         backup_dir = Path(self.client.backup_dir)
+
+        # Guard: don't silently clobber a real backup that happens to be
+        # named test.zip. The staging copy below is written to that exact
+        # path and removed once the restore is done, so an unrelated file
+        # with the same name would otherwise be destroyed with no warning.
+        staging_path = backup_dir / "test.zip"
+        if staging_path.exists():
+            if not self._confirm_overwrite(f"'{staging_path}'"):
+                msg.err(f"Aborted by user. '{staging_path}' was not modified.")
+
         commands.append(
             Command(
                 self,

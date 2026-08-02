@@ -262,7 +262,7 @@ class Client:
                 continue
 
             manifest_file = Path(root) / "__manifest__.py"
-            manifest = Client.load_manifest(manifest_file)
+            manifest = Client._load_manifest(manifest_file)
 
             if (
                 isinstance(manifest, dict)
@@ -351,7 +351,7 @@ class Client:
                 continue
 
             manifest_file = Path(root) / "__manifest__.py"
-            manifest = self.load_manifest(manifest_file)
+            manifest = self._load_manifest(manifest_file)
 
             # Verificar que sea un dict válido
             if not isinstance(manifest, dict):
@@ -399,7 +399,7 @@ class Client:
         return manifest if manifest else None
 
     @staticmethod
-    def load_manifest(filename: "str | Path") -> dict[str, object]:
+    def _load_manifest(filename: "str | Path") -> dict[str, object]:
         """
         Loads a manifest
         :param filename: absolute filename to manifest

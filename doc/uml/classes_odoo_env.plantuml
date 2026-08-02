@@ -17,6 +17,7 @@ class "Client" as odoo_env.client.Client {
   base_dir
   config
   config_file
+  custom_modules_dir
   database_default_name
   debug
   external_dependencies
@@ -43,7 +44,6 @@ class "Client" as odoo_env.client.Client {
   get_manifest_from_struct(path: Path) -> tuple[dict[str, object] | None, str | None]
   get_manifest_from_url() -> dict[str, object] | None
   image(image_name)
-  load_manifest(filename: 'str | Path') -> dict[str, object]
   parse_odoo_version(ver: str) -> str
   validate_manifest_keys(manifest, name)
 }
@@ -60,14 +60,18 @@ class "Command" as odoo_env.command.Command {
   subprocess_call(cmd, check, capture)
 }
 class "CommandCompositionTests" as odoo_env.test_qa.CommandCompositionTests {
+  test_coverage_cmd_adds_with_demo_for_ge19()
   test_coverage_cmd_includes_test_enable_and_stop_after_init()
+  test_coverage_cmd_omits_with_demo_for_le18()
   test_coverage_cmd_passes_explicit_db_args()
   test_coverage_cmd_sets_cov_file_env()
   test_coverage_cmd_uses_install_verb()
   test_coverage_cmd_wraps_with_entrypoint_bash()
   test_module_cmd_includes_network_and_link()
+  test_plain_cmd_adds_with_demo_for_ge19()
   test_plain_cmd_has_tests_and_db()
   test_plain_cmd_no_coverage_when_disabled()
+  test_plain_cmd_omits_with_demo_for_le18()
 }
 class "CreateGitignore" as odoo_env.command.CreateGitignore {
   check_args()
@@ -101,7 +105,7 @@ class "EnvironmentManager" as odoo_env.managers.environment_manager.EnvironmentM
   docker_client
   parent : str
   system_client
-  discover_modules_in_cwd()
+  discover_modules_in(base_dir)
   install()
   qa(database, modules_to_test)
   run_client(write_config)
@@ -323,6 +327,11 @@ class "SystemClient" as odoo_env.services.system.SystemClient {
 class "TestAllCommand" as odoo_env.command.TestAllCommand {
   execute()
 }
+class "TestBuildModuleCommandWithDemo" as odoo_env.test_environment_manager.TestBuildModuleCommandWithDemo {
+  test_install_adds_with_demo_for_ge19()
+  test_install_omits_with_demo_for_le18()
+  test_update_never_adds_with_demo()
+}
 class "TestBuildRepoUrl" as odoo_env.test_client.TestBuildRepoUrl {
   test_build_url_configured_org()
   test_build_url_default_org()
@@ -341,18 +350,27 @@ class "TestClientDebugFollowsPersistedEnvironment" as odoo_env.test_client.TestC
   test_debug_false_when_persisted_environment_is_prod()
   test_debug_true_when_persisted_environment_is_debug()
 }
-class "TestCreateTestDb" as odoo_env.test_oe.TestCreateTestDb {
+class "TestCreateTestDb" as odoo_env.test_create_test_db.TestCreateTestDb {
   test_build_module_command_install()
   test_create_test_db_command_composition()
   test_create_test_db_confirm_no_aborts()
   test_create_test_db_confirm_yes_proceeds()
+  test_create_test_db_discovers_from_custom_modules_dir()
   test_create_test_db_dispatched_from_build_commands()
   test_create_test_db_eof_aborts()
   test_create_test_db_non_interactive_aborts()
+  test_create_test_db_seed_guard_runs_before_db_confirm_prompt()
   test_create_test_db_seed_missing_aborts()
+  test_create_test_db_staging_collision_confirm_no_aborts()
+  test_create_test_db_staging_collision_confirm_yes_proceeds()
+  test_create_test_db_staging_collision_non_interactive_aborts()
   test_create_test_db_zero_modules_aborts()
+  test_db_exists_does_not_interpolate_database_name_into_sql()
+  test_db_exists_false_when_query_returns_empty()
+  test_db_exists_true_when_query_returns_1()
   test_discover_modules_does_not_recurse()
-  test_discover_modules_empty_cwd()
+  test_discover_modules_does_not_use_process_cwd()
+  test_discover_modules_empty_dir()
   test_discover_modules_finds_manifest_dirs()
   test_discover_modules_ignores_hidden_dirs()
   test_discover_modules_ignores_root_manifest()
@@ -392,7 +410,9 @@ class "TestExtractCpCommand" as odoo_env.test_docker_client.TestExtractCpCommand
   setUp()
   test_extract_cp_command_shape()
   test_extract_cp_copies_dir_contents_not_dir()
+  test_extract_cp_glob_src_uses_sh_entrypoint()
   test_extract_cp_mounts_host_dest()
+  test_extract_cp_non_glob_src_keeps_cp_entrypoint()
   test_extract_cp_preserves_symlinks_with_archive_flag()
   test_extract_cp_replaces_entrypoint_with_cp()
 }
@@ -464,6 +484,10 @@ class "TestImageManager" as odoo_env.test_image_manager.TestImageManager {
   test_pull_images_command_starts_with_docker_pull()
   test_pull_images_no_extract_sources_in_non_debug_mode()
   test_pull_images_uses_pull_not_run()
+  test_v19_legacy_dirs_clean_all_other_layouts()
+  test_v19_not_in_odoo_version_map()
+  test_v19_rejects_versions_beyond_19()
+  test_v19_resolve_targets_odoo_src_and_site_packages()
 }
 class "TestOdooVersionMap" as odoo_env.test_constants.TestOdooVersionMap {
   test_legacy_and_future_keys_absent()
@@ -505,6 +529,11 @@ class "TestProcessInputRmdisk" as odoo_env.test_sd.TestProcessInputRmdisk {
   test_rmdisk_without_mask_no_images_returns_none()
   test_rmdisk_without_mask_removes_all()
 }
+class "TestQaCli" as odoo_env.test_create_test_db.TestQaCli {
+  test_qa_all_aborts_when_no_testable_modules(mock_discover)
+  test_qa_all_expands_to_discovered_testable_modules(mock_discover)
+  test_qa_passes_full_module_name()
+}
 class "TestRepository" as odoo_env.test_oe.TestRepository {
   setUp()
   test_base_dir_does_not_require_client()
@@ -520,7 +549,6 @@ class "TestRepository" as odoo_env.test_oe.TestRepository {
   test_install2_enterprise()
   test_pull_images()
   test_qa()
-  test_qa_passes_full_module_name()
   test_repo2_clone()
   test_repo_clone()
   test_restore()
@@ -602,10 +630,12 @@ odoo_env.command.WriteConfigFile --|> odoo_env.command.Command
 odoo_env.test_backup_guard.TestRestoreBackupGuard --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_client.TestBuildRepoUrl --|> odoo_env.test_helpers.OeConfigPatchTestCase
 odoo_env.test_config.TestOrganizationConfig --|> odoo_env.test_helpers.OeConfigPatchTestCase
+odoo_env.test_create_test_db.TestCreateTestDb --|> odoo_env.test_helpers.OdooEnvTestCase
+odoo_env.test_create_test_db.TestQaCli --|> odoo_env.test_helpers.OdooEnvTestCase
+odoo_env.test_environment_manager.TestBuildModuleCommandWithDemo --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_environment_manager.TestDebugMountings --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_environment_manager.TestEnvironmentManager --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_image_manager.TestImageManager --|> odoo_env.test_helpers.OdooEnvTestCase
-odoo_env.test_oe.TestCreateTestDb --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_oe.TestGetPacks --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_oe.TestRepository --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.qa.runner.TestRunner --> odoo_env.services.docker_client.DockerClient : docker_client

@@ -195,13 +195,14 @@ class TestRunner:
             '--db_password="${DB_ENV_POSTGRES_PASSWORD:-odoo}"'
         )
 
+        demo_flag = " --with-demo" if self.config.needs_with_demo_flag else ""
         odoo_cmd = (
             f"coverage run -p --source={shlex.quote(source)} "
             f'"$(command -v odoo)" '
             f"-c {shlex.quote(IN_CONFIG + 'odoo.conf')} "
             f"{db_args} "
             f"--stop-after-init --log-level=test --test-enable "
-            f"-d {shlex.quote(db_name)} -i {shlex.quote(module)}"
+            f"-d {shlex.quote(db_name)} -i {shlex.quote(module)}{demo_flag}"
         )
         inner = f"mkdir -p {shlex.quote(cv_dir)} && {odoo_cmd}"
 
@@ -221,6 +222,10 @@ class TestRunner:
 
     def _plain_module_cmd(self, module: str) -> list[str]:
         """Plain Odoo test run (no coverage wrapper)."""
+        extra_args = ["-d", self.config.db_name, "-i", module]
+        if self.config.needs_with_demo_flag:
+            extra_args.append("--with-demo")
+
         spec = RunSpec(
             image=self.config.image,
             interactive=True,
@@ -237,7 +242,7 @@ class TestRunner:
             stop_after_init=True,
             log_level="test",
             test_enable=True,
-            extra_args=["-d", self.config.db_name, "-i", module],
+            extra_args=extra_args,
         )
         return self.docker_client.get_run_command(spec)
 

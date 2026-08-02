@@ -276,6 +276,30 @@ class CommandCompositionTests(unittest.TestCase):
         self.assertIn("--link", joined)
         self.assertIn("pg-dimec:db", joined)
 
+    def test_coverage_cmd_adds_with_demo_for_ge19(self):
+        runner = TestRunner(_config(numeric_ver=19.0))
+        cmd = runner._build_module_cmd("mod_a")
+        joined = " ".join(cmd)
+        self.assertIn("--with-demo", joined)
+
+    def test_coverage_cmd_omits_with_demo_for_le18(self):
+        runner = TestRunner(_config(numeric_ver=17.0))
+        cmd = runner._build_module_cmd("mod_a")
+        joined = " ".join(cmd)
+        self.assertNotIn("--with-demo", joined)
+
+    def test_plain_cmd_adds_with_demo_for_ge19(self):
+        runner = TestRunner(_config(coverage=False, numeric_ver=19.0))
+        cmd = runner._build_module_cmd("mod_a")
+        joined = " ".join(cmd)
+        self.assertIn("--with-demo", joined)
+
+    def test_plain_cmd_omits_with_demo_for_le18(self):
+        runner = TestRunner(_config(coverage=False, numeric_ver=17.0))
+        cmd = runner._build_module_cmd("mod_a")
+        joined = " ".join(cmd)
+        self.assertNotIn("--with-demo", joined)
+
 
 class RunAllTests(unittest.TestCase):
     """REQ-QA-003 — first-failure stop orchestration (ADR 4)."""

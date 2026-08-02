@@ -22,6 +22,15 @@ DEFAULT_OMIT = [
 _DEMO_DEFAULT_MAX_VERSION = 18.0
 
 
+def needs_with_demo_flag(numeric_ver: float) -> bool:
+    """True when the Odoo version requires an explicit --with-demo flag.
+
+    Standalone so any -i (install) command builder can apply the same rule,
+    not just the ``RunnerConfig``-based engine.
+    """
+    return numeric_ver > _DEMO_DEFAULT_MAX_VERSION
+
+
 @dataclass
 class RunnerConfig:
     client: str
@@ -51,4 +60,4 @@ class RunnerConfig:
     @property
     def needs_with_demo_flag(self) -> bool:
         """True when the Odoo version requires an explicit --with-demo flag."""
-        return self.numeric_ver > _DEMO_DEFAULT_MAX_VERSION
+        return needs_with_demo_flag(self.numeric_ver)

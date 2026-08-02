@@ -24,6 +24,7 @@ from odoo_env.constants import (
     WDB_IMAGE_NEW,
 )
 from odoo_env.messages import msg
+from odoo_env.qa.config import needs_with_demo_flag
 from odoo_env.services.docker_client import DockerClient, RunSpec
 from odoo_env.services.system import SystemClient
 
@@ -374,6 +375,15 @@ class EnvironmentManager:
         if self.parent.debug:
             volumes.update(self._get_debug_mountings())
 
+        # Odoo's -i/-u expects modules comma-separated WITHOUT spaces;
+        # a leading space after a comma makes the module not be found.
+        extra_args = ["-d", database, verb, ",".join(modules)]
+
+        # Odoo >=19 no longer loads demo data by default on -i (odoo/odoo#194585).
+        # Only relevant for a fresh install, not for -u on already-installed modules.
+        if verb == "-i" and needs_with_demo_flag(self.parent._client.numeric_ver):
+            extra_args.append("--with-demo")
+
         cmd_list = self.docker_client.get_run_command(
             RunSpec(
                 self.parent._client.get_image_required("odoo").name,
@@ -385,9 +395,7 @@ class EnvironmentManager:
                 env={"ODOO_CONF": "/dev/null"},
                 stop_after_init=True,
                 logfile="false",
-                # Odoo's -i/-u expects modules comma-separated WITHOUT spaces;
-                # a leading space after a comma makes the module not be found.
-                extra_args=["-d", database, verb, ",".join(modules)],
+                extra_args=extra_args,
             )
         )
 

@@ -5,6 +5,44 @@ from odoo_env.odooenv import OdooEnv
 from odoo_env.test_helpers import MockArgs, OdooEnvTestCase
 
 
+class TestBuildModuleCommandWithDemo(OdooEnvTestCase):
+    """oe --create-test-db must pass --with-demo on Odoo >=19 installs.
+
+    Odoo 19 no longer loads demo data by default on -i; without this flag,
+    modules installed on the freshly created test DB silently end up
+    without their demo records.
+    """
+
+    def _make_em(self, numeric_ver):
+        options = MockArgs(debug=False, client="test_client")
+        oe = OdooEnv(options)
+        patcher = patch.object(
+            type(oe._client),
+            "numeric_ver",
+            new_callable=PropertyMock,
+            return_value=numeric_ver,
+        )
+        patcher.start()
+        self.addCleanup(patcher.stop)
+        return EnvironmentManager(oe)
+
+    def test_install_adds_with_demo_for_ge19(self):
+        em = self._make_em(19.0)
+        cmds = em._build_module_command("test_client_test", ["mod_a"], "-i")
+        self.assertIn("--with-demo", cmds[0].command)
+
+    def test_install_omits_with_demo_for_le18(self):
+        em = self._make_em(17.0)
+        cmds = em._build_module_command("test_client_test", ["mod_a"], "-i")
+        self.assertNotIn("--with-demo", cmds[0].command)
+
+    def test_update_never_adds_with_demo(self):
+        """--with-demo only matters at initial install, not at update."""
+        em = self._make_em(19.0)
+        cmds = em._build_module_command("test_client_test", ["mod_a"], "-u")
+        self.assertNotIn("--with-demo", cmds[0].command)
+
+
 class TestDebugMountings(OdooEnvTestCase):
 
     def _make_em(self, odoo_version: int):

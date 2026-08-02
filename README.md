@@ -66,7 +66,9 @@ Functionality
     --no-repos           Does not clone or pull repos when doing -i (install)
     -m MODULE            Module to update. Used with -u (update) i.e. -m sale for updating sale module -m all for updating all modules.
                         NOTE: if you perform -u without -m it asumes all modules
-    -Q repo              Run the tests. Required parameters: -m <module name>. Optional parameters: -d <database>; if omitted, the
+    -Q MODULES           Run the tests. Required parameters: comma-separated list of modules to test, no spaces,
+                        e.g. -Q sale,stock. Use -Q all to auto-discover and run every module with a tests/
+                        directory in the current repository. Optional parameters: -d <database>; if omitted, the
                         default test database will be used, which is [client]_test. NOTE: The database used for testing must be
                         created with demo data and must have admin/admin credentials.
     --test-all           Run all module tests in the current repository with coverage measurement.

@@ -379,6 +379,16 @@ class OdooEnv:
         :param modules_to_test: parametro -m (es una lista)
         :return: lista con los comandos para correr
         """
+        if modules_to_test == "all":
+            modules = TestRunner.discover_test_modules()
+            if not modules:
+                msg.err(
+                    "No testable modules found in the current directory. "
+                    "'oe -Q all' requires at least one module with a tests/ "
+                    "directory."
+                )
+            modules_to_test = ",".join(modules)
+
         database = f"{self._client.name}_test"
         return EnvironmentManager(self).qa(database, modules_to_test)
 

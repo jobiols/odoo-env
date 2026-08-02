@@ -106,7 +106,9 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
         metavar="MODULES",
         dest="modules_to_test",
         help="Run the tests. Required parameters: list of modules to test "
-        "separate by commas (without spaces) e.g. -Q sale,stock."
+        "separate by commas (without spaces) e.g. -Q sale,stock. "
+        "Use -Q all to auto-discover and run every module with a tests/ "
+        "directory in the current repository. "
         "Optional parameters: -d <database>; if omitted, the default "
         "[project]_test database will be used, "
         "NOTE: The database used for testing must be created with demo "

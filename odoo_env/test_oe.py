@@ -683,6 +683,39 @@ class TestRepository(OdooEnvTestCase):
         u_index = run_cmd.index("-u")
         self.assertEqual(run_cmd[u_index + 1], "modulo_a_testear")
 
+    @patch("odoo_env.odooenv.TestRunner.discover_test_modules")
+    def test_qa_all_expands_to_discovered_testable_modules(self, mock_discover):
+        """oe -Q all genera -u con la lista de módulos que tienen tests/."""
+        mock_discover.return_value = ["mod_a", "mod_b"]
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(debug=False, client="test_client", modules_to_test="all")
+        oe = OdooEnv(options)
+        cmds = oe.build_commands()
+
+        all_commands = [c.command for c in cmds]
+        run_cmd = next(
+            (
+                c
+                for c in all_commands
+                if "--test-enable" in c or "--stop-after-init" in c
+            ),
+            None,
+        )
+        self.assertIsNotNone(run_cmd, "No se generó comando de test")
+        assert run_cmd is not None
+        u_index = run_cmd.index("-u")
+        self.assertEqual(run_cmd[u_index + 1], "mod_a,mod_b")
+
+    @patch("odoo_env.odooenv.TestRunner.discover_test_modules")
+    def test_qa_all_aborts_when_no_testable_modules(self, mock_discover):
+        """oe -Q all sin módulos con tests/ debe abortar, no correr con -u vacío."""
+        mock_discover.return_value = []
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(debug=False, client="test_client", modules_to_test="all")
+        oe = OdooEnv(options)
+        with self.assertRaises(OeError):
+            oe.build_commands()
+
     def test_base_dir_does_not_require_client(self):
         """oe --base-dir /x no falla si no hay cliente configurado."""
         self.mock_config_data.return_value["client"] = None

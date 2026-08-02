@@ -1100,3 +1100,41 @@ class TestCreateTestDb(OdooEnvTestCase):
             result = oe.build_commands()
             mock_ctdb.assert_called_once()
             self.assertIn("fake_cmd", result)
+
+    # ------- 4.10 _db_exists uses safe psql parameterization, not f-string -------
+
+    def test_db_exists_does_not_interpolate_database_name_into_sql(self):
+        """El nombre de DB no debe ir embebido literal dentro del texto SQL.
+
+        Antes del fix: f"...datname='{database}'" interpolaba el valor
+        directo en la query — un patrón frágil (rompe, o peor, con una
+        comilla en el nombre). Ahora se pasa como variable psql (-v) y se
+        referencia con :'var', que psql cita de forma segura.
+        """
+        options = MockArgs(client="test_client")
+        oe = OdooEnv(options)
+        fake_result = MagicMock(returncode=0, stdout="1\n")
+        with patch("subprocess.run", return_value=fake_result) as mock_run:
+            oe._db_exists("weird'name")
+
+        cmd = mock_run.call_args[0][0]
+        sql_arg = cmd[-1]
+        self.assertNotIn("weird'name", sql_arg)
+        self.assertIn("-v", cmd)
+        v_index = cmd.index("-v")
+        self.assertEqual(cmd[v_index + 1], "dbname=weird'name")
+        self.assertIn(":'dbname'", sql_arg)
+
+    def test_db_exists_true_when_query_returns_1(self):
+        options = MockArgs(client="test_client")
+        oe = OdooEnv(options)
+        fake_result = MagicMock(returncode=0, stdout="1\n")
+        with patch("subprocess.run", return_value=fake_result):
+            self.assertTrue(oe._db_exists("test_client_test"))
+
+    def test_db_exists_false_when_query_returns_empty(self):
+        options = MockArgs(client="test_client")
+        oe = OdooEnv(options)
+        fake_result = MagicMock(returncode=0, stdout="")
+        with patch("subprocess.run", return_value=fake_result):
+            self.assertFalse(oe._db_exists("test_client_test"))

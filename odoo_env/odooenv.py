@@ -216,6 +216,11 @@ class OdooEnv:
 
         Queries pg_database via docker exec on pg-{client}.
         Returns True if the database exists.
+
+        `database` is passed as a psql variable (-v) and referenced via
+        :'dbname' rather than interpolated into the SQL text, so psql
+        quotes it as a safe string literal instead of it being pasted
+        raw into the query.
         """
         result = subprocess.run(
             [
@@ -225,8 +230,10 @@ class OdooEnv:
                 "psql",
                 "-U",
                 "odoo",
+                "-v",
+                f"dbname={database}",
                 "-tAc",
-                f"SELECT 1 FROM pg_database WHERE datname='{database}'",
+                "SELECT 1 FROM pg_database WHERE datname = :'dbname'",
             ],
             capture_output=True,
             text=True,

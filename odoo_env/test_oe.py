@@ -918,11 +918,12 @@ class TestCreateTestDb(OdooEnvTestCase):
             EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
-                with patch("sys.stdin.isatty", return_value=True):
-                    with patch("builtins.input", return_value="n"):
-                        with self.assertRaises(OeError) as ctx:
-                            oe.create_test_db()
-                        self.assertIn("Aborted", str(ctx.exception))
+                with patch.object(Path, "is_file", return_value=True):
+                    with patch("sys.stdin.isatty", return_value=True):
+                        with patch("builtins.input", return_value="n"):
+                            with self.assertRaises(OeError) as ctx:
+                                oe.create_test_db()
+                            self.assertIn("Aborted", str(ctx.exception))
 
     # ------- 4.4 non-interactive aborts (RED) -------
 
@@ -933,10 +934,11 @@ class TestCreateTestDb(OdooEnvTestCase):
             EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
-                with patch("sys.stdin.isatty", return_value=False):
-                    with self.assertRaises(OeError) as ctx:
-                        oe.create_test_db()
-                    self.assertIn("not a terminal", str(ctx.exception))
+                with patch.object(Path, "is_file", return_value=True):
+                    with patch("sys.stdin.isatty", return_value=False):
+                        with self.assertRaises(OeError) as ctx:
+                            oe.create_test_db()
+                        self.assertIn("not a terminal", str(ctx.exception))
 
     # ------- 4.5 EOFError aborts (RED) -------
 
@@ -947,11 +949,12 @@ class TestCreateTestDb(OdooEnvTestCase):
             EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
-                with patch("sys.stdin.isatty", return_value=True):
-                    with patch("builtins.input", side_effect=EOFError):
-                        with self.assertRaises(OeError) as ctx:
-                            oe.create_test_db()
-                        self.assertIn("input stream ended", str(ctx.exception))
+                with patch.object(Path, "is_file", return_value=True):
+                    with patch("sys.stdin.isatty", return_value=True):
+                        with patch("builtins.input", side_effect=EOFError):
+                            with self.assertRaises(OeError) as ctx:
+                                oe.create_test_db()
+                            self.assertIn("input stream ended", str(ctx.exception))
 
     # ------- 4.6 full command composition (RED) -------
 
@@ -1016,6 +1019,28 @@ class TestCreateTestDb(OdooEnvTestCase):
                     with self.assertRaises(OeError) as ctx:
                         oe.create_test_db()
                     self.assertIn("Seed", str(ctx.exception))
+
+    def test_create_test_db_seed_guard_runs_before_db_confirm_prompt(self):
+        """El seed guard corre antes del prompt interactivo de la DB.
+
+        Si el seed falta, debe abortar con el error de seed sin llegar a
+        preguntarle nada al usuario sobre la DB existente (aunque
+        _db_exists() sea True). Antes del fix, el prompt corría primero:
+        el usuario contestaba y recién ahí se enteraba de que el seed
+        faltaba.
+        """
+        options = MockArgs(create_test_db=True, client="test_client")
+        oe = OdooEnv(options)
+        with patch.object(
+            EnvironmentManager, "discover_modules_in_cwd", return_value=["module_a"]
+        ):
+            with patch.object(OdooEnv, "_db_exists", return_value=True):
+                with patch.object(Path, "is_file", return_value=False):
+                    with patch("builtins.input") as mock_input:
+                        with self.assertRaises(OeError) as ctx:
+                            oe.create_test_db()
+                        self.assertIn("Seed", str(ctx.exception))
+                        mock_input.assert_not_called()
 
     # ------- 4.9 staging-collision guard: never silently clobbers an
     # existing backup that happens to be named test.zip; prompts instead -------

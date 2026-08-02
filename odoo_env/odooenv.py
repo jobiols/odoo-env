@@ -262,8 +262,8 @@ class OdooEnv:
         Composes discovery, guard checks, seed restore, and module install
         into a flat list of Command objects.
 
-        Order: discovery → zero-module guard → db-exists confirm →
-               seed guard → cp → restore → rm → install (-i)
+        Order: discovery → zero-module guard → seed guard →
+               db-exists confirm → cp → restore → rm → install (-i)
         """
         modules = EnvironmentManager.discover_modules_in_cwd()
         if not modules:
@@ -275,18 +275,20 @@ class OdooEnv:
 
         database = f"{self.client.name}_test"
 
-        # Guard: confirm overwrite if target DB already exists
-        if self._db_exists(database):
-            if not self._confirm_overwrite(f"Database '{database}'"):
-                msg.err("Aborted by user. Test database was not modified.")
-
-        # Guard: seed database must exist
+        # Guard: seed database must exist. Checked before the (interactive)
+        # db-exists confirm below, so a missing seed fails fast instead of
+        # prompting the user first and only then reporting the real problem.
         seed_path = Path(self.client.backup_dir) / "bkp_test" / "test.zip"
         if not seed_path.is_file():
             msg.err(
                 f"Seed database not found at {seed_path}. "
                 "Cannot create test database."
             )
+
+        # Guard: confirm overwrite if target DB already exists
+        if self._db_exists(database):
+            if not self._confirm_overwrite(f"Database '{database}'"):
+                msg.err("Aborted by user. Test database was not modified.")
 
         commands = []
 

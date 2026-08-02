@@ -125,10 +125,10 @@ class TestImageManager(OdooEnvTestCase):
     def test_v19_resolve_targets_odoo_src_and_site_packages(self):
         targets, legacy = ImageManager._resolve_extract_targets(19)
         self.assertEqual(
-            targets,
+        targets,
             [
                 ("src", "/odoo/odoo-src"),
-                ("site-packages", "/odoo/venv/lib/python3.10/site-packages"),
+                ("site-packages", "/odoo/venv/lib/python3.*/site-packages"),
             ],
         )
 

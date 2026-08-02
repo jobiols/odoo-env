@@ -43,7 +43,11 @@ class ImageManager:
             return (
                 [
                     ("src", "/odoo/odoo-src"),
-                    ("site-packages", "/odoo/venv/lib/python3.10/site-packages"),
+                    # python3.* (glob): la version de python del venv es un
+                    # detalle de la imagen que cambia entre builds (3.10 ->
+                    # 3.12 ...). El glob lo resuelve el shell en el extract,
+                    # asi que no hay que tocar codigo por cada bump.
+                    ("site-packages", "/odoo/venv/lib/python3.*/site-packages"),
                 ],
                 ("dist-packages", "dist-local-packages", "lib"),
             )

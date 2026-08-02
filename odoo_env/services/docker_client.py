@@ -152,20 +152,31 @@ class DockerClient:
         symlinks que escapan del arbol copiado y rompe con, p.ej.,
         `babel/global.dat -> ../../../../share/python-babel-localedata/...`).
         El dir host se monta en `mount` y se copia el CONTENIDO de src (src/.).
+
+        Si `container_src` trae un glob (p.ej. `python3.*` en el venv de
+        v19, cuya version de python cambia entre builds), `cp` no lo expande;
+        se usa `--entrypoint sh -c 'cp -a <glob>/. <mount>/'` para que el
+        SHELL lo resuelva. Igual reemplaza el entrypoint de odoo (no arranca)
+        y `cp -a` preserva symlinks.
         """
-        return [
-            "docker",
-            "run",
-            "--rm",
-            "--user",
-            "root",
-            "--entrypoint",
+        src = f"{container_src.rstrip('/')}/."
+        base = ["docker", "run", "--rm", "--user", "root", "--entrypoint"]
+        if "*" in container_src:
+            return base + [
+                "sh",
+                "-v",
+                f"{host_dest}:{mount}",
+                image,
+                "-c",
+                f"cp -a {src} {mount}/",
+            ]
+        return base + [
             "cp",
             "-v",
             f"{host_dest}:{mount}",
             image,
             "-a",
-            f"{container_src.rstrip('/')}/.",
+            src,
             f"{mount}/",
         ]
 

@@ -25,11 +25,11 @@ jobs:
   test:
     runs-on: [self-hosted]
     env:
-      CLIENT: dimec              # <-- CHANGE ME to your client name
+      CLIENT: dimec # <-- CHANGE ME to your client name
       POSTGRES_IMAGE: postgres:17.5-alpine
       POSTGRES_USER: odoo
       POSTGRES_PASSWORD: odoo
-      PG_CONTAINER: pg-dimec     # <-- CHANGE ME to pg-<CLIENT>
+      PG_CONTAINER: pg-dimec # <-- CHANGE ME to pg-<CLIENT>
       NETWORK: odoo-net
 
     steps:
@@ -147,7 +147,7 @@ jobs:
         if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: 'docs: update coverage badge'
+          commit_message: "docs: update coverage badge"
           file_pattern: coverage.svg
           commit_user_name: github-actions[bot]
           commit_user_email: github-actions[bot]@users.noreply.github.com

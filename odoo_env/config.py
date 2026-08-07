@@ -211,7 +211,9 @@ class OeConfig(metaclass=SingletonMeta):
 
     def _fetch_pypi_version(self):
         try:
-            with urllib.request.urlopen(
+            # nosec B310 - URL es un literal https:// constante, sin input
+            # externo; no hay forma de inyectar file:// u otro esquema.
+            with urllib.request.urlopen(  # nosec B310
                 "https://pypi.python.org/pypi/odoo-env/json", timeout=5
             ) as response:
                 info = json.loads(response.read().decode("utf-8"))

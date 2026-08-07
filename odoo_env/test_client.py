@@ -167,7 +167,7 @@ class TestGetManifest(unittest.TestCase):
         self.mock_get_client_path.return_value = None
         self.mock_discover_manifest_from_path.return_value = (
             BASE_MANIFEST,
-            "/tmp/path",
+            "/fake/path",
         )
 
         client = self._make_client(install="not-a-url")
@@ -181,7 +181,7 @@ class TestGetManifest(unittest.TestCase):
         self.mock_get_client_path.return_value = None
         self.mock_discover_manifest_from_path.return_value = (
             BASE_MANIFEST,
-            "/tmp/path",
+            "/fake/path",
         )
 
         client = self._make_client(install="git@github.com:org/repo.git")
@@ -195,7 +195,7 @@ class TestGetManifest(unittest.TestCase):
         self.mock_get_client_path.return_value = None
         self.mock_discover_manifest_from_path.return_value = (
             BASE_MANIFEST,
-            "/tmp/path",
+            "/fake/path",
         )
 
         client = self._make_client(install="https://github.com/org/repo.git")
@@ -209,7 +209,7 @@ class TestGetManifest(unittest.TestCase):
         self.mock_get_client_path.return_value = None
         self.mock_discover_manifest_from_path.return_value = (
             BASE_MANIFEST,
-            "/tmp/path",
+            "/fake/path",
         )
 
         client = self._make_client(install="labutic")
@@ -233,7 +233,7 @@ class TestGetManifest(unittest.TestCase):
         self.mock_get_client_path.return_value = None
         self.mock_discover_manifest_from_path.return_value = (
             BASE_MANIFEST,
-            "/tmp/tmpXXX/repo-name",
+            "/fake/tmpXXX/repo-name",
         )
 
         client = self._make_client(install="https://github.com/org/repo.git")
@@ -247,7 +247,7 @@ class TestGetManifest(unittest.TestCase):
         self.assertEqual(call_args[3], "1")
         self.assertEqual(call_args[4], "https://github.com/org/repo.git")
         self.mock_save_client_path.assert_called_once_with(
-            "test_client", "/tmp/tmpXXX/repo-name"
+            "test_client", "/fake/tmpXXX/repo-name"
         )
         self.assertIsNotNone(manifest)
 
@@ -267,7 +267,7 @@ class TestGetManifest(unittest.TestCase):
         self.mock_get_client_path.return_value = None
         self.mock_discover_manifest_from_path.return_value = (
             BASE_MANIFEST,
-            "/tmp/path",
+            "/fake/path",
         )
 
         client = self._make_client(install="git@github.com:org/repo.git")

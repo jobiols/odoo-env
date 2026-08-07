@@ -73,7 +73,7 @@ ignored-modules=
 # Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
 # number of processors available to use, and will cap the count on Windows to
 # avoid hangs.
-jobs=1
+jobs=0
 
 # Control the amount of potential inferred values when inferring a single
 # object. This can help the performance when dealing with large functions or
@@ -92,12 +92,17 @@ load-plugins=
                   pylint.extensions.mccabe
 
 
+
 # Pickle collected data for later comparisons.
 persistent=yes
 
 # Resolve imports to .pyi stubs if available. May reduce no-member messages and
 # increase not-an-iterable messages.
 prefer-stubs=no
+
+# Minimum Python version to use for version dependent checks. Will default to
+# the version used to run pylint.
+py-version=3.12
 
 # Discover python modules and packages in the file system subtree.
 recursive=no
@@ -107,10 +112,6 @@ recursive=no
 # directory used to determine a package namespace for modules located under the
 # source root.
 source-roots=
-
-# When enabled, pylint would attempt to guess common misconfiguration and emit
-# user-friendly hints instead of false-positive error messages.
-suggestion-mode=yes
 
 # Allow loading of arbitrary C extensions. Extensions are imported into the
 # active Python interpreter and may run arbitrary code.
@@ -199,7 +200,8 @@ good-names=i,
            k,
            ex,
            Run,
-           _
+           _,
+           maxDiff
 
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted
@@ -238,6 +240,11 @@ name-group=
 # not require a docstring.
 no-docstring-rgx=^_
 
+# Regular expression matching correct parameter specification variable names.
+# If left empty, parameter specification variable names will be checked with
+# the set naming style.
+#paramspec-rgx=
+
 # List of decorators that produce properties, such as abc.abstractproperty. Add
 # to this list to register other decorators that produce valid properties.
 # These decorators are taken in consideration only for invalid-name.
@@ -250,6 +257,10 @@ property-classes=abc.abstractproperty
 # Regular expression matching correct type variable names. If left empty, type
 # variable names will be checked with the set naming style.
 #typevar-rgx=
+
+# Regular expression matching correct type variable tuple names. If left empty,
+# type variable tuple names will be checked with the set naming style.
+#typevartuple-rgx=
 
 # Naming style matching correct variable names.
 variable-naming-style=snake_case
@@ -294,10 +305,12 @@ exclude-too-few-public-methods=
 ignored-parents=
 
 # Maximum number of arguments for function / method.
-max-args=6 # too-many-arguments
+max-args=5
 
 # Maximum number of attributes for a class (see R0902).
-max-attributes=7
+# RunSpec (DTO de opciones de docker run, 21 campos) y Client / setUp de tests
+# justifican un umbral mas alto que el default.
+max-attributes=22
 
 # Maximum number of boolean expressions in an if statement (see R0916).
 max-bool-expr=5
@@ -315,7 +328,9 @@ max-parents=7
 max-positional-arguments=5
 
 # Maximum number of public methods for a class (see R0904).
-max-public-methods=20
+# Client (clase de dominio) y las clases de tests superan el default de forma
+# legitima; se sube el umbral en vez de partir clases artificialmente.
+max-public-methods=32
 
 # Maximum number of return / yield for function / method body.
 max-returns=6
@@ -331,13 +346,13 @@ min-public-methods=2
 #   - The figure of 10 had received substantial corroborating evidence,
 #     but that in some circumstances it may be appropriate to relax the restriction
 #     and permit modules with a complexity as high as 15
-max-complexity=22
+max-complexity=8
+
 
 [EXCEPTIONS]
 
 # Exceptions that will emit a warning when caught.
-overgeneral-exceptions= builtins.BaseException,
-                        builtins.Exception
+overgeneral-exceptions=builtins.BaseException,builtins.Exception
 
 
 [FORMAT]
@@ -355,8 +370,10 @@ indent-after-paren=4
 # tab).
 indent-string='    '
 
-# Maximum number of characters on a single line.
-max-line-length=110
+# Maximum number of characters on a single line. Pylint's default of 100 is
+# based on PEP 8's guidance that teams may choose line lengths up to 99
+# characters.
+max-line-length=100
 
 # Maximum number of lines in a module.
 max-module-lines=1000
@@ -450,387 +467,19 @@ disable=raw-checker-failed,
         use-implicit-booleaness-not-comparison-to-string,
         use-implicit-booleaness-not-comparison-to-zero,
         use-symbolic-message-instead,
-        c-extension-no-member,
-        unnecessary-dunder-call,
-        multiple-imports,
-        wrong-import-order,
-        ungrouped-imports,
-        wrong-import-position,
-        useless-import-alias,
-        import-outside-toplevel,
-        non-ascii-name,
-        non-ascii-module-import,
-        unnecessary-lambda-assignment,
-        unnecessary-direct-lambda-call,
-        bad-file-encoding,
-        invalid-name,
-        disallowed-name,
-        typevar-name-incorrect-variance,
-        typevar-double-variance,
-        typevar-name-mismatch,
-        empty-docstring,
+
         missing-module-docstring,
-        missing-class-docstring,
-        missing-function-docstring,
-        singleton-comparison,
-        unidiomatic-typecheck,
-#        line-too-long,
-#        too-many-lines,
-        trailing-whitespace,
-        missing-final-newline,
-        trailing-newlines,
-        multiple-statements,
-        superfluous-parens,
-        mixed-line-endings,
-        unexpected-line-ending-format,
-        unnecessary-negation,
-        consider-using-enumerate,
-        consider-iterating-dictionary,
-        consider-using-dict-items,
-        use-maxsplit-arg,
-        use-sequence-for-iteration,
-        consider-using-f-string,
-        use-implicit-booleaness-not-len,
-        use-implicit-booleaness-not-comparison,
-        bad-classmethod-argument,
-        bad-mcs-method-argument,
-        bad-mcs-classmethod-argument,
-        single-string-used-for-slots,
-        wrong-spelling-in-comment,
-        wrong-spelling-in-docstring,
-        invalid-characters-in-docstring,
-        misplaced-comparison-constant,
-        dict-init-mutate,
-        cyclic-import,
-        consider-using-from-import,
-        literal-comparison,
-        comparison-with-itself,
-        comparison-of-constants,
-        too-many-ancestors,
-        too-many-instance-attributes,
-        too-few-public-methods,
-        too-many-public-methods,
-        too-many-return-statements,
-        too-many-branches,
-#        too-many-arguments,
-        too-many-locals,
-        too-many-statements,
-        too-many-boolean-expressions,
-        too-many-positional-arguments,
-        consider-merging-isinstance,
-        too-many-nested-blocks,
-#        simplifiable-if-statement,
-        redefined-argument-from-local,
-#        no-else-return,
-        consider-using-ternary,
-        trailing-comma-tuple,
-        stop-iteration-return,
-        simplify-boolean-expression,
-        inconsistent-return-statements,
-#        useless-return,
-        consider-swap-variables,
-#        consider-using-join,
-#        consider-using-in,
-#        consider-using-get,
-        chained-comparison,
-        consider-using-dict-comprehension,
-        consider-using-set-comprehension,
-        simplifiable-if-expression,
-        no-else-raise,
-        unnecessary-comprehension,
-        consider-using-sys-exit,
-        no-else-break,
-        no-else-continue,
-#        super-with-arguments,
-        simplifiable-condition,
-        condition-evals-to-constant,
-        consider-using-generator,
-#        use-a-generator,
-        consider-using-min-builtin,
-        consider-using-max-builtin,
-        consider-using-with,
-        unnecessary-dict-index-lookup,
-#        use-list-literal,
-#        use-dict-literal,
-        unnecessary-list-index-lookup,
-        use-yield-from,
-#        duplicate-code,      # min-similarity-lines
-        no-classmethod-decorator,
-        no-staticmethod-decorator,
-        useless-object-inheritance,
-        property-with-parameters,
-        consider-refactoring-into-while-condition,
-        empty-comment,
-        global-variable-undefined,
-        global-variable-not-assigned,
-        global-statement,
-        global-at-module-level,
-        unused-import,
-#        unused-variable,
-        unused-argument,
-        unused-wildcard-import,
-        redefined-outer-name,
-        redefined-builtin,
-        undefined-loop-variable,
-        unbalanced-tuple-unpacking,
-        cell-var-from-loop,
-        possibly-unused-variable,
-        self-cls-assignment,
-        unbalanced-dict-unpacking,
-        nested-min-max,
-        wildcard-import,
-        reimported,
-        import-self,
-        preferred-module,
-        misplaced-future,
-        shadowed-import,
-        non-ascii-file-name,
-        missing-timeout,
-        bad-open-mode,
-        boolean-datetime,
-        redundant-unittest-assert,
-        bad-thread-instantiation,
-        shallow-copy-environ,
-        invalid-envvar-default,
-        subprocess-popen-preexec-fn,
-        subprocess-run-check,
-        unspecified-encoding,
-        forgotten-debug-statement,
-        method-cache-max-size-none,
-        deprecated-method,
-        deprecated-argument,
-        deprecated-class,
-        deprecated-decorator,
-        deprecated-attribute,
-        useless-else-on-loop,
-        unreachable,
-        dangerous-default-value,
-        pointless-statement,
-        pointless-string-statement,
-        expression-not-assigned,
-        unnecessary-lambda,
-        duplicate-key,
-        exec-used,
-        eval-used,
-        confusing-with-statement,
-        using-constant-test,
-        missing-parentheses-for-call-in-test,
-        self-assigning-variable,
-        redeclared-assigned-name,
-        assert-on-string-literal,
-        duplicate-value,
-        named-expr-without-context,
-        pointless-exception-statement,
-        return-in-finally,
-        lost-exception,
-        assert-on-tuple,
-        unnecessary-pass,
-        comparison-with-callable,
-        nan-comparison,
-        contextmanager-generator-missing-cleanup,
-        unnecessary-semicolon,
-        bad-indentation,
-        modified-iterating-list,
-        unnecessary-ellipsis,
-        bare-except,
-        duplicate-except,
-        try-except-raise,
-        raise-missing-from,
-        binary-op-exception,
-        raising-format-tuple,
-        wrong-exception-operation,
-        broad-exception-caught,
-        broad-exception-raised,
-        logging-not-lazy,
-        logging-format-interpolation,
-        logging-fstring-interpolation,
-        attribute-defined-outside-init,
-        bad-staticmethod-argument,
-        protected-access,
-        implicit-flag-alias,
-        arguments-differ,
-        signature-differs,
-        abstract-method,
-        super-init-not-called,
-        non-parent-init-called,
-        invalid-overridden-method,
-        arguments-renamed,
-        unused-private-member,
-        overridden-final-method,
-        subclassed-final-class,
-        redefined-slots-in-subclass,
-        super-without-brackets,
-        useless-parent-delegation,
-        keyword-arg-before-vararg,
-        arguments-out-of-order,
-        non-str-assignment-to-dunder-name,
-        isinstance-second-argument-not-valid-type,
-        kwarg-superseded-by-positional-arg,
-        useless-with-lock,
-        bad-format-string-key,
-        unused-format-string-key,
-        bad-format-string,
-        missing-format-argument-key,
-        unused-format-string-argument,
-        format-combined-specification,
-        missing-format-attribute,
-        invalid-format-index,
-        duplicate-string-formatting-argument,
-        f-string-without-interpolation,
-        format-string-without-interpolation,
-        anomalous-unicode-escape-in-string,
-        implicit-str-concat,
-        inconsistent-quotes,
-        redundant-u-string-prefix,
-        bad-chained-comparison,
-        using-f-string-in-unsupported-version,
-        using-final-decorator-in-unsupported-version,
-        using-exception-groups-in-unsupported-version,
-        using-generic-type-syntax-in-unsupported-version,
-        using-assignment-expression-in-unsupported-version,
-        using-positional-only-args-in-unsupported-version,
-        fixme,   #Esto esta bueno para revisar los todo
-        overlapping-except,
-        used-before-assignment,
-        undefined-variable,
-        undefined-all-variable,
-        invalid-all-object,
-        invalid-all-format,
-        possibly-used-before-assignment,
-        no-name-in-module,
-        unpacking-non-sequence,
-        potential-index-error,
-        bad-super-call,
         import-error,
-        relative-beyond-top-level,
-        yield-inside-async-function,
-        not-async-context-manager,
-        invalid-unicode-codec,
-        bidirectional-unicode,
-        invalid-character-backspace,
-        invalid-character-carriage-return,
-        invalid-character-sub,
-        invalid-character-esc,
-        invalid-character-nul,
-        invalid-character-zero-width-space,
-        positional-only-arguments-expected,
-        invalid-envvar-value,
-        singledispatch-method,
-        singledispatchmethod-function,
-        init-is-generator,
-        return-in-init,
-        function-redefined,
-        not-in-loop,
-        return-outside-function,
-        yield-outside-function,
-        return-arg-in-generator,
-        nonexistent-operator,
-        duplicate-argument-name,
-        abstract-class-instantiated,
-        too-many-star-expressions,
-        invalid-star-assignment-target,
-        star-needs-assignment-target,
-        nonlocal-and-global,
-        continue-in-finally,
-        nonlocal-without-binding,
-        used-prior-global-declaration,
-        bad-reversed-sequence,
-        misplaced-format-function,
-        modified-iterating-dict,
-        modified-iterating-set,
-        bad-except-order,
-        raising-bad-type,
-        misplaced-bare-raise,
-        bad-exception-cause,
-        raising-non-exception,
-        notimplemented-raised,
-        catching-non-exception,
-        logging-unsupported-format,
-        logging-format-truncated,
-        logging-too-many-args,
-        logging-too-few-args,
-        method-hidden,
-        access-member-before-definition,
-        no-method-argument,
-        no-self-argument,
-        invalid-slots-object,
-        assigning-non-slot,
-        invalid-slots,
-        inherit-non-class,
-        inconsistent-mro,
-        duplicate-bases,
-        class-variable-slots-conflict,
-        invalid-class-object,
-        invalid-enum-extension,
-        declare-non-slot,
-        non-iterator-returned,
-        unexpected-special-method-signature,
-        invalid-length-returned,
-        invalid-bool-returned,
-        invalid-index-returned,
-        invalid-repr-returned,
-        invalid-str-returned,
-        invalid-bytes-returned,
-        invalid-hash-returned,
-        invalid-length-hint-returned,
-        invalid-format-returned,
-        invalid-getnewargs-returned,
-        invalid-getnewargs-ex-returned,
-        invalid-field-call,
-        no-member,
-        not-callable,
-        assignment-from-no-return,
-        no-value-for-parameter,
-        too-many-function-args,
-        unexpected-keyword-arg,
-        redundant-keyword-arg,
-        missing-kwoa,
-        invalid-sequence-index,
-        invalid-slice-index,
-        assignment-from-none,
-        not-context-manager,
-        invalid-unary-operand-type,
-        unsupported-binary-operation,
-        repeated-keyword,
-        unsupported-membership-test,
-        unsubscriptable-object,
-        unsupported-assignment-operation,
-        unsupported-delete-operation,
-        invalid-metaclass,
-        dict-iter-missing-items,
-        await-outside-async,
-        unhashable-member,
-        invalid-slice-step,
-        not-an-iterable,
-        not-a-mapping,
-        bad-format-character,
-        truncated-format-string,
-        mixed-format-string,
-        format-needs-mapping,
-        missing-format-string-key,
-#        too-many-format-args,
-#        too-few-format-args,
-        bad-string-format-type,
-#        bad-str-strip-call,
-#        method-check-failed,
-        ; manifest-required-author,
-        ; prefer-env-translation,     # esto requiere self.env._() en lugar de _()
-        ; translation-not-lazy,       # no logro que funcione bien da falso positivo
-        ; deprecated-name-get         # esto es para version >= 17
+        missing-class-docstring,
+        too-few-public-methods,
+        missing-function-docstring,
+        protected-access
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
 # multiple time (only on the command line, not in the configuration file where
 # it should appear only once). See also the "--disable" option for examples.
-enable=consider-using-alias,
-       consider-alternative-union-syntax,
-       redundant-typehint-argument,
-       unnecessary-default-type-args,
-       deprecated-module,
-       anomalous-backslash-in-string,
-       deprecated-typing-alias,
-       broken-noreturn,
-       broken-collections-callable
+enable=
 
 
 [METHOD_ARGS]
@@ -841,6 +490,9 @@ timeout-methods=requests.api.delete,requests.api.get,requests.api.head,requests.
 
 
 [MISCELLANEOUS]
+
+# Whether or not to search for fixme's in docstrings.
+check-fixme-in-docstring=no
 
 # List of note tags to take in consideration, separated by a comma.
 notes=FIXME,
@@ -879,12 +531,12 @@ evaluation=max(0, 0 if fatal else 10.0 - ((float(5 * error + warning + refactor 
 
 # Template used to display messages. This is a python new-style format string
 # used to format the message information. See doc for all details.
-msg-template={path}:{line}: [{msg_id}({symbol}), {obj}] {msg}
+msg-template=
 
-# Set the output format. Available formats are: text, parseable, colorized,
-# json2 (improved json format), json (old json format) and msvs (visual
-# studio). You can also give a reporter class, e.g.
-# mypackage.mymodule.MyReporterClass.
+# Set the output format. Available formats are: 'text', 'parseable',
+# 'colorized', 'json2' (improved json format), 'json' (old json format), msvs
+# (visual studio) and 'github' (GitHub actions). You can also give a reporter
+# class, e.g. mypackage.mymodule.MyReporterClass.
 #output-format=
 
 # Tells whether to display a full report or only the messages.
@@ -892,6 +544,8 @@ reports=no
 
 # Activate the evaluation score.
 score=no
+
+output-format=colorized
 
 
 [SIMILARITIES]
@@ -909,7 +563,8 @@ ignore-imports=yes
 ignore-signatures=yes
 
 # Minimum lines number of a similarity.
-min-similarity-lines=12
+min-similarity-lines=8
+
 
 [SPELLING]
 
@@ -985,7 +640,7 @@ ignored-classes=optparse.Values,thread._local,_thread._local,argparse.Namespace
 # of finding the hint is based on edit distance.
 missing-member-hint=yes
 
-# The minimum edit distance a name should have in order to be considered a
+# The maximum edit distance a name should have in order to be considered a
 # similar match for a missing member name.
 missing-member-hint-distance=1
 
@@ -998,17 +653,6 @@ mixin-class-rgx=.*[Mm]ixin
 
 # List of decorators that change the signature of a decorated function.
 signature-mutators=
-
-
-[TYPING]
-
-# Set to ``no`` if the app / library does **NOT** need to support runtime
-# introspection of type annotations. If you use type annotations
-# **exclusively** for type checking of an application, you're probably fine.
-# For libraries, evaluate if some users want to access the type hints at
-# runtime first, e.g., through ``typing.get_type_hints``. Applies to Python
-# versions 3.7 - 3.9
-runtime-typing=yes
 
 
 [VARIABLES]

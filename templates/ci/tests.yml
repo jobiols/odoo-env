@@ -1,0 +1,158 @@
+# CI/CD template for running Odoo module tests with coverage on a
+# self-hosted GitHub Actions runner.
+#
+# Copy this file into your client repo as:
+#     .github/workflows/tests.yml
+#
+# Then adjust the `env.CLIENT` variable and any runner labels below.
+#
+# Prerequisites on the self-hosted runner:
+#   - Docker
+#   - odoo-env installed (pipx install odoo-env or python -m odoo_env.qa reachable)
+#   - Odoo debug image available locally (docker pull <image> before first run)
+#   - Postgres image available locally
+#   - A runner label that matches (default: self-hosted)
+
+name: Tests + Coverage
+
+on:
+  pull_request:
+    branches: [master, main]
+  push:
+    branches: [master, main]
+
+jobs:
+  test:
+    runs-on: [self-hosted]
+    env:
+      CLIENT: dimec # <-- CHANGE ME to your client name
+      POSTGRES_IMAGE: postgres:17.5-alpine
+      POSTGRES_USER: odoo
+      POSTGRES_PASSWORD: odoo
+      PG_CONTAINER: pg-dimec # <-- CHANGE ME to pg-<CLIENT>
+      NETWORK: odoo-net
+
+    steps:
+      # ── 1. Checkout ─────────────────────────────────────────────────
+      - uses: actions/checkout@v6
+
+      # ── 2. Resolve the Odoo debug image from the oe manifest ────────
+      - name: Resolve Odoo image
+        id: image
+        run: |
+          IMAGE=$(python3 -c '
+          from odoo_env.config import OeConfig
+          from odoo_env.client import Client
+          from odoo_env.options import get_client
+          args = type("Args", (), {"client": "${{ env.CLIENT }}", "debug": False})()
+          OeConfig(args)
+          cl = Client(args, name=get_client(args))
+          print(cl.get_image_required("odoo").name, end="")
+          ' 2>/dev/null || echo "")
+          if [ -z "$IMAGE" ]; then
+            echo "ERROR: could not resolve Odoo image from config"
+            exit 1
+          fi
+          echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+          echo "Resolved image: $IMAGE"
+
+      # ── 3. Docker infrastructure ────────────────────────────────────
+      - name: Create Docker network
+        run: |
+          docker network create "$NETWORK" 2>/dev/null || true
+          echo "Network $NETWORK ready"
+
+      - name: Ensure PostgreSQL container
+        run: |
+          CONTAINER="${{ env.PG_CONTAINER }}"
+          if docker inspect "$CONTAINER" >/dev/null 2>&1; then
+            echo "PostgreSQL container $CONTAINER already exists"
+          else
+            echo "Creating PostgreSQL container $CONTAINER..."
+            docker run -d --name "$CONTAINER" \
+              --network "$NETWORK" --network-alias db \
+              -e POSTGRES_USER="${{ env.POSTGRES_USER }}" \
+              -e POSTGRES_PASSWORD="${{ env.POSTGRES_PASSWORD }}" \
+              "${{ env.POSTGRES_IMAGE }}"
+          fi
+          until docker exec "$CONTAINER" pg_isready -U "$POSTGRES_USER" -q; do
+            echo "Waiting for postgres..."
+            sleep 2
+          done
+
+      # ── 4. Thin-seed test DB (cached) ───────────────────────────────
+      - name: Cache seed database
+        id: cache-seed
+        uses: actions/cache@v5
+        with:
+          path: /tmp/oe-seed
+          key: oe-testdb-${{ steps.image.outputs.image }}-v1
+
+      - name: Provision test database
+        run: |
+          set -e
+          DB="${{ env.CLIENT }}_test"
+          IMAGE="${{ steps.image.outputs.image }}"
+          PG="${{ env.PG_CONTAINER }}"
+
+          if [ -f /tmp/oe-seed/seed.sql ]; then
+            echo "Restoring cached seed into $DB..."
+            docker exec -i "$PG" psql -U "$POSTGRES_USER" \
+              -c "DROP DATABASE IF EXISTS $DB;"
+            docker exec -i "$PG" psql -U "$POSTGRES_USER" \
+              -c "CREATE DATABASE $DB OWNER $POSTGRES_USER;"
+            docker exec -i "$PG" psql -U "$POSTGRES_USER" \
+              "$DB" < /tmp/oe-seed/seed.sql
+            echo "Seed restored from cache"
+          else
+            echo "Building thin seed (cache miss)..."
+            docker run --rm --network "$NETWORK" \
+              --link "$PG:db" "$IMAGE" \
+              -d "$DB" --stop-after-init -i base
+            echo "Dumping seed for cache..."
+            mkdir -p /tmp/oe-seed
+            docker exec -i "$PG" pg_dump -U "$POSTGRES_USER" "$DB" \
+              > /tmp/oe-seed/seed.sql
+            echo "Seed built and cached"
+          fi
+
+      # ── 5. Run all tests with coverage ──────────────────────────────
+      - name: Run tests with coverage
+        run: python3 -m odoo_env.qa
+
+      # ── 6. Upload coverage HTML artifact ────────────────────────────
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: coverage-html
+          path: |
+            */data_dir/.coverage_data/htmlcov/
+          retention-days: 7
+
+      # ── 7. Coverage badge (master/main only) ────────────────────────
+      - name: Generate coverage badge
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+        run: |
+          pip install 'genbadge[coverage]'
+          COV_XML=$(find . -path "*/data_dir/.coverage_data/coverage.xml" | head -1)
+          if [ -n "$COV_XML" ] && [ -f "$COV_XML" ]; then
+            genbadge coverage -i "$COV_XML" -o coverage.svg
+            echo "Badge generated: coverage.svg"
+          else
+            echo "WARNING: coverage.xml not found"
+          fi
+
+      - name: Commit badge
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: update coverage badge"
+          file_pattern: coverage.svg
+          commit_user_name: github-actions[bot]
+          commit_user_email: github-actions[bot]@users.noreply.github.com
+
+      # ── 8. Ratchet guard ───────────────────────────────────────────
+      - name: Ratchet guard (coverage threshold never lowers)
+        if: github.event_name == 'pull_request'
+        run: python3 -m odoo_env.qa.ratchet_guard

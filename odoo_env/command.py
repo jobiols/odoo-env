@@ -1,30 +1,33 @@
 import os
-import stat
 import subprocess
 from pathlib import Path
+from typing import Any
 
-from odoo_env.messages import Msg
+from odoo_env.messages import msg
 from odoo_env.odoo_conf import OdooConf
-
-msg = Msg()
 
 
 class Command:
     def __init__(
-        self, parent, command=False, usr_msg=False, args=False, client_name=False
+        self,
+        parent,
+        command=None,
+        usr_msg=None,
+        args=None,
     ):
         """
         :param parent: El objeto OdooEnv que lo contiene por los parametros
-        :param command: El comando a ejecutar en el shell
+        :param command: El comando a ejecutar
         :param usr_msg: El mensaje a mostrarle al usuario
         :param args: Argumentos para chequear, define si se ejecuta o no
         :return: El objeto Comando que se ejecutara luego
         """
+        # command/args/usr_msg son dinamicos (str | list | dict | bool segun el
+        # subcomando), por eso se anotan como Any.
         self._parent = parent
-        self._command = command
-        self._usr_msg = usr_msg
-        self._args = args
-        self._client_name = client_name
+        self._command: Any = command
+        self._usr_msg: Any = usr_msg
+        self._args: Any = args
 
     def check(self):
         # si no tiene argumentos para chequear no requiere chequeo,
@@ -35,42 +38,55 @@ class Command:
         # le pasamos el chequeo al objeto especifico
         return self.check_args()
 
-    def check_args(self):
-        raise NotImplementedError
+    def check_args(self) -> bool:
+        """Esto no puede ser staticmethod porque al heredarlo usan self._args"""
+        return True
 
     def execute(self):
-        cmd = self.command
-        self.subrpocess_call(cmd)
+        self.subprocess_call(self.command)
 
-    def subrpocess_call(self, params, shell=True):
-        """Run command or command list with arguments.  Wait for commands to
-            complete
-            If args.verbose is true, prints command
-            If any errors stop list execution and returns error
-            if shell=True go shell mode (only for --cron-jobs)
+    @staticmethod
+    def _normalize_cmd(cmd):
+        """Normaliza el comando a list[str]: split si es str, tal cual si es list."""
+        if isinstance(cmd, str):
+            return cmd.split()
+        if isinstance(cmd, list):
+            return cmd
+        raise ValueError(f"Invalid command type: {cmd}")
 
-        :param params: command or command list
-        :return: error return
+    def subprocess_call(self, cmd, check=True, capture=False):
         """
-        # if not a list convert to a one element list
-        params = params if isinstance(params, list) else [params]
+        Ejecuta un único comando.
 
-        # traverse list executing shell commands
-        for _cmd in params:
-            # if shell = True we do no split
-            cmd = _cmd if shell else _cmd.split()
-            if self._parent.verbose:
-                msg.run(" ")
-                if shell:
-                    msg.run(cmd)
-                else:
-                    msg.run(" ".join(cmd))
-                msg.run(" ")
-            ret = subprocess.call(cmd, shell=shell)
-            if ret:
-                if "hmod o+w" in cmd:
-                    return msg.warn(f"The command {cmd} returned with {str(ret)}")
-                return msg.err(f"The command {cmd} returned with {str(ret)}")
+        :param cmd: str ("git status") o list[str] (["git", "status"])
+        :param check: si True, lanza error si exit code != 0
+        :param capture: si True, devuelve (stdout, stderr)
+        """
+        cmd_run = self._normalize_cmd(cmd)
+
+        # --- Verbose ---
+        if self._parent.verbose:
+            msg.run(" ")
+            msg.run(" ".join(cmd_run))
+            msg.run(" ")
+
+        # --- Ejecutar ---
+        try:
+            completed = subprocess.run(
+                cmd_run,
+                check=check,
+                capture_output=capture,
+                text=True,
+            )
+            if capture:
+                return completed.stdout, completed.stderr
+            return True
+        except subprocess.CalledProcessError as e:
+            msg.err(f"Command failed: {e.cmd}\nExit code: {e.returncode}\n{e.stderr}")
+        except FileNotFoundError:
+            msg.err(f"Command not found: {cmd_run}")
+        except OSError as e:
+            msg.err(f"Unexpected subprocess error running {cmd_run}: {e}")
 
     @property
     def args(self):
@@ -89,12 +105,11 @@ class CreateGitignore(Command):
     def execute(self):
         # crear el gitignore en el archivo que viene del comando
         values = [".idea/\n", "*.pyc\n", "__pycache__\n"]
-        with open(self._command, "w") as _f:
+        with open(self._command, "w", encoding="utf-8") as _f:
             for value in values:
                 _f.write(value)
 
-    @staticmethod
-    def check_args():
+    def check_args(self):
         return True
 
 
@@ -104,6 +119,37 @@ class MakedirCommand(Command):
         return not os.path.isdir(self._args)
 
 
+class EnsureNetworkCommand(Command):
+    """
+    Creates a Docker network only when it does not yet exist.
+
+    check_args() runs 'docker network inspect <network>' via subprocess.run
+    (no shell=True) to probe whether the network is present:
+      - returncode 0  → network exists → return False (skip creation)
+      - returncode ≠ 0 → network absent → return True  (proceed to create)
+
+    execute() is inherited from Command unchanged; it runs the
+    'docker network create <network>' command passed via command=.
+    """
+
+    def check_args(self) -> bool:
+        """
+        Returns False when the network already exists (skip creation),
+        True when it is absent (proceed to create).
+
+        Side effect: spawns 'docker network inspect self._args' with both
+        stdout and stderr discarded so no Docker output reaches the user.
+        Does NOT raise for any exit code from docker network inspect.
+        """
+        result = subprocess.run(
+            ["docker", "network", "inspect", self._args],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+        return result.returncode != 0
+
+
 class RemovedirCommand(Command):
     def check_args(self):
         # si el directorio existe lo borramos
@@ -111,8 +157,7 @@ class RemovedirCommand(Command):
 
 
 class ExtractSourcesCommand(Command):
-    @staticmethod
-    def check_args():
+    def check_args(self):
         return True
 
 
@@ -129,33 +174,18 @@ class PullRepo(Command):
 
 
 class PullImage(Command):
-    @staticmethod
-    def check_args():
-        return True
-
-
-class CreateNginxTemplate(Command):
     def check_args(self):
-        # si el archivo existe no lo dejamos pasar
-        return not os.path.isfile(self._args)
-
-    def execute(self):
-        # leer el nginx.conf
-        with open("/usr/local/nginx.conf") as _f:
-            conf = _f.read()
-
-        # poner el nombre del cliente en el config
-        conf = conf.replace("$client$", self._client_name)
-
-        with open(self._command, "w") as _f:
-            _f.write(conf)
+        return True
 
 
 class WriteConfigFile(Command):
+    """Escribe el archivo odoo.conf segun los parametros del manifiesto"""
+
     def check_args(self):
         return True
 
-    def check_item(self, search_item, search_list):
+    @staticmethod
+    def check_item(search_item, search_list):
         for item in search_list:
             if search_item in item:
                 return item
@@ -188,7 +218,7 @@ class WriteConfigFile(Command):
         odoo_conf.add_list_data(client.config)
 
         # siempre sobreescribimos estas tres cosas.
-        odoo_conf.add_line("addons_path = %s" % repos)
+        odoo_conf.add_line(f"addons_path = {repos}")
         odoo_conf.add_line("unaccent = True")
         odoo_conf.add_line("data_dir = /opt/odoo/data")
 
@@ -206,7 +236,7 @@ class WriteConfigFile(Command):
             if not line:
                 # Calculo los workers
                 # You should use 2 worker threads per CPU
-                odoo_conf.add_line(f"workers = {(os.cpu_count() * 2)}")
+                odoo_conf.add_line(f"workers = {((os.cpu_count() or 1) * 2)}")
             else:
                 odoo_conf.add_line(line)
 
@@ -220,19 +250,29 @@ class WriteConfigFile(Command):
 
         odoo_conf.write_config()
 
-        # Corregir los permisos de odoo.conf
-        os.chmod(
-            client.config_file,
-            stat.S_IREAD + stat.S_IWRITE + stat.S_IWOTH + stat.S_IROTH,
-        )
-
 
 class MessageOnly(Command):
-    @staticmethod
-    def check_args():
+    def check_args(self):
         """Siempre lo dejamos pasar"""
         return True
 
-    @staticmethod
-    def execute():
-        pass
+    def execute(self):
+        """Este metodo debe sobreescribirse en las subclases"""
+
+
+class TestAllCommand(Command):
+    """Runs the full test+coverage engine (REQ-QA-010).
+
+    Delegates to ``TestRunner`` instead of a shell subprocess.
+    """
+
+    def __init__(self, parent, runner):
+        super().__init__(
+            parent,
+            usr_msg="Running all module tests with coverage",
+        )
+        self._runner = runner
+
+    def execute(self):
+        self._runner.run_all()
+        self._runner.generate_report()

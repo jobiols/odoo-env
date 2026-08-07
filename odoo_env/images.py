@@ -1,35 +1,32 @@
-from odoo_env.messages import Msg
+from odoo_env.messages import msg
 
-msg = Msg()
+# class Image:
+#     def __init__(self, values):
+#         self._dict = values
 
+#     @property
+#     def short_name(self):
+#         return self._dict.get("name")
 
-class Image:
-    def __init__(self, values):
-        self._dict = values
+#     @property
+#     def version(self):
+#         return self._dict.get("ver")
 
-    @property
-    def short_name(self):
-        return self._dict.get("name")
+#     @property
+#     def name(self):
+#         ret = self._dict.get("usr")
+#         image = self._dict.get("img")
+#         ver = self._dict.get("ver")
 
-    @property
-    def version(self):
-        return self._dict.get("ver")
+#         if image:
+#             ret += "/" + image
+#         if ver:
+#             ret += ":" + ver
 
-    @property
-    def name(self):
-        ret = self._dict.get("usr")
-        image = self._dict.get("img")
-        ver = self._dict.get("ver")
-
-        if image:
-            ret += "/" + image
-        if ver:
-            ret += ":" + ver
-
-        return ret
+#         return ret
 
 
-class Image2:
+class DockerImage:
     def __init__(self, values, debug=False):
         _odoo_image = "odoo" in values
         values = values.split()

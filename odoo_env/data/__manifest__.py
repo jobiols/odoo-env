@@ -53,6 +53,5 @@
         "odoo jobiols/odoo-jeo:9.0",
         "postgres postgres:11.1-alpine",
         "aeroo adhoc/aeroo",
-        "nginx nginx",
     ],
 }

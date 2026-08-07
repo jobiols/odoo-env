@@ -1,59 +1,60 @@
 import re
 
-from odoo_env.messages import Msg
+from odoo_env.config import OeConfig
+from odoo_env.messages import msg
+
+# class Repo:
+#     def __init__(self, value):
+#         self._dict = value
+
+#     @property
+#     def name(self):
+#         return self._dict.get("repo")
+
+#     @property
+#     def dir_name(self):
+#         return self._dict.get("repo")
+
+#     @property
+#     def branch(self):
+#         return self._dict.get("branch")
+
+#     @property
+#     def url(self):
+#         if self._dict.get("ssh", False):
+#             template = "git@{}:{}/{}"
+#         else:
+#             template = "https://{}/{}/{}"
+
+#         return template.format(
+#             self._dict.get("host", "github.com"),
+#             self._dict.get("usr"),
+#             self._dict.get("repo"),
+#         )
+
+#     @property
+#     def formatted(self):
+#         aaa = self._dict["usr"] + "/" + self._dict["repo"]
+#         ret = "b " + self._dict["branch"].ljust(7) + " " + aaa.ljust(30)
+#         return ret
+
+#     @property
+#     def clone(self):
+#         return f"clone --depth 1 -b {self.branch} {self.url}"
+
+#     @property
+#     def pull(self):
+#         return "pull"
 
 
-class Repo:
-    def __init__(self, value):
-        self._dict = value
-
-    @property
-    def name(self):
-        return self._dict.get("repo")
-
-    @property
-    def dir_name(self):
-        return self._dict.get("repo")
-
-    @property
-    def branch(self):
-        return self._dict.get("branch")
-
-    @property
-    def url(self):
-        if self._dict.get("ssh", False):
-            template = "git@{}:{}/{}"
-        else:
-            template = "https://{}/{}/{}"
-
-        return template.format(
-            self._dict.get("host", "github.com"),
-            self._dict.get("usr"),
-            self._dict.get("repo"),
-        )
-
-    @property
-    def formatted(self):
-        aaa = self._dict["usr"] + "/" + self._dict["repo"]
-        ret = "b " + self._dict["branch"].ljust(7) + " " + aaa.ljust(30)
-        return ret
-
-    @property
-    def clone(self):
-        return f"clone --depth 1 -b {self.branch} {self.url}"
-
-    @property
-    def pull(self):
-        return "pull"
-
-
-class Repo2:
-    def __init__(self, value, branch, options=None):
+class GitRepo:
+    def __init__(self, value, branch):
         """Sintaxis <repo> [<directory>[/<directory>] [-b <branch>] [optios]
         El branch debe estar despues del repo, si no esta se toma el branch
         que viene como parametro, si no viene nada es una excepcion.
         El directorio va despues del repo y puede no estar
         """
+
         # parsear value en una lista
         parsed = value.split(" ")
         # eliminar los espacios
@@ -77,11 +78,9 @@ class Repo2:
 
         self._url = parsed[0]
 
-        if options is not None:  # Si options es None no hay que agregarla el prefijo
-
-            # agregarle a la url el prefijo de ssh si es requerido solo si estamos en produccion
-            if self.protocol == "ssh" and not options["debug"]:
-                self._url = re.sub(r"@(github)", f"@{self.code_name}.\\1", self._url)
+        # agregarle a la url el prefijo de ssh si es requerido solo si estamos en produccion
+        if self.protocol == "ssh" and OeConfig().prod:
+            self._url = re.sub(r"@(github)", f"@{self.code_name}.\\1", self._url)
 
         # si me quedan dos parametros tengo un directorio
         if len(parsed) > 1:
@@ -130,7 +129,7 @@ class Repo2:
             return "ssh"
         if self._url.startswith("https:"):
             return "https"
-        Msg().err(f"Unknown git protocol {self._url}")
+        msg.err(f"Unknown git protocol {self._url}")
 
     @property
     def code_name(self):
@@ -140,4 +139,4 @@ class Repo2:
         if match:
             return match.group("name")
 
-        Msg().err(f"invalid repository URL {self._url}")
+        msg.err(f"invalid repository URL {self._url}")

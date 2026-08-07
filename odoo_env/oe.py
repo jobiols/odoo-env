@@ -1,92 +1,129 @@
 #!/usr/bin/env python
-"""Este es el modulo principal de odoo-env"""
 
 import argparse
 import sys
 
 from odoo_env.__init__ import __version__
 from odoo_env.config import OeConfig
-from odoo_env.create_database import create_database
-from odoo_env.deploy_keys import deploy_keys
-from odoo_env.messages import Msg
+from odoo_env.messages import OeError, msg
 from odoo_env.odooenv import OdooEnv
-from odoo_env.options import get_param
 
 
-def main():
-    """main"""
+def parse_args():
+
     parser = argparse.ArgumentParser(
         description=f"""
 Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.com>
 """
     )
-
     parser.add_argument(
         "-i",
-        "--install",
+        dest="install",
+        nargs="?",
+        const=True,
+        metavar="CLIENT",
+        help=(
+            "Install environment / update repositories. With no value, repositories are "
+            "taken from the manifest. Pass a CLIENT name to build the canonical repo URL "
+            "git@github.com:<org>/cl-<client>.git for the first installation "
+            "(e.g. oe -i labutic). A full git URL (git@... or https://...) is also accepted."
+        ),
+    )
+
+    parser.add_argument(
+        "--org",
+        dest="org",
+        help="Set the GitHub organization used to build canonical repo URLs "
+        "(e.g. quilsoft-org). This parameter is persistent. Defaults to "
+        "quilsoft-org when unset.",
+    )
+
+    parser.add_argument(
+        "-R",
+        dest="run_env",
         action="store_true",
-        help="The first time it runs, it creates the directory structure and "
-        "clones all repositories declared in the project. If run again, it "
-        "updates the repositories. Use together with --extract-sources to copy "
-        "the sources from the Odoo image to the host, which is essential for "
-        "working in debug mode.",
+        help="Run postgres, wdb and aeroo images (aeroo only for old odoo versions).",
     )
 
     parser.add_argument(
         "-p",
-        "--pull-images",
+        dest="pull_images",
         action="store_true",
         help="Pull Images. Download all images declared in client manifest.",
     )
 
     parser.add_argument(
         "-w",
-        "--write-config",
+        dest="write_config",
         action="store_true",
         help="Create / Overwrite config file.",
     )
 
     parser.add_argument(
-        "-R",
-        "--run-env",
+        "-r",
+        dest="run_cli",
         action="store_true",
-        help="Run postgres, wdb and aeroo images (aeroo only for old odoo versions).",
+        help="Run odoo image",
     )
-
-    parser.add_argument("-r", "--run-cli", action="store_true", help="Run odoo image")
 
     parser.add_argument(
         "-S",
-        "--stop-env",
+        dest="stop_env",
         action="store_true",
         help="Stop postgres, wdb and aeroo images.",
     )
 
     parser.add_argument(
-        "-s", "--stop-cli", action="store_true", help="Stop odoo image."
+        "-s", dest="stop_cli", action="store_true", help="Stop odoo image."
     )
 
     parser.add_argument(
         "-u",
-        "--update",
+        dest="update",
         action="store_true",
         help="Updates modules in the database. With no parameters, all modules "
-        "are updated. Use -m modulename to update only the specified module; "
-        "you can also pass a list of modules separated by commas (without "
-        "spaces). Use -d databasename to update a database other than the "
-        "default database.",
+        "are updated. Use -m list-modules to update only the specified modules "
+        "Use -d databasename to update a database other than the default database.",
+    )
+
+    parser.add_argument(
+        "-H",
+        dest="server_help",
+        action="store_true",
+        help="Show odoo server help, it shows the help from the odoo image "
+        "declared in the cliente manifest",
+    )
+
+    parser.add_argument(
+        "-V",
+        dest="version",
+        action="store_true",
+        help="Show version number and exit.",
+    )
+
+    parser.add_argument(
+        "-Q",
+        metavar="MODULES",
+        dest="modules_to_test",
+        help="Run the tests. Required parameters: list of modules to test "
+        "separate by commas (without spaces) e.g. -Q sale,stock. "
+        "Use -Q all to auto-discover and run every module with a tests/ "
+        "directory in the current repository. "
+        "Optional parameters: -d <database>; if omitted, the default "
+        "[project]_test database will be used, "
+        "NOTE: The database used for testing must be created with demo "
+        "data and must have admin/admin credentials.",
     )
 
     parser.add_argument(
         "-c",
-        action="append",
         dest="client",
-        help="Set default client name. This option is persistent",
+        help="Set default client name. This parameter is persistent",
     )
 
     parser.add_argument(
         "-v",
-        "--verbose",
+        dest="verbose",
         action="store_true",
         help="Go verbose mode. Prints every command",
     )
@@ -94,47 +131,8 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     parser.add_argument(
         "-d",
         action="store",
-        nargs=1,
         dest="database",
         help="Set default Database name. This option is persistent",
-    )
-
-    parser.add_argument(
-        "--no-deactivate",
-        action="store_true",
-        help="No Deactivate database before restore. WARNING this command is "
-        "deprecated",
-    )
-
-    parser.add_argument(
-        "--deploy-keys",
-        action="store_true",
-        help="Available only in production mode. It creates a pair of deploy keys for each private "
-        "repository found in the manifest, lists the public keys for adding to the repositories.",
-    )
-
-    parser.add_argument(
-        "--debug", action="store_true", help="Set default environment mode to debug "
-    )
-    parser.add_argument(
-        "--prod",
-        action="store_true",
-        help="Set default environment mode to production ",
-    )
-    parser.add_argument(
-        "--from-prod",
-        action="store_true",
-        help="Restore backup from production server. Use with --restore. "
-        "it needs the option 'prod_server': 'user@vps-alias' in the manifest"
-        "WARNING: This options may download an exact backup please deactivate"
-        "before use."
-        "You can deactivate a database running odoo with those parameters"
-        "odoo deactivate -d database",
-    )
-    parser.add_argument(
-        "--no-repos",
-        action="store_true",
-        help="Does not clone or pull repos when doing -i (install)",
     )
 
     parser.add_argument(
@@ -147,177 +145,118 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     )
 
     parser.add_argument(
-        "-Q",
-        action="store",
-        metavar="repo",
-        nargs=1,
-        dest="quality_assurance",
-        help="Run the tests. Required parameters: -m <module name>. "
-        "Optional parameters: -d <database>; if omitted, the default test database will be used, "
-        "which is [client]_test. NOTE: The database used for testing must be created with demo "
-        "data and must have admin/admin credentials.",
-    )
-
-    parser.add_argument(
         "-f",
         action="append",
         dest="backup_file",
         help="Filename to restore. Used with --restore. To get the name of "
-        "this file issue a --backup-list command."
         "If ommited the newest file will be restored",
     )
 
     parser.add_argument(
-        "-H",
-        "--server-help",
+        "--deploy-keys",
         action="store_true",
-        help="Show odoo server help, it shows the help from the odoo image"
-        "declared in the cliente manifest",
+        help="Available only in production mode. It creates a pair of deploy keys for each private "
+        "repository found in the manifest, lists the public keys for adding to the repositories.",
     )
 
     parser.add_argument(
-        "-V", "--version", action="store_true", help="Show version number and exit."
+        "--no-deactivate",
+        action="store_true",
+        help="No Deactivate database before restore. WARNING this command is "
+        "deprecated",
     )
 
     parser.add_argument(
-        "--nginx",
+        "--debug",
         action="store_true",
-        help="Add nginx to installation: Used with -i creates nginx dir "
-        "with config file. "
-        "Used with -r starts an nginx container linked to odoo."
-        "Used with -s stops nginx container. "
-        "If you want to add certificates review nginx.conf file located "
-        "in /odoo_ar/nginx/conf NOTE: This option will be deprecated in the"
-        "near future",
+        help="Set default environment mode to debug. This parameter is persistent.",
     )
 
     parser.add_argument(
-        "--backup-list",
+        "--prod",
         action="store_true",
-        help="List all backup files available for restore",
+        help="Set default environment mode to production. This parameter is persistent.",
     )
 
     parser.add_argument(
         "--restore",
         action="store_true",
-        help="Restores a backup. it uses last backup and restores to default "
-        "database. You can change the backup file to restore with -f "
-        "option and change database name -d option",
+        help="Restore a backup into the client database. By default restores "
+        "the newest .zip file found in backup_dir into the default database "
+        "([client]_prod). Use -f to specify a particular backup file and "
+        "-d to target a different database. The restored database is "
+        "deactivated automatically unless --no-deactivate is passed.",
     )
 
     parser.add_argument(
         "--create-test-db",
         action="store_true",
-        help="Create database with demo data.",
+        help="Create a test database with all project modules.",
     )
 
     parser.add_argument(
-        "--force-create",
+        "--test-all",
         action="store_true",
-        help="Force database creation.",
+        help="Run all module tests with coverage and enforce the coverage threshold.",
     )
+
     parser.add_argument(
         "--base-dir",
-        action="append",
         dest="base_dir",
-        help="Set default base-dir This option is persistent.",
+        help="Set the root directory where all client environments are stored "
+        "(e.g. /odoo_ar/). Saved persistently in the config file; subsequent "
+        "commands will use this value as the default until changed.",
     )
 
-    args = parser.parse_args()
-    if args.debug:
-        OeConfig().save_environment("debug")
+    return parser.parse_args()
 
-    if args.prod:
-        OeConfig().save_environment("prod")
 
-    if args.base_dir:
-        OeConfig().save_base_dir(args.base_dir[0])
+def get_client():
+    conf = OeConfig()
+    client = conf.get_client()
+    if not client:
+        msg.err("No client configured. Use -c <client>.")
+    return client
 
-    debug_option = OeConfig().get_environment() == "debug"
-    options = {
-        "verbose": args.verbose,
-        "debug": debug_option,
-        "no-repos": args.no_repos,
-        "nginx": args.nginx,
-        "backup_file": args.backup_file,
-        "force-create": args.force_create,
-    }
-    commands = []
-    client_name = get_param(args, "client").strip()
 
-    if args.server_help:
-        commands += OdooEnv(options).server_help(client_name)
-
-    if args.backup_list:
-        commands += OdooEnv(options).backup_list(client_name)
-
-    if args.restore:
-        database = get_param(args, "database")
-        backup_file = get_param(args, "backup_file")
-        no_deactivate = args.no_deactivate
-        from_server = args.from_prod
-        commands += OdooEnv(options).restore(
-            client_name, database, backup_file, no_deactivate, from_server
-        )
-
-    if args.install:
-        commands += OdooEnv(options).install(client_name)
-
-    if args.write_config:
-        commands += OdooEnv(options).write_config(client_name)
-
-    if args.pull_images:
-        commands += OdooEnv(options).pull_images(client_name)
-
-    if args.stop_env:
-        commands += OdooEnv(options).stop_environment(client_name)
-
-    if args.run_env:
-        commands += OdooEnv(options).run_environment(client_name)
-
-    if args.stop_cli:
-        commands += OdooEnv(options).stop_client(client_name)
-
-    if args.run_cli:
-        commands += OdooEnv(options).run_client(client_name)
-
-    if args.update:
-        database = get_param(args, "database")
-        modules = get_param(args, "module")
-        commands += OdooEnv(options).update(client_name, database, modules)
-
-    if args.quality_assurance:
-        database = f"{get_param(args, 'client')}_test"
-        commands += OdooEnv(options).qa(
-            client_name, database, args.quality_assurance[0]
-        )
+def main():
+    args = parse_args()
 
     if args.version:
-        Msg().inf(f"oe version {__version__}")
+        # Nota: a futuro esto podria modelarse como un Command propio.
+        msg.inf(f"oe version {__version__}")
         sys.exit()
 
-    if args.create_test_db:
-        Msg().inf("Creating test database with demo data.")
-        create_database(OdooEnv(options=options), client_name)
-        sys.exit()
+    try:
+        conf = OeConfig(args)
+        conf.persist_config()
+        conf.check_version()
 
-    if args.deploy_keys:
-        if options["debug"]:
-            Msg().err("Must be in prod mode in order to create deploy keys.")
-        deploy_keys(OdooEnv(options=options), client_name)
+        if (args.base_dir or args.org) and not any(
+            [
+                args.install,
+                args.run_env,
+                args.pull_images,
+                args.write_config,
+                args.run_cli,
+                args.stop_env,
+                args.stop_cli,
+                args.update,
+                args.deploy_keys,
+                args.modules_to_test,
+                args.server_help,
+                args.restore,
+                args.create_test_db,
+                args.test_all,
+            ]
+        ):
+            return
 
-    conf = OeConfig()
-
-    # Verificar la version del script en pypi
-    conf.check_version()
-
-    # #####################################################################
-    # ejecutar comandos
-    # ######################################################################
-    for command in commands:
-        if command and command.check():
-            Msg().inf(command.usr_msg)
-            command.execute()
+        oe = OdooEnv(args)
+        commands = oe.build_commands()
+        oe.execute(commands)
+    except OeError:
+        sys.exit(1)
 
 
 if __name__ == "__main__":

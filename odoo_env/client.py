@@ -1,90 +1,139 @@
 import ast
+import difflib
 import os
+import subprocess
+import tempfile
+from pathlib import Path
 
 from odoo_env.config import OeConfig
-from odoo_env.constants import BASE_DIR
-from odoo_env.images import Image, Image2
-from odoo_env.messages import Msg
-from odoo_env.repos import Repo, Repo2
+from odoo_env.images import DockerImage
+from odoo_env.messages import msg
+from odoo_env.repos import GitRepo
 
-msg = Msg()
+# Claves especificas de odoo-env (las que oe lee del manifiesto).
+# Si se escriben mal, oe falla en silencio usando el default.
+ODOO_ENV_KEYS = frozenset(
+    {
+        "config",
+        "config-local",
+        "git-repos",
+        "docker-images",
+        "odoo-license",
+        "env-ver",
+        "port",
+        "longpolling_port",
+        "external_dependencies",
+        "prod_server",
+    }
+)
+
+# Claves estandar de un __manifest__.py de Odoo (el manifiesto es doble:
+# vale como modulo Odoo y como manifiesto odoo-env). Se aceptan para no
+# marcar como invalidas claves legitimas de Odoo.
+ODOO_STANDARD_KEYS = frozenset(
+    {
+        "name",
+        "version",
+        "description",
+        "author",
+        "website",
+        "license",
+        "category",
+        "depends",
+        "data",
+        "demo",
+        "demo_xml",
+        "init_xml",
+        "update_xml",
+        "test",
+        "css",
+        "js",
+        "qweb",
+        "images",
+        "application",
+        "auto_install",
+        "installable",
+        "summary",
+        "sequence",
+        "bootstrap",
+        "web",
+        "web_icon",
+        "pre_init_hook",
+        "post_init_hook",
+        "post_load",
+        "uninstall_hook",
+        "assets",
+        "cloc_exclude",
+        "live_test_url",
+        "maintainer",
+        "maintainers",
+        "contributors",
+        "support",
+        "price",
+        "currency",
+        "countries",
+        "complexity",
+        "icon",
+        "active",
+        "excludes",
+    }
+)
+
+# Union de todas las claves validas que puede tener el manifiesto.
+VALID_MANIFEST_KEYS = ODOO_ENV_KEYS | ODOO_STANDARD_KEYS
 
 
 class Client:
-    """Clase cliente"""
+    """Esta clase representa a un cliente, con su manifiesto, sus imagenes y repositorios."""
 
-    def __init__(self, odooenv, name):
-        """Busca el cliente en la estructura de directorios, pero si no lo
-        encuentra pide un directorio donde esta el repo que lo contiene
-        """
-        # parent es siempre un objeto OdooEnv
-        self._parent = odooenv
-        self._name = name
-        self._license = False
+    def __init__(self, args, name=None):
+        self._name = name or OeConfig().client
+        self._args = args
         self._images = []
         self._repos = []
-        self._port = False
-        self._version = ""
 
-        # si estamos en test accedo a data
-        if name[0:5] in ["test_", "test2"]:
-            path = os.path.dirname(os.path.abspath(__file__))
-            path = path.replace("odoo_env", "odoo_env/data")
+        # Caso especial para test
+        if self._name.startswith(("test_", "test2")):
+            root = Path(__file__).resolve().parent
+            path = root / "data"
             manifest = self.get_manifest(path)
-            OeConfig().save_client_path(name, path)
-        else:
-            manifest = self.get_manifest(BASE_DIR)
-        if not manifest:
-            msg.inf(
-                f"Can not find client {self._name} in this host installation.\n"
-                "We will try in current dir"
-            )
-
-            # mantener compatibilidad con python2
-            input("Hit Enter to continue or CTRL C to exit")
-            manifest, _ = self.get_manifest_from_struct(os.getcwd())
+            OeConfig().save_client_path(self.name, str(path))
+        elif isinstance(self._args.install, str):
+            # Primera instalación desde URL: clonar repo temporalmente,
+            # extraer el nombre del proyecto del manifiesto y usarlo
+            # como el nuevo cliente default.
+            url = self._resolve_install_url(self._args.install)
+            manifest = self._discover_from_url(url)[0]
             if not manifest:
-                msg.err("Can not find client %s in current dir" % name)
+                msg.err(
+                    f"No valid __manifest__.py found in repository "
+                    f"'{self._args.install}'"
+                )
+            # Cambiar al nombre que declara el manifiesto
+            new_name = str(manifest.get("name", "")).lower().split()[0]
+            if new_name:
+                if new_name != self._name:
+                    self._name = new_name
+                OeConfig().save_client(self._name)
+        else:
+            manifest = self.get_manifest()
 
-            msg.inf("Client found!")
-            msg.inf(
-                "Name %s\nversion %s\n"
-                % (manifest.get("name"), manifest.get("version"))
-            )
+        if not manifest:
+            msg.err(f"No manifest found for client '{self._name}'")
 
         self.check_common(manifest)
 
-        # verificar version del manifiesto
-        ver = manifest.get("env-ver", "1")
-        if ver == "1":
-            self.check_v1(manifest)
-            msg.warn("The manifest syntax is deprecated, please upgrade to env-ver 2")
-            msg.warn("see documentation at https://jobiols.github.io/odoo-env/")
-            msg.warn(" ")
-        elif ver == "2":
-            self.check_v2(manifest)
-        else:
+        # Validar sintaxis env-ver (solo versión 2)
+        ver = manifest.get("env-ver", "2")
+
+        if ver != "2":
             msg.err(
-                "Not supported syntax version in manifest, please set env-ver to "
-                "1 or 2"
+                f"Manifest syntax '{ver}' is not supported.\n"
+                f"Only env-ver=2 is allowed."
             )
 
-    def check_v1(self, manifest):
-        # Chequar que el manifiesto tenga bien las cosas
-        if not manifest.get("docker"):
-            msg.err("No images in manifest %s" % self.name)
-
-        if not manifest.get("repos"):
-            msg.err("No repos in manifest %s" % self.name)
-
-        # Crear imagenes y repos
-        self._repos = []
-        for rep in manifest.get("repos"):
-            self._repos.append(Repo(rep))
-
-        self._images = []
-        for img in manifest.get("docker"):
-            self._images.append(Image(img))
+        # Procesar sintaxis v2
+        self.check_v2(manifest)
 
     def check_v2(self, manifest):
         # Chequar que el manifiesto tenga bien las cosas
@@ -102,91 +151,277 @@ class Client:
 
         # Crear imagenes y repos
         for rep in manifest.get("git-repos"):
-            self._repos.append(Repo2(rep, self._version, self._parent._options))
+            self._repos.append(GitRepo(rep, self._version))
 
         for img in manifest.get("docker-images"):
-            self._images.append(Image2(img, self._parent.debug))
+            self._images.append(DockerImage(img, OeConfig().debug))
 
         # levantar el nombre del user server
         self._prod_server = manifest.get("prod_server", "ubuntu")
 
-    def check_common(self, manifest):
-        self._port = manifest.get("port", 8069)
-        self._longpolling_port = manifest.get("longpolling_port", 8072)
-        self._external_dependencies = manifest.get("external_dependencies", {})
-        ver = manifest.get("version")
-        if not ver:
-            msg.err(f"No version tag in manifest {self.name}")
+    @staticmethod
+    def parse_odoo_version(ver: str) -> str:
+        """
+        Recibe algo como '17.0.1.0.0'
+        Devuelve '17.0' validando el formato.
+        """
+        parts = ver.split(".")
 
-        _x = ver.find(".") + 1
-        _y = ver[_x:].find(".") + _x
-        self._version = ver[0:_y]
-
-        name = manifest.get("name").lower()
-        if not self._name == name.split()[0]:
+        # Odoo standard version expects 5 numeric segments
+        if len(parts) != 5:
             msg.err(
-                f"You intend to install client {self._name} but in manifest, "
-                f"the name is {manifest.get('name')}"
+                f"Invalid version format '{ver}'. "
+                "Expected: MAJOR.MINOR.X.Y.Z  (example: 17.0.1.0.0)"
             )
 
-        # Tomar los datos para odoo.conf
-        if self._parent.debug:
+        major, minor, _, _, _ = parts
+
+        # All segments must be numeric
+        if not all(p.isdigit() for p in parts):
+            msg.err(f"Invalid version '{ver}', all segments must be numeric")
+
+        # Odoo core rule: MINOR must always be '0'
+        if minor != "0":
+            msg.err(f"Odoo minor version must be '0', got '{minor}' in '{ver}'")
+
+        return f"{major}.{minor}"
+
+    @staticmethod
+    def validate_manifest_keys(manifest, name):
+        """
+        Verifica que todas las claves del manifiesto sean validas (claves
+        odoo-env o claves estandar de Odoo). Aborta con una sugerencia si
+        encuentra una clave desconocida; asi un typo como 'config_local'
+        no falla en silencio usando el default.
+        """
+        candidates = sorted(VALID_MANIFEST_KEYS)
+        errors = []
+        for key in manifest:
+            if key in VALID_MANIFEST_KEYS:
+                continue
+            match = difflib.get_close_matches(key, candidates, n=1, cutoff=0.6)
+            if match:
+                errors.append(f"  '{key}' is not valid, did you mean '{match[0]}'?")
+            else:
+                errors.append(f"  '{key}' is not a recognized manifest key")
+
+        if errors:
+            msg.err(f"Invalid keyword(s) in manifest '{name}':\n" + "\n".join(errors))
+
+    def check_common(self, manifest):
+        # Validar que no haya claves mal escritas (typos que fallan en silencio)
+        self.validate_manifest_keys(manifest, self._name)
+
+        # Puertos
+        self._port = manifest.get("port", 8069)
+        self._longpolling_port = manifest.get("longpolling_port", 8072)
+
+        # Dependencias externas
+        self._external_dependencies = manifest.get("external_dependencies", {})
+
+        # Versión (obligatoria)
+        ver = manifest.get("version")
+        if not ver:
+            msg.err(f"No version tag in manifest '{self.name}'")
+
+        # Validar y extraer versión Odoo estándar
+        self._version = self.parse_odoo_version(ver)
+
+        # Validar nombre del cliente
+        name = manifest.get("name", "").lower()
+        if not name:
+            msg.err(f"No name in manifest for client '{self._name}'")
+
+        manifest_name = name.split()[0]
+        if self._name != manifest_name:
+            msg.err(
+                f"You intend to install client '{self._name}' but manifest "
+                f"name is '{manifest.get('name')}'"
+            )
+
+        # Cargar configuración para odoo.conf
+        if OeConfig().debug:
             self.config = manifest.get("config-local", [])
         else:
             self.config = manifest.get("config", [])
 
-    def get_manifest_from_struct(self, path):
-        """leer un manifest que esta dentro de una estructura de directorios
-        revisar toda la estructura hasta encontrar un manifest.
-        devolver el manifest y el path
+    @staticmethod
+    def _discover_manifest_from_path(
+        path: Path,
+    ) -> tuple[dict[str, object] | None, str | None]:
         """
-        for root, _, files in os.walk(path):
-            set_files = {"__openerp__.py", "__manifest__.py"}.intersection(files)
-            for file in list(set_files):
-                manifest_file = "%s/%s" % (root, file)
-                manifest = self.load_manifest(manifest_file)
-                name = manifest.get("name", False)
-                if name and name.lower() == self._name:
-                    return manifest, root
-        return False, False
+        Recorre recursivamente un directorio buscando __manifest__.py
+        sin validar el nombre del cliente.
+        Devuelve (manifest_dict, path) o (None, None).
+        """
+        if not path.exists():
+            return None, None
 
-    def get_manifest(self, path):
+        for root, _, files in os.walk(path):
+            if "__manifest__.py" not in files:
+                continue
+
+            manifest_file = Path(root) / "__manifest__.py"
+            manifest = Client._load_manifest(manifest_file)
+
+            if (
+                isinstance(manifest, dict)
+                and manifest.get("name")
+                and manifest.get("env-ver")
+            ):
+                return manifest, str(manifest_file.parent)
+
+        return None, None
+
+    @staticmethod
+    def _is_full_git_url(value: str) -> bool:
+        """True si el valor ya es una URL git completa (git@ o https://)."""
+        return isinstance(value, str) and value.startswith(("git@", "https://"))
+
+    @staticmethod
+    def build_repo_url(client_name: str) -> str:
+        """Arma la URL canonica del repo a partir del nombre del cliente.
+
+        Patron fijo: git@github.com:<organization>/cl-<client>.git
+        El prefijo 'cl-' es fijo. La organizacion se resuelve via OeConfig
+        (--org / config / default 'quilsoft-org'). El nombre se valida
+        (sin espacios ni '/') y se normaliza a minusculas.
+        """
+        name = client_name.strip() if isinstance(client_name, str) else ""
+        if not name or " " in name or "/" in name:
+            msg.err(
+                f"Invalid client name '{client_name}'. It must be a simple "
+                "name without spaces or '/'."
+            )
+        name = name.lower()
+        org = OeConfig().get_organization()
+        return f"git@github.com:{org}/cl-{name}.git"
+
+    def _resolve_install_url(self, value: str) -> str:
+        """Resuelve el valor de -i a una URL git.
+
+        Si ya es una URL completa la devuelve tal cual; si es un nombre de
+        cliente arma la URL canonica.
+        """
+        if self._is_full_git_url(value):
+            return value
+        return self.build_repo_url(value)
+
+    def _discover_from_url(
+        self, url: str
+    ) -> tuple[dict[str, object] | None, str | None]:
+        """
+        Clona un repositorio temporalmente y extrae el manifiesto
+        sin validar el nombre del cliente.
+        Devuelve (manifest_dict, manifest_dir) o (None, None).
+        """
+        if not (url.startswith("git@") or url.startswith("https://")):
+            msg.err(f"Invalid git URL '{url}'. Must start with 'git@' or 'https://'")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            subprocess.run(["git", "clone", "--depth", "1", url, tmpdir], check=True)
+            return self._discover_manifest_from_path(Path(tmpdir))
+
+    def get_manifest_from_url(self) -> dict[str, object] | None:
+        if not isinstance(self._args.install, str) or not self._args.install:
+            msg.err(f"Invalid install argument '{self._args.install}'.")
+
+        url = self._resolve_install_url(self._args.install)
+        if not self._is_full_git_url(url):
+            msg.err(f"Invalid git URL '{url}'. Must start with 'git@' or 'https://'")
+
+        manifest, manifest_dir = self._discover_from_url(url)
+        if manifest and manifest_dir:
+            OeConfig().save_client_path(self._name, manifest_dir)
+        return manifest
+
+    def get_manifest_from_struct(
+        self, path: Path
+    ) -> tuple[dict[str, object] | None, str | None]:
+        """
+        Recorrer recursivamente un directorio buscando un __manifest__.py.
+        Devuelve (manifest_dict, path) o (None, None)
+        """
+
+        if not path.exists():
+            return None, None
+
+        for root, _, files in os.walk(path):
+            if "__manifest__.py" not in files:
+                continue
+
+            manifest_file = Path(root) / "__manifest__.py"
+            manifest = self._load_manifest(manifest_file)
+
+            # Verificar que sea un dict válido
+            if not isinstance(manifest, dict):
+                continue
+
+            name = manifest.get("name")
+
+            # Validar nombre
+            if isinstance(name, str) and name.lower() != self._name:
+                msg.err(f"project name {name} does not match client name {self._name}")
+
+            return manifest, str(manifest_file.parent)
+
+        return None, None
+
+    def get_manifest(self, path=None):
         """
         :param path: path base para buscar el cliente
         :return: manifiesto del cliente
         """
+        # Si no me pasan un path, busco en el directorio actual o base
+        if path is None:
+            path = Path.cwd()
+
         # traer el path al cliente de la configuracion
         client_path = OeConfig().get_client_path(self._name)
-        # si lo encuentro traigo el manifest rapidamente con el path
-        if client_path:
-            manifest, _ = self.get_manifest_from_struct(client_path)
-            return manifest
+        # No esta en la configuración, verificar si me lo pasan como repositorio
+        if not client_path:
+            if isinstance(self._args.install, str):
+                manifest = self.get_manifest_from_url()
+                if manifest:
+                    return manifest
+
+        else:
+            manifest, _ = self.get_manifest_from_struct(Path(client_path))
+            if manifest:
+                return manifest
 
         # no lo encuentro, busco en toda la estructura de directorios
         manifest, path = self.get_manifest_from_struct(path)
         if manifest:
             # si lo encuentro lo guardo en el archivo para la proxima
             OeConfig().save_client_path(self._name, path)
-        # devuelvo el manifiesto o false si no esta
-        return manifest
+        # devuelvo el manifiesto o None si no esta
+        return manifest if manifest else None
 
     @staticmethod
-    def load_manifest(filename):
+    def _load_manifest(filename: "str | Path") -> dict[str, object]:
         """
         Loads a manifest
         :param filename: absolute filename to manifest
         :return: manifest in dictionary format
         """
-        manifest = ""
-        with open(filename) as _f:
-            for line in _f:
-                if line.strip() and line.strip()[0] != "#":
-                    manifest += line
-            try:
-                ret = ast.literal_eval(manifest)
-            except Exception:
-                return {"name": "none"}
-            return ret
+        path = Path(filename)
+        if not path.is_file():
+            return {"name": "none"}
+
+        try:
+            # Leer todas las líneas no vacías ni comentadas
+            text = "\n".join(
+                line
+                for line in path.read_text(encoding="utf-8").splitlines()
+                if line.strip() and not line.strip().startswith("#")
+            )
+
+            # Convertir a dict seguro
+            return ast.literal_eval(text)
+
+        except (OSError, ValueError, SyntaxError):
+            return {"name": "none"}
 
     def image(self, image_name):
         for img_dict in self._images:
@@ -206,6 +441,13 @@ class Client:
             if image.short_name == value:
                 return image
         return False
+
+    def get_image_required(self, value):
+        """Como get_image pero aborta si la imagen no existe en el proyecto."""
+        image = self.get_image(value)
+        if not image:
+            msg.err(f"There is no '{value}' image on this project")
+        return image
 
     @property
     def name(self):
@@ -241,17 +483,18 @@ class Client:
 
     @property
     def version_dir(self):
-        """/odoo_ar/odoo-13.0/
-        /odoo_ar/odoo-13.0e/
+        """
+        /odoo_ar/odoo-18.0/
+        /odoo_ar/odoo-18.0e/
         """
         lic = "e" if self._license == "EE" else ""
-        return "%sodoo-%s%s/" % (BASE_DIR, self._version, lic)
+        return f"{OeConfig().base_dir}odoo-{self._version}{lic}/"
 
     @property
     def server_version_dir(self):
         """/odoo_ar/odoo-13.0/
         /odoo_ar/odoo-13.0e/
-        Esta funcion no tiene que tomar BASE_DIR porque en el servidor es siempre
+        Esta funcion no tiene que tomar OeConfig().base_dir porque en el servidor es siempre
         /odoo_ar/
         """
         lic = "e" if self._license == "EE" else ""
@@ -259,52 +502,67 @@ class Client:
 
     @property
     def base_dir(self):
-        """/odoo_ar/odoo-13.0/clientname/
-        /odoo_ar/odoo-13.0e/clientname/
+        """
+        Ejemplo: /odoo_ar/odoo-18.0/clientname/
+
         """
         return f"{self.version_dir}{self._name}/"
 
     @property
     def server_base_dir(self):
-        """/odoo_ar/odoo-13.0/clientname/
-        /odoo_ar/odoo-13.0e/clientname/
-        """
+        """Ejemplo: /odoo_ar/odoo-13.0/clientname/"""
         return f"{self.server_version_dir}{self._name}/"
 
     @property
     def backup_dir(self):
-        """/odoo_ar/odoo-13.0/clientname/backup_dir/"""
+        """Ejemplo: /odoo_ar/odoo-13.0/clientname/backup_dir/"""
         return self.base_dir + "backup_dir/"
 
     @property
     def server_backup_dir(self):
-        """/odoo_ar/odoo-13.0/clientname/backup_dir/"""
+        """Ejemplo: /odoo_ar/odoo-13.0/clientname/backup_dir/"""
         return f"{self.server_base_dir}backup_dir/"
 
     @property
     def sources_dir(self):
-        """/odoo_ar/odoo-13.0/clientname/sources/"""
+        """Ejemplo: /odoo_ar/odoo-13.0/clientname/sources/"""
         return self.base_dir + "sources/"
 
     @property
+    def custom_modules_dir(self):
+        """Donde viven los modulos customizados del cliente (no el repo cl-).
+
+        Bajo sources_dir cuelgan varios repos: cl-<cliente> (el manifiesto
+        extendido/env) y <cliente> (a secas) con los modulos customizados
+        que se instalan/testean.
+
+        Ejemplo: /odoo_ar/odoo-13.0/clientname/sources/clientname/
+        """
+        return f"{self.sources_dir}{self._name}/"
+
+    @property
     def psql_dir(self):
-        """/odoo_ar/odoo-13.0/clientname/postgresql/"""
+        """Ejemplo: /odoo_ar/odoo-13.0/clientname/postgresql/"""
         return self.base_dir + "postgresql/"
 
     @property
     def config_file(self):
-        """/odoo_ar/odoo-13.0/clientname/config/odoo.conf"""
+        """Ejemplo: /odoo_ar/odoo-13.0/clientname/config/odoo.conf"""
         return self.base_dir + "config/odoo.conf"
 
     @property
-    def nginx_dir(self):
-        """/odoo_ar/nginx/"""
-        return "%snginx/" % BASE_DIR
-
-    @property
     def debug(self):
-        return self._parent.debug
+        # Sigue el environment PERSISTIDO (oe_config.yaml), no el flag
+        # transitorio --debug. --debug solo persiste environment=debug; una
+        # vez seteado, comandos como `oe -w` (sin --debug) deben seguir en
+        # modo debug. Consistente con OdooEnv.debug y con el resto de esta
+        # clase (lineas que ya usan OeConfig().debug).
+        return OeConfig().debug
 
     @property
     def prod_server(self):
         return self._prod_server
+
+    @property
+    def database_default_name(self):
+        return f"{self.name}_prod"

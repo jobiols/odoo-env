@@ -1,158 +1,238 @@
+import atexit
 import json
 import os
+import threading
+import urllib.request
 from datetime import datetime
+from pathlib import Path
+from typing import Any
 
-import tornado
-import tornado.httpclient
 import yaml
 
 from odoo_env.__init__ import __version__
-from odoo_env.messages import Msg
-
-USER_CONFIG_PATH = os.path.expanduser("~") + "/.config/oe/"
-USER_CONFIG_FILE = USER_CONFIG_PATH + "oe_config.yaml"
-USER_CONFIG_FILE_TEST = USER_CONFIG_PATH + "oe_config_test.yaml"
-
-oe_config = False
-
-_instances = {}
+from odoo_env.messages import msg
+from odoo_env.singleton import SingletonMeta
 
 
-class Singleton:
-    def __new__(cls, *args, **kw):
-        if cls not in _instances:
-            instance = super().__new__(cls)
-            _instances[cls] = instance
-        return _instances[cls]
+class OeConfig(metaclass=SingletonMeta):
 
+    def __init__(self, args=None):
+        # en esta variable guardo toda la data del archivo oe_config.yaml.
+        # args es opcional: por ser singleton, __init__ solo corre en la primera
+        # construccion (con args reales); las llamadas posteriores OeConfig()
+        # devuelven la instancia cacheada sin re-ejecutar __init__.
+        # args es un argparse.Namespace (atributos dinamicos) -> Any.
+        self._args: Any = args
+        self._config_data: dict[str, Any] = self._get_config_data()
 
-class OeConfig(Singleton):
+    def persist_config(self):
+        """Salva en la configuracion los parametros que se declararon como persistentes"""
+
+        if self._args.debug:
+            self.save_environment("debug")
+
+        if self._args.prod:
+            self.save_environment("prod")
+
+        if self._args.client:
+            self.save_client(self.client)
+
+        if self._args.base_dir:
+            self.save_base_dir(self._args.base_dir)
+
+        if getattr(self._args, "org", None):
+            self.save_organization(self._args.org)
+
+    @property
+    def client(self):
+        """Traer el nombre del cliente"""
+        return self.get_client()
+
+    @property
+    def config_data(self):
+        return self._config_data
+
+    @property
+    def base_dir(self):
+        return self._config_data.get("base_dir", "/odoo_ar/")
+
+    @property
+    def organization(self):
+        return self.get_organization()
+
+    @property
+    def debug(self):
+        return self._config_data.get("environment") == "debug"
+
+    @property
+    def prod(self):
+        return self._config_data.get("environment") == "prod"
+
     @staticmethod
-    def get_config_data():
-        template = {"clients": []}
-        # obtener el archivo con los datos de clientes
+    def _user_config_path():
+        """Path al archivo de configuración del usuario"""
+        return f"{os.path.expanduser('~')}/.config/oe/"
+
+    def _user_config_file(self):
+        """Archivo de configuración del usuario"""
+        return f"{self._user_config_path()}oe_config.yaml"
+
+    def _get_config_data(self) -> dict[str, Any]:
+        """Trae todo el oe_config.yaml como un diccionario"""
+        template: dict[str, Any] = {"clients": []}
+
         try:
-            with open(USER_CONFIG_FILE) as config:
-                ret = yaml.safe_load(config)
-        except Exception:
+            with open(self._user_config_file(), encoding="utf-8") as config:
+                data = yaml.safe_load(config)
+        except FileNotFoundError:
             return template
-        return ret if ret else template
+        except yaml.YAMLError as e:
+            msg.err(f"Invalid YAML in {self._user_config_file()}: {e}")
 
-    def save_config_data(self, config):
-        """ Salvar el conjunto de paths a los clientes
-        """ ""
+        # Si está vacío, safe_load devuelve None
+        return data or template
+
+    def _save_config_data(self):
+        """Salvar el conjunto de paths a los clientes"""
         # chequear si esta el archivo y sino crear el path
-        if not os.path.exists(USER_CONFIG_PATH):
-            os.makedirs(USER_CONFIG_PATH)
+        if not os.path.exists(self._user_config_path()):
+            os.makedirs(self._user_config_path())
 
-        with open(USER_CONFIG_FILE, "w") as config_file:
-            yaml.dump(config, config_file, default_flow_style=False, allow_unicode=True)
-
-    def get_base_dir(self):
-        config = self.get_config_data()
-        return config.get("base_dir", "/odoo_ar/")
+        with open(self._user_config_file(), "w", encoding="utf-8") as config_file:
+            yaml.dump(
+                self._config_data,
+                config_file,
+                default_flow_style=False,
+                allow_unicode=True,
+            )
 
     def get_client_path(self, client_name):
-        """Traer el path de un cliente"""
-        config = self.get_config_data()
+        """Traer el path de un cliente desde la config; None si no esta."""
 
-        clients = config.get("clients", False)
+        # Traer la lista de clientes del archivo de configuracion
+        clients = self._config_data.get("clients", [])
 
-        for client in clients:
-            if client.get(client_name):
-                return client.get(client_name)
-        return False
+        path = next((d[client_name] for d in clients if client_name in d), None)
+        return Path(path) if path else None
 
     def save_client_path(self, client_name, path):
-        """Salvar el path al cliente, una sola vez"""
-        if not self.get_client_path(client_name):
-            # me traigo la configuracion
-            config = self.get_config_data()
-            # obtengo lista de clientes
-            client_list = config["clients"]
-            # agrego el cliente
-            client_list.append({client_name: path})
-            # salvo la configuracion
-            self.save_config_data(config)
+        """Salvar el path al cliente solo si no esta, sino no hago nada"""
+
+        if self.get_client_path(client_name):
+            return
+
+        # obtengo lista de clientes
+        client_list = self._config_data.setdefault("clients", [])
+        # agrego el cliente
+        client_list.append({client_name: path})
+        # salvo la configuracion
+        self._save_config_data()
 
     def get_client(self):
-        config = self.get_config_data()
-        return config.get("client", False)
+        client_name = self._config_data.get("client")
+        if client_name is None:
+            msg.err("No default client set. Please specify a client using --client.")
+        if not isinstance(client_name, str):
+            msg.err("Invalid client name in configuration. must be a string.")
+        client_name = client_name.strip().lower()
+        if " " in client_name or "/" in client_name:
+            msg.err("Invalid client name in configuration. must be a simple name.")
+        return client_name
 
     def save_client(self, client):
-        config = self.get_config_data()
-        config["client"] = client
-        self.save_config_data(config)
+        if self._config_data.get("client") == client:
+            return
 
-    def get_environment(self):
-        """Traer el ambiente con prod por defecto"""
-        config = self.get_config_data()
-        return config.get("environment", "prod")
+        self._config_data["client"] = client
+        self._save_config_data()
 
     def save_environment(self, environment):
         """Salvar el ambiente"""
-        config = self.get_config_data()
-        config["environment"] = environment
-        self.save_config_data(config)
+        if self._config_data.get("environment") == environment:
+            return
+
+        self._config_data["environment"] = environment
+        self._save_config_data()
+
+    def get_organization(self):
+        """Traer la organizacion de GitHub usada para armar las URLs canonicas.
+
+        Si la clave no esta en el config, persiste y devuelve el default
+        'quilsoft-org'.
+        """
+        org = self._config_data.get("organization")
+        if org:
+            return org
+        self._config_data["organization"] = "quilsoft-org"
+        self._save_config_data()
+        return "quilsoft-org"
+
+    def save_organization(self, value):
+        """Salvar la organizacion (no-op si no cambia)."""
+        if self._config_data.get("organization") == value:
+            return
+
+        self._config_data["organization"] = value
+        self._save_config_data()
 
     def save_base_dir(self, value):
         """Salvar el base dir"""
-        config = self.get_config_data()
         # Asegurar que termina con /
         value = os.path.join(value, "")
-        config["base_dir"] = value
-        self.save_config_data(config)
+        if self._config_data.get("base_dir") == value:
+            return
+
+        self._config_data["base_dir"] = value
+        self._save_config_data()
+
+    def get_environment(self):
+        """Traer el ambiente con prod por defecto"""
+        return self._config_data.get("environment", "prod")
 
     def check_version(self):
-        """Chequea si la version de odoo-env es la última"""
+        """Chequea si la version de odoo-env es la última y si no avisa al usuario"""
 
-        config = self.get_config_data()
         dt_today = datetime.today()
 
-        # veo las fechas, si no tiene fecha es que esta recien instalado
-        # me guardo la fecha y termino
-        last_check = config.get("last_version_check", False)
-        if not last_check:
-            config["last_version_check"] = dt_today.strftime("%Y-%m-%d")
-            self.save_config_data(config)
-            return True
+        last_check = self._config_data.get("last_version_check")
+        if last_check is None:
+            self._config_data["last_version_check"] = dt_today.strftime("%Y-%m-%d")
+            self._save_config_data()
+            return
 
-        # tiene fecha, la paso a datetime
         dt_last = datetime.strptime(last_check, "%Y-%m-%d")
 
-        # verifico la version cada 10 dias
-        if abs((dt_today - dt_last).days) > 10:
-            # guardo la fecha del chequeo
-            config["last_version_check"] = dt_today.strftime("%Y-%m-%d")
-            self.save_config_data(config)
+        if abs((dt_today - dt_last).days) > 1:
+            self._config_data["last_version_check"] = dt_today.strftime("%Y-%m-%d")
+            self._save_config_data()
+            thread = threading.Thread(target=self._fetch_pypi_version, daemon=True)
+            thread.start()
+            atexit.register(thread.join, 5)
 
-            http = tornado.httpclient.HTTPClient()
-            try:
-                response = http.fetch(
-                    "https://pypi.python.org/pypi/odoo-env/json",
-                    connect_timeout=5,
-                    request_timeout=5,
+    def _fetch_pypi_version(self):
+        try:
+            # nosec B310 - URL es un literal https:// constante, sin input
+            # externo; no hay forma de inyectar file:// u otro esquema.
+            with urllib.request.urlopen(  # nosec B310
+                "https://pypi.python.org/pypi/odoo-env/json", timeout=5
+            ) as response:
+                info = json.loads(response.read().decode("utf-8"))
+            version = info["info"]["version"]
+            pypi_tuple = tuple(int(x) for x in version.split("."))
+            local_tuple = tuple(int(x) for x in __version__.split("."))
+            if pypi_tuple > local_tuple:
+                msg.warn(
+                    f"BE CAREFUL, you are using version {__version__} of odoo-env "
+                    f"however version {version} is already available."
                 )
-                info = json.loads(response.buffer.read().decode("utf-8"))
-                version = info["info"]["version"]
-                if version != __version__:
-                    Msg().warn(
-                        f"BE CAREFUL, you are using version {__version__} of odoo-env "
-                        f"however version {version} is already available."
-                    )
-                    Msg().warn(
-                        'You should update using "pipx upgrade odoo-env" or "pip '
-                        'install --upgrade odoo-env" (old style).\n'
-                    )
-                    Msg().warn(
-                        "Do it right now before chaos knocks your digital door. Dont risk it."
-                    )
-
-            except Exception:
-                Msg().inf(
-                    "Oops! It seems my cowboy hat ran out of internet connection. "
-                    "Did you feed coins to the internet ranch, or did the Wi-Fi birds "
-                    "fly away?"
+                msg.warn(
+                    'You should update using "pipx upgrade odoo-env" or "pip '
+                    'install --upgrade odoo-env" (old style).\n'
                 )
-
-        return True
+                msg.warn(
+                    "Do it right now before chaos knocks your digital door. Dont risk it."
+                )
+        except (OSError, ValueError, KeyError):
+            # OSError cubre urllib.error.URLError; ValueError cubre
+            # json.JSONDecodeError. El chequeo de version es best-effort.
+            pass

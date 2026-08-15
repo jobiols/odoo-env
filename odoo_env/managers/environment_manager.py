@@ -464,7 +464,12 @@ class EnvironmentManager:
         }
 
     def _get_debug_mountings(self):
-        version = self.parent._client.numeric_ver
+        # numeric_ver is a validated float of the form MAJOR.0 (see
+        # parse_odoo_version), so int() only normalizes 17.0 -> 17 and cannot
+        # raise; the major version is semantically an int (ODOO_VERSION_MAP has
+        # int keys), the same normalization image_manager.extract_sources does.
+        # pi-lens-ignore: unchecked-throwing-call-python
+        version = int(self.parent._client.numeric_ver)
         cvd = self.parent._client.version_dir
 
         if version == 14:
@@ -474,7 +479,7 @@ class EnvironmentManager:
                 for host, bind in ODOO_V14_DEBUG_MOUNTS.items()
             }
 
-        info = ODOO_VERSION_MAP.get(int(version))
+        info = ODOO_VERSION_MAP.get(version)
         if info is not None:
             return {
                 f"{cvd}src": {"bind": info.src},

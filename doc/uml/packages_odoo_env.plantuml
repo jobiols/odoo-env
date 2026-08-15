@@ -151,6 +151,7 @@ odoo_env.test_client --> odoo_env.config
 odoo_env.test_client --> odoo_env.messages
 odoo_env.test_client --> odoo_env.test_helpers
 odoo_env.test_config --> odoo_env.config
+odoo_env.test_config --> odoo_env.messages
 odoo_env.test_config --> odoo_env.test_helpers
 odoo_env.test_constants --> odoo_env
 odoo_env.test_constants --> odoo_env.constants
@@ -168,9 +169,11 @@ odoo_env.test_image_manager --> odoo_env.constants
 odoo_env.test_image_manager --> odoo_env.managers.image_manager
 odoo_env.test_image_manager --> odoo_env.odooenv
 odoo_env.test_image_manager --> odoo_env.test_helpers
+odoo_env.test_oe --> odoo_env.client
 odoo_env.test_oe --> odoo_env.command
 odoo_env.test_oe --> odoo_env.config
 odoo_env.test_oe --> odoo_env.constants
+odoo_env.test_oe --> odoo_env.messages
 odoo_env.test_oe --> odoo_env.odooenv
 odoo_env.test_oe --> odoo_env.repos
 odoo_env.test_oe --> odoo_env.test_helpers

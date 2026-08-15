@@ -35,7 +35,7 @@ class OeConfig(metaclass=SingletonMeta):
             self.save_environment("prod")
 
         if self._args.client:
-            self.save_client(self.client)
+            self.save_client(self._args.client)
 
         if self._args.base_dir:
             self.save_base_dir(self._args.base_dir)
@@ -94,17 +94,23 @@ class OeConfig(metaclass=SingletonMeta):
 
     def _save_config_data(self):
         """Salvar el conjunto de paths a los clientes"""
-        # chequear si esta el archivo y sino crear el path
-        if not os.path.exists(self._user_config_path()):
-            os.makedirs(self._user_config_path())
+        # En instalacion fresca ~/.config/oe/ no existe todavia; makedirs y open
+        # pueden fallar (permisos, disco lleno). Convertimos el OSError crudo en
+        # un msg.err claro, igual que _get_config_data hace en la lectura.
+        try:
+            # chequear si esta el archivo y sino crear el path
+            if not os.path.exists(self._user_config_path()):
+                os.makedirs(self._user_config_path())
 
-        with open(self._user_config_file(), "w", encoding="utf-8") as config_file:
-            yaml.dump(
-                self._config_data,
-                config_file,
-                default_flow_style=False,
-                allow_unicode=True,
-            )
+            with open(self._user_config_file(), "w", encoding="utf-8") as config_file:
+                yaml.dump(
+                    self._config_data,
+                    config_file,
+                    default_flow_style=False,
+                    allow_unicode=True,
+                )
+        except OSError as e:
+            msg.err(f"Could not write config file {self._user_config_file()}: {e}")
 
     def get_client_path(self, client_name):
         """Traer el path de un cliente desde la config; None si no esta."""
@@ -131,7 +137,7 @@ class OeConfig(metaclass=SingletonMeta):
     def get_client(self):
         client_name = self._config_data.get("client")
         if client_name is None:
-            msg.err("No default client set. Please specify a client using --client.")
+            msg.err("No default client set. Please specify a client using -c.")
         if not isinstance(client_name, str):
             msg.err("Invalid client name in configuration. must be a string.")
         client_name = client_name.strip().lower()

@@ -35,8 +35,15 @@ class OdooEnv:
     def __init__(self, args):
         self._args = args
         OeConfig(args)
-        # Seteamos el cliente inicial resolviendo el nombre desde los args
-        client_name = get_param(args, "client")
+        # Seteamos el cliente inicial resolviendo el nombre desde los args.
+        # Primer instalación desde `-i <nombre|URL>`: todavía no hay cliente
+        # default, así que derivamos el nombre desde el valor de -i y dejamos
+        # que Client.__init__ lo ajuste al nombre real del manifiesto (y lo
+        # persista). Sin esto, get_param aborta con "No default client set".
+        if isinstance(args.install, str) and args.install and not args.client:
+            client_name = args.install
+        else:
+            client_name = get_param(args, "client")
         self._client = Client(args, name=client_name)
 
     def build_commands(self):

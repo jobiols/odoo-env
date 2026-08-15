@@ -1,12 +1,14 @@
 import subprocess
 from unittest.mock import MagicMock, PropertyMock, patch
 
+from odoo_env.client import Client
 from odoo_env.command import Command, EnsureNetworkCommand
 from odoo_env.config import OeConfig
 from odoo_env.constants import (
     DBTOOLS_IMAGE,
     WDB_IMAGE_DEFAULT,
 )
+from odoo_env.messages import OeError
 from odoo_env.odooenv import OdooEnv
 from odoo_env.repos import GitRepo
 from odoo_env.test_helpers import TEST_CLIENT_MANIFEST, MockArgs, OdooEnvTestCase
@@ -718,3 +720,59 @@ class TestGetPacks(OdooEnvTestCase):
     def test_get_packs_v14_not_dist_packages(self):
         result = self._make_oe_with_version(14)
         self.assertNotEqual(result, ["dist-packages", "dist-local-packages"])
+
+
+SAMA_MANIFEST = {
+    "name": "sama",
+    "version": "14.0.1.0.0",
+    "docker-images": ["odoo jobiols/odoo-jeo:14.0", "postgres postgres:13"],
+    "git-repos": ["https://github.com/jobiols/cl-sama.git"],
+    "env-ver": "2",
+}
+
+
+class TestInstallNameResolution(OdooEnvTestCase):
+    """oe -i <client> en instalación fresca, sin default client (issue #123).
+
+    El bug era que OdooEnv.__init__ resolvía el cliente solo desde -c o desde
+    el config persistido, ignorando args.install. En una instalación nueva
+    `oe -i sama` abortaba antes de que Client.__init__ pudiera clonar, leer el
+    manifiesto y persistir el cliente.
+    """
+
+    def setUp(self):
+        super().setUp()
+        # Simular instalación fresca: sin cliente default persistido.
+        self.mock_config_data.return_value["client"] = None
+        self.discover_patcher = patch.object(
+            Client,
+            "_discover_from_url",
+            return_value=(SAMA_MANIFEST, "/tmp/cl-sama"),
+        )
+        self.mock_discover = self.discover_patcher.start()
+
+    def tearDown(self):
+        self.discover_patcher.stop()
+        super().tearDown()
+
+    def test_install_name_resolves_client_without_default(self):
+        options = MockArgs(install="sama", client=None)
+
+        oe = OdooEnv(options)
+
+        self.assertEqual(oe.client.name, "sama")
+        self.mock_discover.assert_called_once()
+
+    def test_install_full_url_resolves_client_without_default(self):
+        options = MockArgs(install="git@github.com:org/repo.git", client=None)
+
+        oe = OdooEnv(options)
+
+        self.assertEqual(oe.client.name, "sama")
+        self.mock_discover.assert_called_once()
+
+    def test_no_install_and_no_default_raises(self):
+        options = MockArgs(install=False, client=None)
+
+        with self.assertRaises(OeError):
+            OdooEnv(options)

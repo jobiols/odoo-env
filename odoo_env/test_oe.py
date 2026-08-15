@@ -104,7 +104,8 @@ class TestRepository(OdooEnvTestCase):
         options = MockArgs(debug=False, client="test_client")
         modules = "modulo_a_testear"
         oe = OdooEnv(options)
-        cmds = oe.qa(modules)
+        with patch("sys.stdin.isatty", return_value=True):
+            cmds = oe.qa(modules)
 
         # Order: volumes, env, links, image
         command = [
@@ -197,7 +198,8 @@ class TestRepository(OdooEnvTestCase):
         database = "test_client_prod"
         modules = ["all"]
         oe = OdooEnv(options)
-        cmds = oe.update(database, modules)
+        with patch("sys.stdin.isatty", return_value=True):
+            cmds = oe.update(database, modules)
 
         command = [
             "docker",

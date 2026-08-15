@@ -43,6 +43,50 @@ class TestBuildModuleCommandWithDemo(OdooEnvTestCase):
         self.assertNotIn("--with-demo", cmds[0].command)
 
 
+class TestModuleCommandTty(OdooEnvTestCase):
+    """-Q / -i / -u / --create-test-db must adapt to TTY presence.
+
+    These commands build `docker run` for a non-interactive Odoo job
+    (--stop-after-init + --test-enable). They must NOT hardcode -it: when
+    stdin is not a terminal (CI, agents, cron, piped stdin), docker rejects
+    `-it` and the container never starts. The discriminator is
+    `sys.stdin.isatty()`, not "manual vs agent".
+    """
+
+    def _make_em(self):
+        options = MockArgs(debug=False, client="test_client")
+        oe = OdooEnv(options)
+        return EnvironmentManager(oe)
+
+    def test_qa_uses_it_when_tty(self):
+        em = self._make_em()
+        with patch("sys.stdin.isatty", return_value=True):
+            cmds = em.qa("test_client_test", "mod_a")
+        self.assertEqual(cmds[0].command[cmds[0].command.index("--rm") + 1], "-it")
+
+    def test_qa_omits_it_when_no_tty(self):
+        em = self._make_em()
+        with patch("sys.stdin.isatty", return_value=False):
+            cmds = em.qa("test_client_test", "mod_a")
+        cmd = cmds[0].command
+        self.assertNotIn("-it", cmd)
+        self.assertEqual(cmd[cmd.index("--rm") + 1], "--network")
+
+    def test_build_module_command_uses_it_when_tty(self):
+        em = self._make_em()
+        with patch("sys.stdin.isatty", return_value=True):
+            cmds = em._build_module_command("test_client_test", ["mod_a"], "-i")
+        self.assertEqual(cmds[0].command[cmds[0].command.index("--rm") + 1], "-it")
+
+    def test_build_module_command_omits_it_when_no_tty(self):
+        em = self._make_em()
+        with patch("sys.stdin.isatty", return_value=False):
+            cmds = em._build_module_command("test_client_test", ["mod_a"], "-i")
+        cmd = cmds[0].command
+        self.assertNotIn("-it", cmd)
+        self.assertEqual(cmd[cmd.index("--rm") + 1], "--network")
+
+
 class TestDebugMountings(OdooEnvTestCase):
 
     def _make_em(self, odoo_version: int):

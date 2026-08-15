@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -382,10 +383,12 @@ class EnvironmentManager:
         if verb == "-i" and needs_with_demo_flag(self.parent._client.numeric_ver):
             extra_args.append("--with-demo")
 
+        tty = sys.stdin.isatty()
         cmd_list = self.docker_client.get_run_command(
             RunSpec(
                 self.parent._client.get_image_required("odoo").name,
-                interactive=True,
+                interactive=tty,
+                tty=tty,
                 remove=True,
                 network="odoo-net",
                 volumes=volumes,
@@ -422,10 +425,12 @@ class EnvironmentManager:
         if self.parent.debug:
             volumes.update(self._get_debug_mountings())
 
+        tty = sys.stdin.isatty()
         cmd_list = self.docker_client.get_run_command(
             RunSpec(
                 self.parent._client.get_image_required("odoo").name,
-                interactive=True,
+                interactive=tty,
+                tty=tty,
                 remove=True,
                 network="odoo-net",
                 volumes=volumes,

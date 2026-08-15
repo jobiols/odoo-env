@@ -489,6 +489,12 @@ class "TestImageManager" as odoo_env.test_image_manager.TestImageManager {
   test_v19_rejects_versions_beyond_19()
   test_v19_resolve_targets_odoo_src_and_site_packages()
 }
+class "TestModuleCommandTty" as odoo_env.test_environment_manager.TestModuleCommandTty {
+  test_build_module_command_omits_it_when_no_tty()
+  test_build_module_command_uses_it_when_tty()
+  test_qa_omits_it_when_no_tty()
+  test_qa_uses_it_when_tty()
+}
 class "TestOdooVersionMap" as odoo_env.test_constants.TestOdooVersionMap {
   test_legacy_and_future_keys_absent()
   test_odoo_python_map_absent()
@@ -635,6 +641,7 @@ odoo_env.test_create_test_db.TestQaCli --|> odoo_env.test_helpers.OdooEnvTestCas
 odoo_env.test_environment_manager.TestBuildModuleCommandWithDemo --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_environment_manager.TestDebugMountings --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_environment_manager.TestEnvironmentManager --|> odoo_env.test_helpers.OdooEnvTestCase
+odoo_env.test_environment_manager.TestModuleCommandTty --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_image_manager.TestImageManager --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_oe.TestGetPacks --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_oe.TestRepository --|> odoo_env.test_helpers.OdooEnvTestCase

@@ -26,7 +26,9 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
             "Install environment / update repositories. With no value, repositories are "
             "taken from the manifest. Pass a CLIENT name to build the canonical repo URL "
             "git@github.com:<org>/cl-<client>.git for the first installation "
-            "(e.g. oe -i labutic). A full git URL (git@... or https://...) is also accepted."
+            "(e.g. oe -i labutic). Use CLIENT:VERSION to select a migrated branch, "
+            "e.g. oe -i sama:17 clones cl-sama at branch 17.0 (:17 and :17.0 both work). "
+            "A full git URL (git@... or https://...) is also accepted."
         ),
     )
 

@@ -101,9 +101,10 @@ class Client:
         elif isinstance(self._args.install, str):
             # Primera instalación desde URL: clonar repo temporalmente,
             # extraer el nombre del proyecto del manifiesto y usarlo
-            # como el nuevo cliente default.
-            url = self._resolve_install_url(self._args.install)
-            manifest = self._discover_from_url(url)[0]
+            # como el nuevo cliente default. Soporta 'nombre:version'
+            # (issue #125) para elegir el repo y la rama.
+            url, branch, _ = self._resolve_install_target()
+            manifest = self._discover_from_url(url, branch)[0]
             if not manifest:
                 msg.err(
                     f"No valid __manifest__.py found in repository "
@@ -279,6 +280,78 @@ class Client:
         return isinstance(value, str) and value.startswith(("git@", "https://"))
 
     @staticmethod
+    def _normalize_branch(ver: str, spec: str) -> str:
+        """Normaliza el token de version de un install spec a una rama Odoo.
+
+        '17'   -> '17.0'
+        '17.0' -> '17.0'
+        El minor (si viene) debe ser '0'. Cualquier otra cosa aborta.
+        """
+        parts = ver.split(".")
+        if not ver or len(parts) > 2 or not all(p.isdigit() for p in parts):
+            msg.err(
+                f"Invalid version '{ver}' in install spec '{spec}'. "
+                "Use ':17' or ':17.0'."
+            )
+        if len(parts) == 2 and parts[1] != "0":
+            msg.err(f"Odoo minor version must be '0', got '{parts[1]}' in '{spec}'.")
+        return f"{parts[0]}.0"
+
+    @staticmethod
+    def _parse_install_spec(value: str) -> "tuple[str, str | None]":
+        """Divide el argumento de -i en (repo_ref, branch).
+
+        Sintaxis 'nombre:version' (issue #125): el nombre selecciona el repo
+        canonico cl-<nombre> y la version selecciona la rama <major>.0. El
+        nombre se usa tal cual (los digitos finales son parte del nombre del
+        proyecto, no de la version), por eso el separador ':' es inequivoco.
+
+        'sama:17'    -> ('sama', '17.0')
+        'sama:17.0'  -> ('sama', '17.0')
+        'espacio4:18'-> ('espacio4', '18.0')
+        'sama'       -> ('sama', None)          (rama por defecto)
+        URL git completa -> (url, None)         (no se parte por ':')
+        """
+        if Client._is_full_git_url(value):
+            return value, None
+        if ":" not in value:
+            return value, None
+        name, _, ver = value.partition(":")
+        name = name.strip()
+        ver = ver.strip()
+        if not name:
+            msg.err(f"Invalid install spec '{value}'. Empty project name before ':'.")
+        branch = Client._normalize_branch(ver, value)
+        return name, branch
+
+    @staticmethod
+    def _validate_migrated_manifest(manifest: dict, name: str, branch: str) -> None:
+        """Red de seguridad (regla de oro) cuando se pide una rama explicita.
+
+        El 'name' del manifest debe coincidir con el proyecto pedido y el
+        major de 'version' con la rama pedida. Si no, aborta limpio en vez de
+        instalar la rama equivocada en silencio.
+        """
+        m_name = (
+            str(manifest.get("name", "")).lower().split()[0]
+            if manifest.get("name")
+            else ""
+        )
+        if m_name != name.lower():
+            msg.err(
+                f"Manifest name '{m_name}' does not match requested project "
+                f"'{name}'."
+            )
+        m_ver = str(manifest.get("version", ""))
+        m_major = m_ver.split(".", maxsplit=1)[0]
+        want_major = branch.split(".", maxsplit=1)[0]
+        if m_major != want_major:
+            msg.err(
+                f"Manifest version '{m_ver}' does not match requested branch "
+                f"'{branch}'."
+            )
+
+    @staticmethod
     def build_repo_url(client_name: str) -> str:
         """Arma la URL canonica del repo a partir del nombre del cliente.
 
@@ -307,30 +380,45 @@ class Client:
             return value
         return self.build_repo_url(value)
 
+    def _resolve_install_target(self) -> "tuple[str, str | None, str]":
+        """Parsea self._args.install en (url, branch, repo_ref).
+
+        Aplica la sintaxis 'nombre:version' (issue #125) y arma la URL
+        canonica a partir del nombre pelado.
+        """
+        repo_ref, branch = self._parse_install_spec(self._args.install)
+        url = self._resolve_install_url(repo_ref)
+        return url, branch, repo_ref
+
     def _discover_from_url(
-        self, url: str
+        self, url: str, branch: "str | None" = None
     ) -> tuple[dict[str, object] | None, str | None]:
         """
         Clona un repositorio temporalmente y extrae el manifiesto
-        sin validar el nombre del cliente.
+        sin validar el nombre del cliente. Si se pasa branch, clona esa rama.
         Devuelve (manifest_dict, manifest_dir) o (None, None).
         """
         if not (url.startswith("git@") or url.startswith("https://")):
             msg.err(f"Invalid git URL '{url}'. Must start with 'git@' or 'https://'")
 
+        cmd = ["git", "clone", "--depth", "1"]
+        if branch:
+            cmd += ["-b", branch]
         with tempfile.TemporaryDirectory() as tmpdir:
-            subprocess.run(["git", "clone", "--depth", "1", url, tmpdir], check=True)
+            subprocess.run(cmd + [url, tmpdir], check=True)
             return self._discover_manifest_from_path(Path(tmpdir))
 
     def get_manifest_from_url(self) -> dict[str, object] | None:
         if not isinstance(self._args.install, str) or not self._args.install:
             msg.err(f"Invalid install argument '{self._args.install}'.")
 
-        url = self._resolve_install_url(self._args.install)
+        url, branch, repo_ref = self._resolve_install_target()
         if not self._is_full_git_url(url):
             msg.err(f"Invalid git URL '{url}'. Must start with 'git@' or 'https://'")
 
-        manifest, manifest_dir = self._discover_from_url(url)
+        manifest, manifest_dir = self._discover_from_url(url, branch)
+        if manifest and branch:
+            self._validate_migrated_manifest(manifest, repo_ref, branch)
         if manifest and manifest_dir:
             OeConfig().save_client_path(self._name, manifest_dir)
         return manifest

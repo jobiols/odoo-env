@@ -291,6 +291,141 @@ class TestGetManifest(unittest.TestCase):
 
         self.mock_save_client_path.assert_not_called()
 
+    # --- Issue #125: REQ-INSTALL-011 — name:version selects repo + branch ---
+
+    def test_name_version_clones_stripped_repo_at_branch(self):
+        """oe -i sama:17 MUST clone cl-sama at branch 17.0."""
+        self.mock_get_client_path.return_value = None
+        self.mock_discover_manifest_from_path.return_value = (
+            {
+                "name": "sama",
+                "version": "17.0.1.0.0",
+                "docker-images": [],
+                "git-repos": [],
+                "env-ver": "2",
+            },
+            "/fake/path",
+        )
+
+        client = self._make_client(install="sama:17")
+        client.get_manifest_from_url()
+
+        cmd = self.mock_subprocess_run.call_args[0][0]
+        self.assertIn("-b", cmd)
+        self.assertEqual(cmd[cmd.index("-b") + 1], "17.0")
+        self.assertIn("git@github.com:quilsoft-org/cl-sama.git", cmd)
+
+    def test_name_version_dotted_clones_branch(self):
+        """oe -i sama:17.0 MUST also clone branch 17.0."""
+        self.mock_get_client_path.return_value = None
+        self.mock_discover_manifest_from_path.return_value = (
+            {
+                "name": "sama",
+                "version": "17.0.1.0.0",
+                "docker-images": [],
+                "git-repos": [],
+                "env-ver": "2",
+            },
+            "/fake/path",
+        )
+
+        client = self._make_client(install="sama:17.0")
+        client.get_manifest_from_url()
+
+        cmd = self.mock_subprocess_run.call_args[0][0]
+        self.assertEqual(cmd[cmd.index("-b") + 1], "17.0")
+
+    def test_digit_ending_name_version_clones_branch(self):
+        """oe -i espacio4:18 MUST clone cl-espacio4 (digits kept) at branch 18.0."""
+        self.mock_get_client_path.return_value = None
+        self.mock_discover_manifest_from_path.return_value = (
+            {
+                "name": "espacio4",
+                "version": "18.0.1.0.0",
+                "docker-images": [],
+                "git-repos": [],
+                "env-ver": "2",
+            },
+            "/fake/path",
+        )
+
+        client = self._make_client(install="espacio4:18")
+        client.get_manifest_from_url()
+
+        cmd = self.mock_subprocess_run.call_args[0][0]
+        self.assertEqual(cmd[cmd.index("-b") + 1], "18.0")
+        self.assertIn("git@github.com:quilsoft-org/cl-espacio4.git", cmd)
+
+    def test_bare_name_clones_without_branch_flag(self):
+        """oe -i sama (no version) MUST clone default branch (no -b)."""
+        self.mock_get_client_path.return_value = None
+        self.mock_discover_manifest_from_path.return_value = (
+            BASE_MANIFEST,
+            "/fake/path",
+        )
+
+        client = self._make_client(install="sama")
+        client.get_manifest_from_url()
+
+        cmd = self.mock_subprocess_run.call_args[0][0]
+        self.assertNotIn("-b", cmd)
+        self.assertEqual(cmd[4], "git@github.com:quilsoft-org/cl-sama.git")
+
+    def test_invalid_version_raises(self):
+        """oe -i sama:abc MUST raise OeError before cloning."""
+        self.mock_get_client_path.return_value = None
+
+        client = self._make_client(install="sama:abc")
+        with self.assertRaises(OeError):
+            client.get_manifest_from_url()
+        self.mock_subprocess_run.assert_not_called()
+
+    def test_empty_name_before_colon_raises(self):
+        """oe -i :17 MUST raise OeError."""
+        self.mock_get_client_path.return_value = None
+
+        client = self._make_client(install=":17")
+        with self.assertRaises(OeError):
+            client.get_manifest_from_url()
+
+    def test_golden_rule_name_mismatch_raises(self):
+        """Manifest name != requested project MUST abort (golden rule)."""
+        self.mock_get_client_path.return_value = None
+        self.mock_discover_manifest_from_path.return_value = (
+            {
+                "name": "pepe",
+                "version": "17.0.1.0.0",
+                "docker-images": [],
+                "git-repos": [],
+                "env-ver": "2",
+            },
+            "/fake/path",
+        )
+
+        client = self._make_client(install="sama:17")
+        with self.assertRaises(OeError):
+            client.get_manifest_from_url()
+        self.mock_save_client_path.assert_not_called()
+
+    def test_golden_rule_major_mismatch_raises(self):
+        """Manifest major != requested branch MUST abort (golden rule)."""
+        self.mock_get_client_path.return_value = None
+        self.mock_discover_manifest_from_path.return_value = (
+            {
+                "name": "sama",
+                "version": "16.0.1.0.0",
+                "docker-images": [],
+                "git-repos": [],
+                "env-ver": "2",
+            },
+            "/fake/path",
+        )
+
+        client = self._make_client(install="sama:17")
+        with self.assertRaises(OeError):
+            client.get_manifest_from_url()
+        self.mock_save_client_path.assert_not_called()
+
 
 class TestBuildRepoUrl(OeConfigPatchTestCase):
     """Tests for Client.build_repo_url() canonical URL builder.
@@ -477,3 +612,45 @@ class TestValidateManifestKeys(unittest.TestCase):
         for key in ODOO_ENV_KEYS:
             with self.subTest(key=key):
                 Client.validate_manifest_keys({"name": "c", key: "x"}, "c")
+
+
+class TestParseInstallSpec(unittest.TestCase):
+    """Tests for Client._parse_install_spec() — issue #125 name:version split."""
+
+    def test_name_version_int(self):
+        self.assertEqual(Client._parse_install_spec("sama:17"), ("sama", "17.0"))
+
+    def test_name_version_dotted(self):
+        self.assertEqual(Client._parse_install_spec("sama:17.0"), ("sama", "17.0"))
+
+    def test_digit_ending_name_keeps_digits(self):
+        self.assertEqual(
+            Client._parse_install_spec("espacio4:18"), ("espacio4", "18.0")
+        )
+
+    def test_bare_name_no_branch(self):
+        self.assertEqual(Client._parse_install_spec("sama"), ("sama", None))
+
+    def test_full_git_url_not_split(self):
+        url = "git@github.com:org/cl-sama.git"
+        self.assertEqual(Client._parse_install_spec(url), (url, None))
+
+    def test_https_url_not_split(self):
+        url = "https://github.com/org/cl-sama.git"
+        self.assertEqual(Client._parse_install_spec(url), (url, None))
+
+    def test_invalid_version_raises(self):
+        with self.assertRaises(OeError):
+            Client._parse_install_spec("sama:abc")
+
+    def test_minor_nonzero_raises(self):
+        with self.assertRaises(OeError):
+            Client._parse_install_spec("sama:17.3")
+
+    def test_empty_name_raises(self):
+        with self.assertRaises(OeError):
+            Client._parse_install_spec(":17")
+
+    def test_extra_colon_raises(self):
+        with self.assertRaises(OeError):
+            Client._parse_install_spec("sama:17:foo")

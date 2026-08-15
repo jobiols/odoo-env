@@ -5,7 +5,7 @@
 
 odoo-env
 =========
-jeo Software (c) 2024 jorge.obiols@gmail.com
+jeo Software (c) 2026 jorge.obiols@gmail.com
 This code is distributed under the MIT license.
 
 Tool to manage docker based odoo environments. This is a Dockerized
@@ -30,42 +30,49 @@ Directory structure
 Functionality
 -------------
 ```
-usage: oe [-h] [-i [CLIENT]] [--org ORG] [-R] [-p] [-w] [-r] [-S] [-s] [-u] [-H] [-V] [-Q MODULES] [-c CLIENT] [-v] [-d DATABASE] [-m MODULE] [-f BACKUP_FILE] [--deploy-keys] [--no-deactivate] [--debug] [--prod] [--restore]
-          [--create-test-db] [--test-all] [--base-dir BASE_DIR]
+usage: oe [-h] [-i [CLIENT]] [--org ORG] [-R] [-p] [-w] [-r] [-S] [-s] [-u] [-H] [-V] [-Q MODULES] [-c CLIENT] [-v] [-d DATABASE] [-m MODULE] [-f BACKUP_FILE]
+          [--deploy-keys] [--no-deactivate] [--debug] [--prod] [--restore] [--create-test-db] [--test-all] [--base-dir BASE_DIR]
 
 Odoo Environment Manager v0.16.7 - by jeo Software <jorge.obiols@gmail.com>
 
 options:
   -h, --help           show this help message and exit
-  -i [CLIENT]          Install environment / update repositories. With no value, repositories are taken from the manifest. Pass a CLIENT name to build the canonical repo URL git@github.com:<org>/cl-<client>.git for the first
-                       installation (e.g. oe -i labutic). A full git URL (git@... or https://...) is also accepted.
-  --org ORG            Set the GitHub organization used to build canonical repo URLs (e.g. quilsoft-org). This parameter is persistent. Defaults to quilsoft-org when unset.
+  -i [CLIENT]          Install environment / update repositories. With no value, repositories are taken from the manifest. Pass a CLIENT name to build the canonical
+                       repo URL git@github.com:<org>/cl-<client>.git for the first installation (e.g. oe -i labutic). A full git URL (git@... or https://...) is also
+                       accepted.
+  --org ORG            Set the GitHub organization used to build canonical repo URLs (e.g. quilsoft-org). This parameter is persistent. Defaults to quilsoft-org when
+                       unset.
   -R                   Run postgres, wdb and aeroo images (aeroo only for old odoo versions).
   -p                   Pull Images. Download all images declared in client manifest.
   -w                   Create / Overwrite config file.
   -r                   Run odoo image
   -S                   Stop postgres, wdb and aeroo images.
   -s                   Stop odoo image.
-  -u                   Updates modules in the database. With no parameters, all modules are updated. Use -m list-modules to update only the specified modules Use -d databasename to update a database other than the default database.
+  -u                   Updates modules in the database. With no parameters, all modules are updated. Use -m list-modules to update only the specified modules Use -d
+                       databasename to update a database other than the default database.
   -H                   Show odoo server help, it shows the help from the odoo image declared in the cliente manifest
   -V                   Show version number and exit.
-  -Q MODULES           Run the tests. Required parameters: list of modules to test separate by commas (without spaces) e.g. -Q sale,stock. Use -Q all to auto-discover and run every module with a tests/ directory in the current
-                       repository. Optional parameters: -d <database>; if omitted, the default [project]_test database will be used, NOTE: The database used for testing must be created with demo data and must have admin/admin
-                       credentials.
+  -Q MODULES           Run the tests. Required parameters: list of modules to test separate by commas (without spaces) e.g. -Q sale,stock. Use -Q all to auto-discover
+                       and run every module with a tests/ directory in the current repository. Optional parameters: -d <database>; if omitted, the default
+                       [project]_test database will be used, NOTE: The database used for testing must be created with demo data and must have admin/admin credentials.
   -c CLIENT            Set default client name. This parameter is persistent
   -v                   Go verbose mode. Prints every command
   -d DATABASE          Set default Database name. This option is persistent
-  -m MODULE            Module to update. Used with -u (update) i.e. -m sale for updating sale module -m all for updating all modules. NOTE: if you perform -u without -m it asumes all modules
+  -m MODULE            Module to update. Used with -u (update) i.e. -m sale for updating sale module -m all for updating all modules. NOTE: if you perform -u without
+                       -m it asumes all modules
   -f BACKUP_FILE       Filename to restore. Used with --restore. To get the name of If ommited the newest file will be restored
-  --deploy-keys        Available only in production mode. It creates a pair of deploy keys for each private repository found in the manifest, lists the public keys for adding to the repositories.
+  --deploy-keys        Available only in production mode. It creates a pair of deploy keys for each private repository found in the manifest, lists the public keys
+                       for adding to the repositories.
   --no-deactivate      No Deactivate database before restore. WARNING this command is deprecated
   --debug              Set default environment mode to debug. This parameter is persistent.
   --prod               Set default environment mode to production. This parameter is persistent.
-  --restore            Restore a backup into the client database. By default restores the newest .zip file found in backup_dir into the default database ([client]_prod). Use -f to specify a particular backup file and -d to target a
-                       different database. The restored database is deactivated automatically unless --no-deactivate is passed.
+  --restore            Restore a backup into the client database. By default restores the newest .zip file found in backup_dir into the default database
+                       ([client]_prod). Use -f to specify a particular backup file and -d to target a different database. The restored database is deactivated
+                       automatically unless --no-deactivate is passed.
   --create-test-db     Create a test database with all project modules.
   --test-all           Run all module tests with coverage and enforce the coverage threshold.
-  --base-dir BASE_DIR  Set the root directory where all client environments are stored (e.g. /odoo_ar/). Saved persistently in the config file; subsequent commands will use this value as the default until changed.
+  --base-dir BASE_DIR  Set the root directory where all client environments are stored (e.g. /odoo_ar/). Saved persistently in the config file; subsequent commands
+                       will use this value as the default until changed.
 ```
 
 Installation
@@ -73,31 +80,7 @@ Installation
     sudo pipx install odoo-env
     see proyect in https://pypi.org/project/odoo-env/
 
-CI/CD — Automated test + coverage
-----------------------------------
-This project ships a test runner and a GitHub Actions template for running
-all Odoo module tests with coverage on a **self-hosted runner**.
 
-**Quick start (client repo):**
-
-1. Copy ``templates/ci/tests.yml`` → ``.github/workflows/tests.yml``
-2. Copy ``templates/ci/.coverage-threshold`` → repo root (default: ``20``)
-3. Copy ``templates/ci/README-badge.md`` snippet into ``README.md``
-4. Edit the ``env.CLIENT`` variable in the workflow
-5. Ensure the self-hosted runner has Docker, ``odoo-env`` installed, and
-   the Odoo debug image pulled
-
-**What it does:**
-
-- On every Pull Request: runs all module tests with ``coverage``,
-  detects test failures, enforces the coverage threshold (ratchet: can
-  only go up), and blocks the merge on failure.
-- On push to ``master``/``main``: regenerates the coverage badge
-  (``coverage.svg``) and commits it.
-
-**Manual invocation:** ``python -m odoo_env.qa`` from your client repo
-(requires ``pg-<client>`` and the test DB ``<client>_test`` already
-provisioned).
 
 Changelog
 ---------

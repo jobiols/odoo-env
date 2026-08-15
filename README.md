@@ -5,7 +5,8 @@
 
 odoo-env
 =========
-jeo Software (c) 2026 jorge.obiols@gmail.com
+
+jeo Software (c) 2026 <jorge.obiols@gmail.com>
 This code is distributed under the MIT license.
 
 Tool to manage docker based odoo environments. This is a Dockerized
@@ -29,11 +30,12 @@ Directory structure
 
 Functionality
 -------------
+
 ```
 usage: oe [-h] [-i [CLIENT]] [--org ORG] [-R] [-p] [-w] [-r] [-S] [-s] [-u] [-H] [-V] [-Q MODULES] [-c CLIENT] [-v] [-d DATABASE] [-m MODULE] [-f BACKUP_FILE]
           [--deploy-keys] [--no-deactivate] [--debug] [--prod] [--restore] [--create-test-db] [--test-all] [--base-dir BASE_DIR]
 
-Odoo Environment Manager v0.16.7 - by jeo Software <jorge.obiols@gmail.com>
+Odoo Environment Manager v0.16.8 - by jeo Software <jorge.obiols@gmail.com>
 
 options:
   -h, --help           show this help message and exit
@@ -77,13 +79,14 @@ options:
 
 Installation
 ------------
+
     sudo pipx install odoo-env
     see proyect in https://pypi.org/project/odoo-env/
 
-
-
 Changelog
 ---------
+
+- 0.16.8  - FIX -Q / -i / -u / --create-test-db omit docker -it when stdin is not a TTY (CI/headless)
 - 0.16.7  - Refactoring of the code, no changes to functionality, remove old manifest filename "__openerp__.py",
 - 0.16.6  - FIX oe -p extract-sources in version 19.0
 - 0.16.5  - FIX oe -p extract-sources in version 19.0

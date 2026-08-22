@@ -419,11 +419,17 @@ class EnvironmentManager:
             database, modules, "-u", usr_msg_prefix="Performing update of"
         )
 
-    def qa(self, database, modules_to_test):
+    def qa(self, database: str, install_modules: list[str], update_modules: list[str]):
         ret = []
         volumes = self._get_normal_mountings()
         if self.parent.debug:
             volumes.update(self._get_debug_mountings())
+
+        extra_args = ["-d", database]
+        if install_modules:
+            extra_args.extend(["-i", ",".join(install_modules)])
+        if update_modules:
+            extra_args.extend(["-u", ",".join(update_modules)])
 
         tty = sys.stdin.isatty()
         cmd_list = self.docker_client.get_run_command(
@@ -443,12 +449,13 @@ class EnvironmentManager:
                 stop_after_init=True,
                 log_level="test",
                 test_enable=True,
-                extra_args=["-d", database, "-u", modules_to_test],
+                extra_args=extra_args,
             )
         )
 
+        all_modules = install_modules + update_modules
         step_msg = (
-            f"Performing tests on module {modules_to_test} for client "
+            f"Performing tests on module(s) {', '.join(all_modules)} for client "
             f"{self.parent._client.name} and database {database}"
         )
         ret.append(Command(self.parent, command=cmd_list, usr_msg=step_msg))

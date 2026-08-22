@@ -8,6 +8,7 @@ from odoo_env.constants import (
     DBTOOLS_IMAGE,
     WDB_IMAGE_DEFAULT,
 )
+from odoo_env.managers.environment_manager import EnvironmentManager
 from odoo_env.messages import OeError
 from odoo_env.odooenv import OdooEnv
 from odoo_env.repos import GitRepo
@@ -106,8 +107,17 @@ class TestRepository(OdooEnvTestCase):
         options = MockArgs(debug=False, client="test_client")
         modules = "modulo_a_testear"
         oe = OdooEnv(options)
-        with patch("sys.stdin.isatty", return_value=True):
-            cmds = oe.qa(modules)
+        with patch.object(
+            EnvironmentManager,
+            "discover_modules_in",
+            return_value=["modulo_a_testear"],
+        ):
+            with patch.object(OdooEnv, "_db_exists", return_value=True):
+                with patch.object(
+                    OdooEnv, "_installed_modules", return_value={"modulo_a_testear"}
+                ):
+                    with patch("sys.stdin.isatty", return_value=True):
+                        cmds = oe.qa(modules)
 
         # Order: volumes, env, links, image
         command = [

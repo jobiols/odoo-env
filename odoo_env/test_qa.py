@@ -14,6 +14,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import odoo_env.qa.__main__ as qa_main
+from odoo_env.managers.environment_manager import EnvironmentManager
 from odoo_env.odooenv import OdooEnv
 from odoo_env.qa import failures, threshold
 from odoo_env.qa.config import RunnerConfig
@@ -528,7 +529,7 @@ class OeIntegrationTests(unittest.TestCase):
         mock_client_cls.return_value = RunnerConfigTests._fake_client()
         args = MagicMock()
         args.client = "dimec"
-        args.modules_to_test = ["sale", "stock"]
+        args.modules_to_test = "sale,stock"
         for flag in (
             "install",
             "run_env",
@@ -547,7 +548,14 @@ class OeIntegrationTests(unittest.TestCase):
             setattr(args, flag, False)
 
         oe = OdooEnv(args)
-        commands = oe.build_commands()
+        with patch.object(
+            EnvironmentManager,
+            "discover_modules_in",
+            return_value=["sale", "stock"],
+        ):
+            with patch.object(OdooEnv, "_db_exists", return_value=True):
+                with patch.object(OdooEnv, "_installed_modules", return_value=set()):
+                    commands = oe.build_commands()
         self.assertFalse(mock_runner_cls.called)
         self.assertIsInstance(commands, list)
 

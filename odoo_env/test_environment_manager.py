@@ -61,13 +61,13 @@ class TestModuleCommandTty(OdooEnvTestCase):
     def test_qa_uses_it_when_tty(self):
         em = self._make_em()
         with patch("sys.stdin.isatty", return_value=True):
-            cmds = em.qa("test_client_test", "mod_a")
+            cmds = em.qa("test_client_test", ["mod_a"], [])
         self.assertEqual(cmds[0].command[cmds[0].command.index("--rm") + 1], "-it")
 
     def test_qa_omits_it_when_no_tty(self):
         em = self._make_em()
         with patch("sys.stdin.isatty", return_value=False):
-            cmds = em.qa("test_client_test", "mod_a")
+            cmds = em.qa("test_client_test", ["mod_a"], [])
         cmd = cmds[0].command
         self.assertNotIn("-it", cmd)
         self.assertEqual(cmd[cmd.index("--rm") + 1], "--network")

@@ -248,6 +248,38 @@ class OdooEnv:
         )
         return result.returncode == 0 and result.stdout.strip() == "1"
 
+    def _installed_modules(self, database: str) -> set[str]:
+        """Return names of all installed modules in the given database.
+
+        Queries ir_module_module via docker exec on pg-{client}.
+        Returns an empty set on any error (container down, DB missing, etc.).
+
+        Uses the same safe subprocess pattern as _db_exists:
+        - subprocess argv list (no shell)
+        - capture_output=True, text=True, check=False
+        - Fixed SQL text (no interpolation of module names)
+        """
+        result = subprocess.run(
+            [
+                "docker",
+                "exec",
+                f"pg-{self.client.name}",
+                "psql",
+                "-U",
+                "odoo",
+                "-d",
+                database,
+                "-tAc",
+                "SELECT name FROM ir_module_module WHERE state = 'installed'",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if result.returncode != 0:
+            return set()
+        return {line.strip() for line in result.stdout.splitlines() if line.strip()}
+
     def _confirm_overwrite(self, subject):
         """Prompt user to confirm overwriting an existing database or file.
 
@@ -400,22 +432,48 @@ class OdooEnv:
         """
         Corre un test especifico, los parametros necesarios son:
 
-        :param database: parametro -d
         :param modules_to_test: parametro -m (es una lista)
         :return: lista con los comandos para correr
         """
+        database = f"{self._client.name}_test"
+
+        # Step 1: Module resolution
         if modules_to_test == "all":
-            modules = TestRunner.discover_test_modules()
-            if not modules:
+            modules_list = TestRunner.discover_test_modules()
+            if not modules_list:
                 msg.err(
                     "No testable modules found in the current directory. "
                     "'oe -Q all' requires at least one module with a tests/ "
                     "directory."
                 )
-            modules_to_test = ",".join(modules)
+        else:
+            modules_list = [m.strip() for m in modules_to_test.split(",")]
 
-        database = f"{self._client.name}_test"
-        return EnvironmentManager(self).qa(database, modules_to_test)
+            # Step 2: On-disk guard (skip for "all")
+            on_disk = set(
+                EnvironmentManager.discover_modules_in(self.client.custom_modules_dir)
+            )
+            unknown = set(modules_list) - on_disk
+            if unknown:
+                msg.err(f"Module(s) not found on disk: {', '.join(sorted(unknown))}")
+
+        # Step 3: DB-exists guard
+        if not self._db_exists(database):
+            msg.err(
+                f"Test database '{database}' does not exist.\n"
+                "  Create it first with: oe --create-test-db"
+            )
+
+        # Step 4: State query
+        installed = self._installed_modules(database)
+
+        # Step 5: Partition
+        requested = set(modules_list)
+        install_modules = sorted(requested - installed)
+        update_modules = sorted(requested & installed)
+
+        # Step 6: Delegate
+        return EnvironmentManager(self).qa(database, install_modules, update_modules)
 
     @property
     def client(self):

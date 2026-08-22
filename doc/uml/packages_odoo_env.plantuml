@@ -173,11 +173,13 @@ odoo_env.test_oe --> odoo_env.client
 odoo_env.test_oe --> odoo_env.command
 odoo_env.test_oe --> odoo_env.config
 odoo_env.test_oe --> odoo_env.constants
+odoo_env.test_oe --> odoo_env.managers.environment_manager
 odoo_env.test_oe --> odoo_env.messages
 odoo_env.test_oe --> odoo_env.odooenv
 odoo_env.test_oe --> odoo_env.repos
 odoo_env.test_oe --> odoo_env.test_helpers
 odoo_env.test_oe_args --> odoo_env.oe
+odoo_env.test_qa --> odoo_env.managers.environment_manager
 odoo_env.test_qa --> odoo_env.odooenv
 odoo_env.test_qa --> odoo_env.qa
 odoo_env.test_qa --> odoo_env.qa.__main__

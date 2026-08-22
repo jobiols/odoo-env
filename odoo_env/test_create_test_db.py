@@ -21,7 +21,14 @@ class TestQaCli(OdooEnvTestCase):
             debug=False, client="test_client", modules_to_test="modulo_a_testear"
         )
         oe = OdooEnv(options)
-        cmds = oe.build_commands()
+        with patch.object(
+            EnvironmentManager, "discover_modules_in", return_value=["modulo_a_testear"]
+        ):
+            with patch.object(OdooEnv, "_db_exists", return_value=True):
+                with patch.object(
+                    OdooEnv, "_installed_modules", return_value={"modulo_a_testear"}
+                ):
+                    cmds = oe.build_commands()
 
         all_commands = [c.command for c in cmds]
         run_cmd = next(
@@ -44,7 +51,11 @@ class TestQaCli(OdooEnvTestCase):
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
         options = MockArgs(debug=False, client="test_client", modules_to_test="all")
         oe = OdooEnv(options)
-        cmds = oe.build_commands()
+        with patch.object(OdooEnv, "_db_exists", return_value=True):
+            with patch.object(
+                OdooEnv, "_installed_modules", return_value={"mod_a", "mod_b"}
+            ):
+                cmds = oe.build_commands()
 
         all_commands = [c.command for c in cmds]
         run_cmd = next(
@@ -69,6 +80,321 @@ class TestQaCli(OdooEnvTestCase):
         oe = OdooEnv(options)
         with self.assertRaises(OeError):
             oe.build_commands()
+
+    # ------- _installed_modules() (REQ-QAV-004) -------
+
+    def test_installed_modules_uses_correct_psql_command(self):
+        """_installed_modules consulta el contenedor pg-{client} con argv exacto."""
+        options = MockArgs(client="test_client")
+        oe = OdooEnv(options)
+        fake_result = MagicMock(returncode=0, stdout="")
+        with patch("subprocess.run", return_value=fake_result) as mock_run:
+            oe._installed_modules("test_client_test")
+
+        cmd = mock_run.call_args[0][0]
+        self.assertEqual(
+            cmd,
+            [
+                "docker",
+                "exec",
+                "pg-test_client",
+                "psql",
+                "-U",
+                "odoo",
+                "-d",
+                "test_client_test",
+                "-tAc",
+                "SELECT name FROM ir_module_module WHERE state = 'installed'",
+            ],
+        )
+        sql_arg = cmd[-1]
+        self.assertNotIn("sale", sql_arg)
+        self.assertNotIn("mod_a", sql_arg)
+
+    def test_installed_modules_parses_psql_output(self):
+        """El stdout del psql se parsea a un set de nombres sin espacios."""
+        options = MockArgs(client="test_client")
+        oe = OdooEnv(options)
+        fake_result = MagicMock(returncode=0, stdout="sale\nstock\n\n")
+        with patch("subprocess.run", return_value=fake_result):
+            result = oe._installed_modules("test_client_test")
+        self.assertEqual(result, {"sale", "stock"})
+
+    def test_installed_modules_returns_empty_on_error(self):
+        """Un returncode != 0 devuelve set vacío (no lanza excepción)."""
+        options = MockArgs(client="test_client")
+        oe = OdooEnv(options)
+        fake_result = MagicMock(returncode=1, stdout="")
+        with patch("subprocess.run", return_value=fake_result):
+            result = oe._installed_modules("test_client_test")
+        self.assertEqual(result, set())
+
+    # ------- EnvironmentManager.qa() command composition (REQ-QAV-001..003) -------
+
+    def _build_qa_command(self, install_modules, update_modules):
+        """Build the EnvironmentManager.qa() command list for inspection."""
+        options = MockArgs(debug=False, client="test_client")
+        oe = OdooEnv(options)
+        env_mgr = EnvironmentManager(oe)
+        cmds = env_mgr.qa("test_client_test", install_modules, update_modules)
+        self.assertEqual(len(cmds), 1)
+        return cmds[0].command
+
+    def test_qa_command_contains_test_enable(self):
+        """La command de QA lleva --test-enable."""
+        cmd = self._build_qa_command([], ["sale"])
+        self.assertIn("--test-enable", cmd)
+
+    def test_qa_command_contains_log_level_test(self):
+        """La command de QA lleva --log-level=test."""
+        cmd = self._build_qa_command([], ["sale"])
+        self.assertIn("--log-level=test", cmd)
+
+    def test_qa_command_omits_empty_verbs(self):
+        """Una partición vacía omite su verbo; nunca emite -i '' ni -u ''."""
+        install_only = self._build_qa_command(["mod_new"], [])
+        self.assertIn("-i", install_only)
+        self.assertIn("mod_new", install_only)
+        self.assertNotIn("-u", install_only)
+        self.assertNotIn("", install_only)
+
+        update_only = self._build_qa_command([], ["sale"])
+        self.assertIn("-u", update_only)
+        self.assertIn("sale", update_only)
+        self.assertNotIn("-i", update_only)
+        self.assertNotIn("", update_only)
+
+    def test_qa_single_command_for_mixed_modules(self):
+        """Un set mixto produce exactamente un Command (no dos invocaciones)."""
+        options = MockArgs(debug=False, client="test_client")
+        oe = OdooEnv(options)
+        env_mgr = EnvironmentManager(oe)
+        cmds = env_mgr.qa("test_client_test", ["mod_new"], ["sale"])
+        self.assertEqual(len(cmds), 1)
+
+    # ------- OdooEnv.qa() guards + partitioning (REQ-QAV-001..006) -------
+
+    def _find_qa_run_cmd(self, cmds):
+        """Devuelve la lista de argumentos del comando de test (--test-enable)."""
+        for c in cmds:
+            if "--test-enable" in c.command:
+                return c.command
+        raise AssertionError("No se generó comando de test")
+
+    def test_qa_aborts_on_unknown_module(self):
+        """Un módulo que no está en disco aborta con error de módulo no encontrado."""
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(
+            debug=False, client="test_client", modules_to_test="typo_modlue"
+        )
+        oe = OdooEnv(options)
+        with patch.object(
+            EnvironmentManager, "discover_modules_in", return_value=["sale"]
+        ):
+            with patch.object(OdooEnv, "_db_exists", return_value=True):
+                with patch.object(OdooEnv, "_installed_modules", return_value=set()):
+                    with self.assertRaises(OeError) as ctx:
+                        oe.build_commands()
+        self.assertIn("not found on disk", str(ctx.exception))
+
+    def test_qa_aborts_lists_all_unknown_modules(self):
+        """Varios typos se listan todos, ordenados."""
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(
+            debug=False,
+            client="test_client",
+            modules_to_test="sale,typo_b,typo_a",
+        )
+        oe = OdooEnv(options)
+        with patch.object(
+            EnvironmentManager, "discover_modules_in", return_value=["sale"]
+        ):
+            with patch.object(OdooEnv, "_db_exists", return_value=True):
+                with patch.object(OdooEnv, "_installed_modules", return_value=set()):
+                    with self.assertRaises(OeError) as ctx:
+                        oe.build_commands()
+        message = str(ctx.exception)
+        self.assertIn("typo_a", message)
+        self.assertIn("typo_b", message)
+        self.assertIn("typo_a, typo_b", message)
+
+    @patch("odoo_env.odooenv.TestRunner.discover_test_modules")
+    def test_qa_all_skips_ondisk_guard(self, mock_discover):
+        """-Q all no valida contra disco (los módulos salen de discovery)."""
+        mock_discover.return_value = ["mod_a"]
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(debug=False, client="test_client", modules_to_test="all")
+        oe = OdooEnv(options)
+        with patch.object(EnvironmentManager, "discover_modules_in") as mock_ondisk:
+            with patch.object(OdooEnv, "_db_exists", return_value=True):
+                with patch.object(OdooEnv, "_installed_modules", return_value=set()):
+                    oe.build_commands()
+        mock_ondisk.assert_not_called()
+
+    def test_qa_aborts_when_test_db_missing(self):
+        """Sin DB de test aborta y NO consulta el estado instalado."""
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(debug=False, client="test_client", modules_to_test="mod_a")
+        oe = OdooEnv(options)
+        with patch.object(
+            EnvironmentManager, "discover_modules_in", return_value=["mod_a"]
+        ):
+            with patch.object(OdooEnv, "_db_exists", return_value=False):
+                with patch.object(OdooEnv, "_installed_modules") as mock_installed:
+                    with self.assertRaises(OeError):
+                        oe.build_commands()
+        mock_installed.assert_not_called()
+
+    def test_qa_db_error_suggests_create_test_db(self):
+        """El error por DB faltante referencia --create-test-db."""
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(debug=False, client="test_client", modules_to_test="mod_a")
+        oe = OdooEnv(options)
+        with patch.object(
+            EnvironmentManager, "discover_modules_in", return_value=["mod_a"]
+        ):
+            with patch.object(OdooEnv, "_db_exists", return_value=False):
+                with self.assertRaises(OeError) as ctx:
+                    oe.build_commands()
+        self.assertIn("--create-test-db", str(ctx.exception))
+
+    def test_qa_partitions_modules_by_install_state(self):
+        """El estado instalado particiona en install_modules / update_modules."""
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(
+            debug=False,
+            client="test_client",
+            modules_to_test="mod_a,mod_b,sale",
+        )
+        oe = OdooEnv(options)
+        with patch.object(
+            EnvironmentManager,
+            "discover_modules_in",
+            return_value=["mod_a", "mod_b", "sale"],
+        ):
+            with patch.object(OdooEnv, "_db_exists", return_value=True):
+                with patch.object(OdooEnv, "_installed_modules", return_value={"sale"}):
+                    with patch.object(
+                        EnvironmentManager, "qa", return_value=["fake"]
+                    ) as mock_qa:
+                        result = oe.build_commands()
+
+        mock_qa.assert_called_once()
+        call_args = mock_qa.call_args.args
+        # mock replace a EnvironmentManager.qa como atributo de clase, así que
+        # no se bindea self: call_args = (database, install_modules, update_modules)
+        self.assertEqual(call_args[0], "test_client_test")
+        self.assertEqual(call_args[1], ["mod_a", "mod_b"])
+        self.assertEqual(call_args[2], ["sale"])
+        self.assertIn("fake", result)
+
+    def test_qa_all_new_modules_use_install_verb(self):
+        """Ninguno instalado -> solo -i."""
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(
+            debug=False, client="test_client", modules_to_test="mod_a,mod_b"
+        )
+        oe = OdooEnv(options)
+        with patch.object(
+            EnvironmentManager,
+            "discover_modules_in",
+            return_value=["mod_a", "mod_b"],
+        ):
+            with patch.object(OdooEnv, "_db_exists", return_value=True):
+                with patch.object(OdooEnv, "_installed_modules", return_value=set()):
+                    cmds = oe.build_commands()
+        run_cmd = self._find_qa_run_cmd(cmds)
+        self.assertIn("-i", run_cmd)
+        self.assertIn("mod_a,mod_b", run_cmd)
+        self.assertNotIn("-u", run_cmd)
+
+    def test_qa_all_installed_modules_use_update_verb(self):
+        """Todos instalados -> solo -u."""
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(
+            debug=False, client="test_client", modules_to_test="mod_a,mod_b"
+        )
+        oe = OdooEnv(options)
+        with patch.object(
+            EnvironmentManager,
+            "discover_modules_in",
+            return_value=["mod_a", "mod_b"],
+        ):
+            with patch.object(OdooEnv, "_db_exists", return_value=True):
+                with patch.object(
+                    OdooEnv, "_installed_modules", return_value={"mod_a", "mod_b"}
+                ):
+                    cmds = oe.build_commands()
+        run_cmd = self._find_qa_run_cmd(cmds)
+        self.assertIn("-u", run_cmd)
+        self.assertIn("mod_a,mod_b", run_cmd)
+        self.assertNotIn("-i", run_cmd)
+
+    def test_qa_mixed_modules_produce_dual_verb_command(self):
+        """Mezcla -> un solo comando con -i y -u."""
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(
+            debug=False, client="test_client", modules_to_test="mod_new,sale"
+        )
+        oe = OdooEnv(options)
+        with patch.object(
+            EnvironmentManager,
+            "discover_modules_in",
+            return_value=["mod_new", "sale"],
+        ):
+            with patch.object(OdooEnv, "_db_exists", return_value=True):
+                with patch.object(OdooEnv, "_installed_modules", return_value={"sale"}):
+                    cmds = oe.build_commands()
+        run_cmd = self._find_qa_run_cmd(cmds)
+        self.assertIn("-i", run_cmd)
+        self.assertIn("-u", run_cmd)
+        i_index = run_cmd.index("-i")
+        u_index = run_cmd.index("-u")
+        self.assertEqual(run_cmd[i_index + 1], "mod_new")
+        self.assertEqual(run_cmd[u_index + 1], "sale")
+
+    def test_installed_modules_sql_is_fixed_without_interpolation(self):
+        """El SQL es la cadena fija exacta, sin IN (...) ni nombre de módulo (REQ-QAV-004)."""
+        options = MockArgs(client="test_client")
+        oe = OdooEnv(options)
+        fake_result = MagicMock(returncode=0, stdout="")
+        with patch("subprocess.run", return_value=fake_result) as mock_run:
+            oe._installed_modules("test_client_test")
+        argv = mock_run.call_args[0][0]
+        sql = argv[-1]
+        self.assertEqual(
+            sql, "SELECT name FROM ir_module_module WHERE state = 'installed'"
+        )
+        self.assertNotIn("IN (", sql)
+        joined = " ".join(argv)
+        self.assertNotIn("mod_a", joined)
+        self.assertNotIn("sale", joined)
+
+    def test_qa_partitions_are_sorted_for_stable_output(self):
+        """Las particiones install/update se devuelven sorted (output estable)."""
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(
+            debug=False,
+            client="test_client",
+            modules_to_test="zebra,apple,sale,mango",
+        )
+        oe = OdooEnv(options)
+        with patch.object(
+            EnvironmentManager,
+            "discover_modules_in",
+            return_value=["zebra", "apple", "sale", "mango"],
+        ):
+            with patch.object(OdooEnv, "_db_exists", return_value=True):
+                with patch.object(
+                    OdooEnv, "_installed_modules", return_value={"sale", "mango"}
+                ):
+                    with patch.object(
+                        EnvironmentManager, "qa", return_value=["fake"]
+                    ) as mock_qa:
+                        oe.build_commands()
+        call_args = mock_qa.call_args.args
+        self.assertEqual(call_args[1], ["apple", "zebra"])
+        self.assertEqual(call_args[2], ["mango", "sale"])
 
 
 class TestCreateTestDb(OdooEnvTestCase):

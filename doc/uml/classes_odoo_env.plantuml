@@ -107,7 +107,7 @@ class "EnvironmentManager" as odoo_env.managers.environment_manager.EnvironmentM
   system_client
   discover_modules_in(base_dir)
   install()
-  qa(database, modules_to_test)
+  qa(database: str, install_modules: list[str], update_modules: list[str])
   run_client(write_config)
   run_environment()
   stop_client()
@@ -571,9 +571,27 @@ class "TestProcessInputRmdisk" as odoo_env.test_sd.TestProcessInputRmdisk {
   test_rmdisk_without_mask_removes_all()
 }
 class "TestQaCli" as odoo_env.test_create_test_db.TestQaCli {
+  test_installed_modules_parses_psql_output()
+  test_installed_modules_returns_empty_on_error()
+  test_installed_modules_sql_is_fixed_without_interpolation()
+  test_installed_modules_uses_correct_psql_command()
+  test_qa_aborts_lists_all_unknown_modules()
+  test_qa_aborts_on_unknown_module()
+  test_qa_aborts_when_test_db_missing()
   test_qa_all_aborts_when_no_testable_modules(mock_discover)
   test_qa_all_expands_to_discovered_testable_modules(mock_discover)
+  test_qa_all_installed_modules_use_update_verb()
+  test_qa_all_new_modules_use_install_verb()
+  test_qa_all_skips_ondisk_guard(mock_discover)
+  test_qa_command_contains_log_level_test()
+  test_qa_command_contains_test_enable()
+  test_qa_command_omits_empty_verbs()
+  test_qa_db_error_suggests_create_test_db()
+  test_qa_mixed_modules_produce_dual_verb_command()
+  test_qa_partitions_are_sorted_for_stable_output()
+  test_qa_partitions_modules_by_install_state()
   test_qa_passes_full_module_name()
+  test_qa_single_command_for_mixed_modules()
 }
 class "TestRepository" as odoo_env.test_oe.TestRepository {
   setUp()

@@ -6,6 +6,7 @@ from odoo_env.command import (
     Command,
     EnsureNetworkCommand,
     MakedirCommand,
+    QaCommand,
 )
 from odoo_env.config import OeConfig
 from odoo_env.constants import (
@@ -419,7 +420,14 @@ class EnvironmentManager:
             database, modules, "-u", usr_msg_prefix="Performing update of"
         )
 
-    def qa(self, database: str, install_modules: list[str], update_modules: list[str]):
+    def qa(
+        self,
+        database: str,
+        install_modules: list[str],
+        update_modules: list[str],
+        *,
+        any_requested_has_tests: bool = False,
+    ) -> list[Command]:
         ret = []
         volumes = self._get_normal_mountings()
         if self.parent.debug:
@@ -431,12 +439,15 @@ class EnvironmentManager:
         if update_modules:
             extra_args.extend(["-u", ",".join(update_modules)])
 
-        tty = sys.stdin.isatty()
+        # ADR-6: the PTY provides the terminal for docker's stdout, so `-t` is
+        # requested unconditionally (colors inside the container) and the PTY's
+        # ONLCR line discipline prevents the staircase effect. Parent stdin is
+        # irrelevant here, unlike _build_module_command (-i/-u install path).
         cmd_list = self.docker_client.get_run_command(
             RunSpec(
                 self.parent._client.get_image_required("odoo").name,
-                interactive=tty,
-                tty=tty,
+                interactive=True,
+                tty=True,
                 remove=True,
                 network="odoo-net",
                 volumes=volumes,
@@ -458,7 +469,14 @@ class EnvironmentManager:
             f"Performing tests on module(s) {', '.join(all_modules)} for client "
             f"{self.parent._client.name} and database {database}"
         )
-        ret.append(Command(self.parent, command=cmd_list, usr_msg=step_msg))
+        ret.append(
+            QaCommand(
+                self.parent,
+                command=cmd_list,
+                usr_msg=step_msg,
+                any_requested_has_tests=any_requested_has_tests,
+            )
+        )
         return ret
 
     def _get_normal_mountings(self):

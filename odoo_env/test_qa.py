@@ -54,6 +54,31 @@ class FailureDetectionTests(unittest.TestCase):
         self.assertFalse(self.is_error_line("status: ERROR: "))
 
 
+class ParseTestCountTests(unittest.TestCase):
+    """REQ-QAJ-005 — parse_test_count extracts the `of N tests` summary count."""
+
+    def test_summary_line_returns_count(self):
+        self.assertEqual(
+            failures.parse_test_count("0 failed, 0 error(s) of 5 tests"), 5
+        )
+
+    def test_zero_tests_returns_zero(self):
+        self.assertEqual(
+            failures.parse_test_count("0 failed, 0 error(s) of 0 tests"), 0
+        )
+
+    def test_non_summary_returns_none(self):
+        self.assertIsNone(
+            failures.parse_test_count(
+                "2026-01-01 00:00:00,000 1 INFO test_db odoo.modules.loading: Modules loaded."
+            )
+        )
+
+    def test_ansi_stripped_before_match(self):
+        line = "\x1b[32m0 failed, 0 error(s) of 7 tests\x1b[0m"
+        self.assertEqual(failures.parse_test_count(line), 7)
+
+
 class RunnerConfigTests(unittest.TestCase):
     """REQ-QA-007 / REQ-QA-008 — config seam + version-aware demo (ADR 1, 7)."""
 
@@ -64,6 +89,7 @@ class RunnerConfigTests(unittest.TestCase):
         client.version = version
         client.numeric_ver = numeric
         client.base_dir = f"/odoo_ar/odoo-{version}e/{name}/"
+        client.custom_modules_dir = f"{client.base_dir}sources/{name}/"
         client.get_image_required.return_value = MagicMock(
             name=f"jobiols/odoo-ent:{version}e"
         )

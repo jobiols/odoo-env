@@ -14,7 +14,7 @@ strict_tdd: true
 testing:
   test_runner:
     framework: unittest
-    command: "PYTHONPATH=/home/jobiols/tmp/odoo-env /home/jobiols/tmp/odoo-env/venv/bin/python -m unittest discover -s odoo_env -p 'test_*.py'"
+    command: "PYTHONPATH=. python3 -m unittest discover -s odoo_env -p 'test_*.py'"
   layers:
     unit:
       available: true
@@ -57,7 +57,7 @@ rules:
     - Follow existing Command subclass pattern in command.py
     - Maintain check_args / execute separation
   verify:
-    - Run: PYTHONPATH=. venv/bin/python -m unittest discover -s odoo_env -p "test_*.py"
+    - Run: PYTHONPATH=. python3 -m unittest discover -s odoo_env -p "test_*.py"
     - Compare implementation against every spec scenario
   archive:
     - Warn before merging destructive deltas (large removals)

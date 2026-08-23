@@ -82,6 +82,8 @@ package "odoo_env.test_oe_args" as odoo_env.test_oe_args {
 }
 package "odoo_env.test_qa" as odoo_env.test_qa {
 }
+package "odoo_env.test_qa_command" as odoo_env.test_qa_command {
+}
 package "odoo_env.test_sd" as odoo_env.test_sd {
 }
 odoo_env.client --> odoo_env.config
@@ -90,6 +92,7 @@ odoo_env.client --> odoo_env.messages
 odoo_env.client --> odoo_env.repos
 odoo_env.command --> odoo_env.messages
 odoo_env.command --> odoo_env.odoo_conf
+odoo_env.command --> odoo_env.qa.failures
 odoo_env.config --> odoo_env.messages
 odoo_env.config --> odoo_env.singleton
 odoo_env.deploy_keys --> odoo_env.client
@@ -187,6 +190,11 @@ odoo_env.test_qa --> odoo_env.qa.config
 odoo_env.test_qa --> odoo_env.qa.failures
 odoo_env.test_qa --> odoo_env.qa.runner
 odoo_env.test_qa --> odoo_env.qa.threshold
+odoo_env.test_qa_command --> odoo_env.command
+odoo_env.test_qa_command --> odoo_env.managers.environment_manager
+odoo_env.test_qa_command --> odoo_env.messages
+odoo_env.test_qa_command --> odoo_env.odooenv
+odoo_env.test_qa_command --> odoo_env.test_helpers
 odoo_env.test_sd --> odoo_env
 odoo_env.test_sd --> odoo_env.sd
 odoo_env.managers.environment_manager ..> odoo_env.odooenv

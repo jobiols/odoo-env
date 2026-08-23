@@ -472,8 +472,24 @@ class OdooEnv:
         install_modules = sorted(requested - installed)
         update_modules = sorted(requested & installed)
 
-        # Step 6: Delegate
-        return EnvironmentManager(self).qa(database, install_modules, update_modules)
+        # Step 6: Zero-tests precondition (REQ-QAJ-002/003). Does at least
+        # one requested module have a tests/ directory on disk? A module is
+        # a subdir with a __manifest__.py; a testable module additionally
+        # has a tests/ subdir.
+        testable = [
+            m
+            for m in modules_list
+            if (Path(self.client.custom_modules_dir) / m / "tests").is_dir()
+        ]
+        any_requested_has_tests = bool(testable)
+
+        # Step 7: Delegate
+        return EnvironmentManager(self).qa(
+            database,
+            install_modules,
+            update_modules,
+            any_requested_has_tests=any_requested_has_tests,
+        )
 
     @property
     def client(self):

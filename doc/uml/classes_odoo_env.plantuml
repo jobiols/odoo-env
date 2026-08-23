@@ -107,7 +107,7 @@ class "EnvironmentManager" as odoo_env.managers.environment_manager.EnvironmentM
   system_client
   discover_modules_in(base_dir)
   install()
-  qa(database: str, install_modules: list[str], update_modules: list[str])
+  qa(database: str, install_modules: list[str], update_modules: list[str]) -> list[Command]
   run_client(write_config)
   run_environment()
   stop_client()
@@ -127,6 +127,9 @@ class "FailureDetectionTests" as odoo_env.test_qa.FailureDetectionTests {
   test_fail_without_word_is_false()
   test_ignores_non_test_colon_lines()
   test_strips_ansi_before_match()
+}
+class "FakePath" as odoo_env.test_qa_command.TestAnyRequestedHasTests._make_fake_path.FakePath {
+  is_dir()
 }
 class "GitRepo" as odoo_env.repos.GitRepo {
   branch
@@ -245,11 +248,23 @@ class "OeIntegrationTests" as odoo_env.test_qa.OeIntegrationTests {
   test_dash_q_uses_original_qa_method(mock_client_cls, mock_cfg, mock_runner_cls)
   test_test_all_dispatches_to_runner(mock_client_cls, mock_cfg, mock_runner_cls)
 }
+class "ParseTestCountTests" as odoo_env.test_qa.ParseTestCountTests {
+  test_ansi_stripped_before_match()
+  test_non_summary_returns_none()
+  test_summary_line_returns_count()
+  test_zero_tests_returns_zero()
+}
 class "PullImage" as odoo_env.command.PullImage {
   check_args()
 }
 class "PullRepo" as odoo_env.command.PullRepo {
   check_args()
+}
+class "QaCommand" as odoo_env.command.QaCommand {
+  execute()
+}
+class "QaVerdict" as odoo_env.command.QaVerdict {
+  name
 }
 class "RemovedirCommand" as odoo_env.command.RemovedirCommand {
   check_args()
@@ -326,6 +341,12 @@ class "SystemClient" as odoo_env.services.system.SystemClient {
 }
 class "TestAllCommand" as odoo_env.command.TestAllCommand {
   execute()
+}
+class "TestAnyRequestedHasTests" as odoo_env.test_qa_command.TestAnyRequestedHasTests {
+  test_env_manager_qa_flag_defaults_false()
+  test_env_manager_qa_returns_qacommand_with_flag()
+  test_module_with_tests_dir_sets_flag_true()
+  test_module_without_tests_dir_sets_flag_false()
 }
 class "TestBuildModuleCommandWithDemo" as odoo_env.test_environment_manager.TestBuildModuleCommandWithDemo {
   test_install_adds_with_demo_for_ge19()
@@ -509,10 +530,21 @@ class "TestInstallNameResolution" as odoo_env.test_oe.TestInstallNameResolution 
   test_install_name_resolves_client_without_default()
   test_no_install_and_no_default_raises()
 }
+class "TestJudgeStream" as odoo_env.test_qa_command.TestJudgeStream {
+  test_aggregates_multiple_summary_lines()
+  test_ansi_failure_line_reprinted_raw_and_aborts()
+  test_fail_line_aborts()
+  test_failure_gate_fires_before_zero_tests()
+  test_no_summary_line_and_has_tests_dir_is_zero_tests()
+  test_pass_with_tests_collected()
+  test_unrelated_text_is_not_a_failure()
+  test_zero_tests_with_tests_dir_aborts()
+  test_zero_tests_without_tests_dir_passes()
+}
 class "TestModuleCommandTty" as odoo_env.test_environment_manager.TestModuleCommandTty {
   test_build_module_command_omits_it_when_no_tty()
   test_build_module_command_uses_it_when_tty()
-  test_qa_omits_it_when_no_tty()
+  test_qa_always_uses_it_even_when_no_tty()
   test_qa_uses_it_when_tty()
 }
 class "TestOdooVersionMap" as odoo_env.test_constants.TestOdooVersionMap {
@@ -570,6 +602,12 @@ class "TestProcessInputRmdisk" as odoo_env.test_sd.TestProcessInputRmdisk {
   test_rmdisk_without_mask_no_images_returns_none()
   test_rmdisk_without_mask_removes_all()
 }
+class "TestPtySeam" as odoo_env.test_qa_command.TestPtySeam {
+  test_eio_on_child_exit_is_eof()
+  test_exit_code_captured()
+  test_invalid_utf8_replaced()
+  test_partial_line_buffering()
+}
 class "TestQaCli" as odoo_env.test_create_test_db.TestQaCli {
   test_installed_modules_parses_psql_output()
   test_installed_modules_returns_empty_on_error()
@@ -592,6 +630,16 @@ class "TestQaCli" as odoo_env.test_create_test_db.TestQaCli {
   test_qa_partitions_modules_by_install_state()
   test_qa_passes_full_module_name()
   test_qa_single_command_for_mixed_modules()
+}
+class "TestQaCommandContract" as odoo_env.test_qa_command.TestQaCommandContract {
+  test_qa_command_is_command_subclass_and_stores_flag()
+  test_qa_verdict_has_exactly_three_members()
+}
+class "TestQaCommandExecute" as odoo_env.test_qa_command.TestQaCommandExecute {
+  test_execute_passes_on_success()
+  test_execute_raises_on_fail_line()
+  test_execute_raises_on_nonzero_exit()
+  test_execute_raises_on_zero_tests()
 }
 class "TestRepository" as odoo_env.test_oe.TestRepository {
   setUp()
@@ -691,6 +739,7 @@ odoo_env.command.MakedirCommand --|> odoo_env.command.Command
 odoo_env.command.MessageOnly --|> odoo_env.command.Command
 odoo_env.command.PullImage --|> odoo_env.command.Command
 odoo_env.command.PullRepo --|> odoo_env.command.Command
+odoo_env.command.QaCommand --|> odoo_env.command.Command
 odoo_env.command.RemovedirCommand --|> odoo_env.command.Command
 odoo_env.command.TestAllCommand --|> odoo_env.command.Command
 odoo_env.command.WriteConfigFile --|> odoo_env.command.Command
@@ -709,6 +758,7 @@ odoo_env.test_image_manager.TestImageManager --|> odoo_env.test_helpers.OdooEnvT
 odoo_env.test_oe.TestGetPacks --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_oe.TestInstallNameResolution --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_oe.TestRepository --|> odoo_env.test_helpers.OdooEnvTestCase
+odoo_env.test_qa_command.TestAnyRequestedHasTests --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.qa.runner.TestRunner --> odoo_env.services.docker_client.DockerClient : docker_client
 odoo_env.client.Client --* odoo_env.managers.backup_manager.BackupManager : client
 odoo_env.client.Client --* odoo_env.managers.image_manager.ImageManager : client

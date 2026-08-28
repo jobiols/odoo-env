@@ -190,6 +190,7 @@ odoo_env.test_qa --> odoo_env.qa.config
 odoo_env.test_qa --> odoo_env.qa.failures
 odoo_env.test_qa --> odoo_env.qa.runner
 odoo_env.test_qa --> odoo_env.qa.threshold
+odoo_env.test_qa --> odoo_env.test_helpers
 odoo_env.test_qa_command --> odoo_env.command
 odoo_env.test_qa_command --> odoo_env.managers.environment_manager
 odoo_env.test_qa_command --> odoo_env.messages

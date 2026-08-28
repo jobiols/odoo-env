@@ -435,7 +435,9 @@ class OdooEnv:
         database = f"{self._client.name}_test"
 
         # Step 1: Module resolution
-        if modules_to_test == "all":
+        is_all = modules_to_test == "all"
+        available = {}
+        if is_all:
             modules_list = TestRunner.discover_test_modules()
             if not modules_list:
                 msg.err(
@@ -446,11 +448,12 @@ class OdooEnv:
         else:
             modules_list = [m.strip() for m in modules_to_test.split(",")]
 
-            # Step 2: On-disk guard (skip for "all")
-            on_disk = set(
-                EnvironmentManager.discover_modules_in(self.client.custom_modules_dir)
-            )
-            unknown = set(modules_list) - on_disk
+            # Step 2: On-disk guard (skip for "all"). Modules may live in
+            # any repo under sources/ (the client repo or a sibling library
+            # repo), so discover across the whole sources tree instead of
+            # only custom_modules_dir (issue #129).
+            available = EnvironmentManager.discover_all_modules(self.client.sources_dir)
+            unknown = set(modules_list) - set(available)
             if unknown:
                 msg.err(f"Module(s) not found on disk: {', '.join(sorted(unknown))}")
 
@@ -473,11 +476,20 @@ class OdooEnv:
         # one requested module have a tests/ directory on disk? A module is
         # a subdir with a __manifest__.py; a testable module additionally
         # has a tests/ subdir.
-        testable = [
-            m
-            for m in modules_list
-            if (Path(self.client.custom_modules_dir) / m / "tests").is_dir()
-        ]
+        if is_all:
+            # discover_test_modules() already filtered by tests/; keep the
+            # pre-#129 CWD lookup for "all".
+            testable = [
+                m
+                for m in modules_list
+                if (Path(self.client.custom_modules_dir) / m / "tests").is_dir()
+            ]
+        else:
+            testable = [
+                m
+                for m in modules_list
+                if m in available and (available[m] / "tests").is_dir()
+            ]
         any_requested_has_tests = bool(testable)
 
         # Step 7: Delegate

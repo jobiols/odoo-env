@@ -53,6 +53,25 @@ class EnvironmentManager:
                 modules.append(entry.name)
         return sorted(modules)
 
+    @staticmethod
+    def discover_all_modules(base_dir):
+        """Return {module_name: module_dir} for every Odoo module under *base_dir*.
+
+        Scans recursively so modules in sibling library repos (all of sources/)
+        are included, mirroring how WriteConfigCommand builds the addons_path.
+        Unlike discover_modules_in (immediate subdirs of a single repo), this
+        maps each module name to its directory so callers can also probe for a
+        tests/ subdir. A module is a directory containing __manifest__.py.
+        """
+        modules = {}
+        base = Path(base_dir)
+        if not base.is_dir():
+            return modules
+        for manifest in base.rglob("__manifest__.py"):
+            module_dir = manifest.parent
+            modules.setdefault(module_dir.name, module_dir)
+        return modules
+
     def install(self):
         ret = []
         step_msg = f"Installing client {OeConfig().client}"

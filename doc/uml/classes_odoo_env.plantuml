@@ -105,6 +105,7 @@ class "EnvironmentManager" as odoo_env.managers.environment_manager.EnvironmentM
   docker_client
   parent : str
   system_client
+  discover_all_modules(base_dir)
   discover_modules_in(base_dir)
   install()
   qa(database: str, install_modules: list[str], update_modules: list[str]) -> list[Command]
@@ -389,6 +390,8 @@ class "TestCreateTestDb" as odoo_env.test_create_test_db.TestCreateTestDb {
   test_db_exists_does_not_interpolate_database_name_into_sql()
   test_db_exists_false_when_query_returns_empty()
   test_db_exists_true_when_query_returns_1()
+  test_discover_all_modules_empty_when_dir_missing()
+  test_discover_all_modules_finds_modules_across_sibling_repos()
   test_discover_modules_does_not_recurse()
   test_discover_modules_does_not_use_process_cwd()
   test_discover_modules_empty_dir()
@@ -616,6 +619,7 @@ class "TestQaCli" as odoo_env.test_create_test_db.TestQaCli {
   test_qa_aborts_lists_all_unknown_modules()
   test_qa_aborts_on_unknown_module()
   test_qa_aborts_when_test_db_missing()
+  test_qa_accepts_module_in_sibling_library_repo()
   test_qa_all_aborts_when_no_testable_modules(mock_discover)
   test_qa_all_expands_to_discovered_testable_modules(mock_discover)
   test_qa_all_installed_modules_use_update_verb()

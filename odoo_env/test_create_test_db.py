@@ -5,7 +5,12 @@ from odoo_env.constants import DBTOOLS_IMAGE
 from odoo_env.managers.environment_manager import EnvironmentManager
 from odoo_env.messages import OeError
 from odoo_env.odooenv import OdooEnv
-from odoo_env.test_helpers import TEST_CLIENT_MANIFEST, MockArgs, OdooEnvTestCase
+from odoo_env.test_helpers import (
+    TEST_CLIENT_MANIFEST,
+    MockArgs,
+    OdooEnvTestCase,
+    module_map,
+)
 
 
 class TestQaCli(OdooEnvTestCase):
@@ -22,7 +27,9 @@ class TestQaCli(OdooEnvTestCase):
         )
         oe = OdooEnv(options)
         with patch.object(
-            EnvironmentManager, "discover_modules_in", return_value=["modulo_a_testear"]
+            EnvironmentManager,
+            "discover_all_modules",
+            return_value=module_map("modulo_a_testear"),
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
                 with patch.object(
@@ -189,7 +196,7 @@ class TestQaCli(OdooEnvTestCase):
         )
         oe = OdooEnv(options)
         with patch.object(
-            EnvironmentManager, "discover_modules_in", return_value=["sale"]
+            EnvironmentManager, "discover_all_modules", return_value=module_map("sale")
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
                 with patch.object(OdooEnv, "_installed_modules", return_value=set()):
@@ -207,7 +214,7 @@ class TestQaCli(OdooEnvTestCase):
         )
         oe = OdooEnv(options)
         with patch.object(
-            EnvironmentManager, "discover_modules_in", return_value=["sale"]
+            EnvironmentManager, "discover_all_modules", return_value=module_map("sale")
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
                 with patch.object(OdooEnv, "_installed_modules", return_value=set()):
@@ -225,7 +232,7 @@ class TestQaCli(OdooEnvTestCase):
         self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
         options = MockArgs(debug=False, client="test_client", modules_to_test="all")
         oe = OdooEnv(options)
-        with patch.object(EnvironmentManager, "discover_modules_in") as mock_ondisk:
+        with patch.object(EnvironmentManager, "discover_all_modules") as mock_ondisk:
             with patch.object(OdooEnv, "_db_exists", return_value=True):
                 with patch.object(OdooEnv, "_installed_modules", return_value=set()):
                     oe.build_commands()
@@ -237,7 +244,7 @@ class TestQaCli(OdooEnvTestCase):
         options = MockArgs(debug=False, client="test_client", modules_to_test="mod_a")
         oe = OdooEnv(options)
         with patch.object(
-            EnvironmentManager, "discover_modules_in", return_value=["mod_a"]
+            EnvironmentManager, "discover_all_modules", return_value=module_map("mod_a")
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=False):
                 with patch.object(OdooEnv, "_installed_modules") as mock_installed:
@@ -251,7 +258,7 @@ class TestQaCli(OdooEnvTestCase):
         options = MockArgs(debug=False, client="test_client", modules_to_test="mod_a")
         oe = OdooEnv(options)
         with patch.object(
-            EnvironmentManager, "discover_modules_in", return_value=["mod_a"]
+            EnvironmentManager, "discover_all_modules", return_value=module_map("mod_a")
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=False):
                 with self.assertRaises(OeError) as ctx:
@@ -269,8 +276,8 @@ class TestQaCli(OdooEnvTestCase):
         oe = OdooEnv(options)
         with patch.object(
             EnvironmentManager,
-            "discover_modules_in",
-            return_value=["mod_a", "mod_b", "sale"],
+            "discover_all_modules",
+            return_value=module_map("mod_a", "mod_b", "sale"),
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
                 with patch.object(OdooEnv, "_installed_modules", return_value={"sale"}):
@@ -297,8 +304,8 @@ class TestQaCli(OdooEnvTestCase):
         oe = OdooEnv(options)
         with patch.object(
             EnvironmentManager,
-            "discover_modules_in",
-            return_value=["mod_a", "mod_b"],
+            "discover_all_modules",
+            return_value=module_map("mod_a", "mod_b"),
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
                 with patch.object(OdooEnv, "_installed_modules", return_value=set()):
@@ -317,8 +324,8 @@ class TestQaCli(OdooEnvTestCase):
         oe = OdooEnv(options)
         with patch.object(
             EnvironmentManager,
-            "discover_modules_in",
-            return_value=["mod_a", "mod_b"],
+            "discover_all_modules",
+            return_value=module_map("mod_a", "mod_b"),
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
                 with patch.object(
@@ -339,8 +346,8 @@ class TestQaCli(OdooEnvTestCase):
         oe = OdooEnv(options)
         with patch.object(
             EnvironmentManager,
-            "discover_modules_in",
-            return_value=["mod_new", "sale"],
+            "discover_all_modules",
+            return_value=module_map("mod_new", "sale"),
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
                 with patch.object(OdooEnv, "_installed_modules", return_value={"sale"}):
@@ -381,8 +388,8 @@ class TestQaCli(OdooEnvTestCase):
         oe = OdooEnv(options)
         with patch.object(
             EnvironmentManager,
-            "discover_modules_in",
-            return_value=["zebra", "apple", "sale", "mango"],
+            "discover_all_modules",
+            return_value=module_map("zebra", "apple", "sale", "mango"),
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
                 with patch.object(
@@ -395,6 +402,27 @@ class TestQaCli(OdooEnvTestCase):
         call_args = mock_qa.call_args.args
         self.assertEqual(call_args[1], ["apple", "zebra"])
         self.assertEqual(call_args[2], ["mango", "sale"])
+
+    def test_qa_accepts_module_in_sibling_library_repo(self):
+        """Un módulo en un repo hermano (fuera de custom_modules_dir) pasa el guard (issue #129)."""
+        self.mock_get_manifest.side_effect = lambda path=None: TEST_CLIENT_MANIFEST
+        options = MockArgs(
+            debug=False, client="test_client", modules_to_test="library_mod"
+        )
+        oe = OdooEnv(options)
+        with patch.object(
+            EnvironmentManager,
+            "discover_all_modules",
+            return_value={
+                "library_mod": Path("/fake/sources/library_repo/library_mod")
+            },
+        ):
+            with patch.object(OdooEnv, "_db_exists", return_value=True):
+                with patch.object(OdooEnv, "_installed_modules", return_value=set()):
+                    cmds = oe.build_commands()
+        run_cmd = self._find_qa_run_cmd(cmds)
+        self.assertIn("-i", run_cmd)
+        self.assertIn("library_mod", run_cmd)
 
 
 class TestCreateTestDb(OdooEnvTestCase):
@@ -467,6 +495,31 @@ class TestCreateTestDb(OdooEnvTestCase):
             with patch("pathlib.Path.iterdir", return_value=entries):
                 result = EnvironmentManager.discover_modules_in("/fake/sources")
         self.assertEqual(result, ["module_a"])
+
+    # ------- 2.1b discover_all_modules() tests (issue #129) -------
+
+    def test_discover_all_modules_finds_modules_across_sibling_repos(self):
+        """discover_all_modules recorre todo el árbol (repos hermanos), no solo un repo."""
+        manifests = [
+            Path("/fake/sources/client_repo/mod_a/__manifest__.py"),
+            Path("/fake/sources/library_repo/mod_b/__manifest__.py"),
+        ]
+        with patch.object(Path, "is_dir", return_value=True):
+            with patch.object(Path, "rglob", return_value=manifests):
+                result = EnvironmentManager.discover_all_modules("/fake/sources")
+        self.assertEqual(
+            result,
+            {
+                "mod_a": Path("/fake/sources/client_repo/mod_a"),
+                "mod_b": Path("/fake/sources/library_repo/mod_b"),
+            },
+        )
+
+    def test_discover_all_modules_empty_when_dir_missing(self):
+        """Si el directorio no existe, devuelve dict vacío."""
+        with patch.object(Path, "is_dir", return_value=False):
+            result = EnvironmentManager.discover_all_modules("/fake/sources")
+        self.assertEqual(result, {})
 
     # ------- 2.2 _build_module_command install test (RED: method doesn't exist) -------
 

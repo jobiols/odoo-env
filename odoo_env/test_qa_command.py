@@ -228,20 +228,19 @@ class TestAnyRequestedHasTests(OdooEnvTestCase):
         )
         oe = OdooEnv(options)
         on_disk = [m.strip() for m in modules_to_test.split(",")]
+        fake_path = self._make_fake_path(has_tests)
+        available = {m: fake_path(m) for m in on_disk}
         with patch.object(
             EnvironmentManager,
-            "discover_modules_in",
-            return_value=on_disk,
+            "discover_all_modules",
+            return_value=available,
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
                 with patch.object(OdooEnv, "_installed_modules", return_value=set()):
                     with patch.object(
                         EnvironmentManager, "qa", return_value=["fake"]
                     ) as mock_qa:
-                        with patch(
-                            "odoo_env.odooenv.Path", self._make_fake_path(has_tests)
-                        ):
-                            oe.build_commands()
+                        oe.build_commands()
         return mock_qa
 
     def test_module_with_tests_dir_sets_flag_true(self):

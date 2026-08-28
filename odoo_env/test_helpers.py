@@ -1,4 +1,5 @@
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 from odoo_env.config import OeConfig
@@ -106,3 +107,8 @@ class OdooEnvTestCase(unittest.TestCase):
         self.config_data_patcher.stop()
         self.save_config_patcher.stop()
         OeConfig.reset()
+
+
+def module_map(*names):
+    """Return {name: Path('/fake/sources/' + name)} for mocking discover_all_modules."""
+    return {name: Path(f"/fake/sources/{name}") for name in names}

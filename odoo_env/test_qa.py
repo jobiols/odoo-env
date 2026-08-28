@@ -11,6 +11,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from typing import Any
 from unittest.mock import MagicMock, patch
 
 import odoo_env.qa.__main__ as qa_main
@@ -19,6 +20,7 @@ from odoo_env.odooenv import OdooEnv
 from odoo_env.qa import failures, threshold
 from odoo_env.qa.config import RunnerConfig
 from odoo_env.qa.runner import TestRunner
+from odoo_env.test_helpers import module_map
 
 
 class FailureDetectionTests(unittest.TestCase):
@@ -184,8 +186,8 @@ class ThresholdTests(unittest.TestCase):
                 self.threshold.read_floor(path)
 
 
-def _config(**kw):
-    defaults = {
+def _config(**kw: Any) -> RunnerConfig:
+    defaults: dict[str, Any] = {
         "client": "dimec",
         "version": "17.0",
         "base_dir": "/odoo_ar/odoo-17.0e/dimec/",
@@ -576,8 +578,8 @@ class OeIntegrationTests(unittest.TestCase):
         oe = OdooEnv(args)
         with patch.object(
             EnvironmentManager,
-            "discover_modules_in",
-            return_value=["sale", "stock"],
+            "discover_all_modules",
+            return_value=module_map("sale", "stock"),
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
                 with patch.object(OdooEnv, "_installed_modules", return_value=set()):

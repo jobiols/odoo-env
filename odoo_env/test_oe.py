@@ -12,7 +12,12 @@ from odoo_env.managers.environment_manager import EnvironmentManager
 from odoo_env.messages import OeError
 from odoo_env.odooenv import OdooEnv
 from odoo_env.repos import GitRepo
-from odoo_env.test_helpers import TEST_CLIENT_MANIFEST, MockArgs, OdooEnvTestCase
+from odoo_env.test_helpers import (
+    TEST_CLIENT_MANIFEST,
+    MockArgs,
+    OdooEnvTestCase,
+    module_map,
+)
 
 TEST2_CLIENT_MANIFEST = {
     "name": "test2_client",
@@ -109,8 +114,8 @@ class TestRepository(OdooEnvTestCase):
         oe = OdooEnv(options)
         with patch.object(
             EnvironmentManager,
-            "discover_modules_in",
-            return_value=["modulo_a_testear"],
+            "discover_all_modules",
+            return_value=module_map("modulo_a_testear"),
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
                 with patch.object(

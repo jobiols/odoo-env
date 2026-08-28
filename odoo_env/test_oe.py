@@ -16,6 +16,7 @@ from odoo_env.test_helpers import (
     TEST_CLIENT_MANIFEST,
     MockArgs,
     OdooEnvTestCase,
+    docker_run_base,
     module_map,
 )
 
@@ -218,28 +219,7 @@ class TestRepository(OdooEnvTestCase):
         with patch("sys.stdin.isatty", return_value=True):
             cmds = oe.update(database, modules)
 
-        command = [
-            "docker",
-            "run",
-            "--rm",
-            "-it",
-            "--network",
-            "odoo-net",
-            "-v",
-            f"{OeConfig().base_dir}odoo-14.0/test_client/config:/opt/odoo/etc/:rw",
-            "-v",
-            f"{OeConfig().base_dir}odoo-14.0/test_client/data_dir:/opt/odoo/data:rw",
-            "-v",
-            f"{OeConfig().base_dir}odoo-14.0/test_client/log:/var/log/odoo:rw",
-            "-v",
-            f"{OeConfig().base_dir}odoo-14.0/test_client/sources:/opt/odoo/custom-addons:rw",
-            "-v",
-            f"{OeConfig().base_dir}odoo-14.0/test_client/backup_dir:/var/odoo/backups/:rw",
-            "-e",
-            "ODOO_CONF=/dev/null",
-            "--link",
-            "pg-test_client:db",
-            "jobiols/odoo-jeo:14.0",
+        command = docker_run_base() + [
             "--stop-after-init",
             "--logfile=false",
             "-d",

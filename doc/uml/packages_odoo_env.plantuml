@@ -174,7 +174,6 @@ odoo_env.test_image_manager --> odoo_env.constants
 odoo_env.test_image_manager --> odoo_env.managers.image_manager
 odoo_env.test_image_manager --> odoo_env.odooenv
 odoo_env.test_image_manager --> odoo_env.test_helpers
-odoo_env.test_install_module --> odoo_env.config
 odoo_env.test_install_module --> odoo_env.managers.environment_manager
 odoo_env.test_install_module --> odoo_env.messages
 odoo_env.test_install_module --> odoo_env.odooenv

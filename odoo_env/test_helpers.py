@@ -113,3 +113,36 @@ class OdooEnvTestCase(unittest.TestCase):
 def module_map(*names):
     """Return {name: Path('/fake/sources/' + name)} for mocking discover_all_modules."""
     return {name: Path(f"/fake/sources/{name}") for name in names}
+
+
+def docker_run_base(client="test_client", image="jobiols/odoo-jeo:14.0"):
+    """Common prefix of the docker run commands built by OdooEnv.
+
+    Shared by the command-shape tests of -u (update) and -I (install module):
+    run flags, network, the five volume mounts, ODOO_CONF, the postgres link
+    and the Odoo image. Callers append the command-specific tail.
+    """
+    base = OeConfig().base_dir
+    return [
+        "docker",
+        "run",
+        "--rm",
+        "-it",
+        "--network",
+        "odoo-net",
+        "-v",
+        f"{base}odoo-14.0/{client}/config:/opt/odoo/etc/:rw",
+        "-v",
+        f"{base}odoo-14.0/{client}/data_dir:/opt/odoo/data:rw",
+        "-v",
+        f"{base}odoo-14.0/{client}/log:/var/log/odoo:rw",
+        "-v",
+        f"{base}odoo-14.0/{client}/sources:/opt/odoo/custom-addons:rw",
+        "-v",
+        f"{base}odoo-14.0/{client}/backup_dir:/var/odoo/backups/:rw",
+        "-e",
+        "ODOO_CONF=/dev/null",
+        "--link",
+        f"pg-{client}:db",
+        image,
+    ]

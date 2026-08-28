@@ -7,11 +7,10 @@ Strict TDD. Run:
 import unittest
 from unittest.mock import PropertyMock, patch
 
-from odoo_env.config import OeConfig
 from odoo_env.managers.environment_manager import EnvironmentManager
 from odoo_env.messages import OeError
 from odoo_env.odooenv import OdooEnv
-from odoo_env.test_helpers import MockArgs, OdooEnvTestCase, module_map
+from odoo_env.test_helpers import MockArgs, OdooEnvTestCase, docker_run_base, module_map
 
 
 def _make_oe(modules, **kwargs):
@@ -151,29 +150,7 @@ class TestInstallModuleCommand(OdooEnvTestCase):
     def test_full_command_shape(self):
         em = self._make_em()
         cmd = self._build(em, ["sale"], [])
-        base = OeConfig().base_dir
-        expected = [
-            "docker",
-            "run",
-            "--rm",
-            "-it",
-            "--network",
-            "odoo-net",
-            "-v",
-            f"{base}odoo-14.0/test_client/config:/opt/odoo/etc/:rw",
-            "-v",
-            f"{base}odoo-14.0/test_client/data_dir:/opt/odoo/data:rw",
-            "-v",
-            f"{base}odoo-14.0/test_client/log:/var/log/odoo:rw",
-            "-v",
-            f"{base}odoo-14.0/test_client/sources:/opt/odoo/custom-addons:rw",
-            "-v",
-            f"{base}odoo-14.0/test_client/backup_dir:/var/odoo/backups/:rw",
-            "-e",
-            "ODOO_CONF=/dev/null",
-            "--link",
-            "pg-test_client:db",
-            "jobiols/odoo-jeo:14.0",
+        expected = docker_run_base() + [
             "--stop-after-init",
             "--logfile=false",
             "-d",

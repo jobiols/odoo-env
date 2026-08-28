@@ -32,10 +32,10 @@ Functionality
 -------------
 
 ```
-usage: oe [-h] [-i [CLIENT]] [--org ORG] [-R] [-p] [-w] [-r] [-S] [-s] [-u] [-H] [-V] [-Q MODULES] [-c CLIENT] [-v] [-d DATABASE] [-m MODULE] [-f BACKUP_FILE]
+usage: oe [-h] [-i [CLIENT]] [--org ORG] [-R] [-p] [-w] [-r] [-S] [-s] [-u] [-I MODULE] [-H] [-V] [-Q MODULES] [-c CLIENT] [-v] [-d DATABASE] [-m MODULE] [-f BACKUP_FILE]
           [--deploy-keys] [--no-deactivate] [--debug] [--prod] [--restore] [--create-test-db] [--test-all] [--base-dir BASE_DIR]
 
-Odoo Environment Manager v0.16.8 - by jeo Software <jorge.obiols@gmail.com>
+Odoo Environment Manager v0.16.14 - by jeo Software <jorge.obiols@gmail.com>
 
 options:
   -h, --help           show this help message and exit
@@ -52,6 +52,8 @@ options:
   -s                   Stop odoo image.
   -u                   Updates modules in the database. With no parameters, all modules are updated. Use -m list-modules to update only the specified modules Use -d
                        databasename to update a database other than the default database.
+  -I MODULE            Install module(s) in the default database. Pass a module name or a comma-separated list (e.g. -I sale,stock). Modules already installed
+                       are updated (-u) instead of reinstalled. Optional: -d <database> to target a database other than the default ([client]_prod).
   -H                   Show odoo server help, it shows the help from the odoo image declared in the cliente manifest
   -V                   Show version number and exit.
   -Q MODULES           Run the tests. Required parameters: list of modules to test separate by commas (without spaces) e.g. -Q sale,stock. Use -Q all to auto-discover
@@ -86,6 +88,12 @@ Installation
 Changelog
 ---------
 
+- 0.16.14 - ADD oe -I <module> to install a module in the client database (already-installed modules are updated with -u instead of reinstalled)
+- 0.16.13 - FIX oe -Q accepts modules in sibling library repos under sources/ (#129)
+- 0.16.12 - FIX database existence check works with psql 18 (direct connection instead of variable interpolation)
+- 0.16.11 - FIX oe -Q selects -i/-u per module state and detects zero-test modules as failures (#128)
+- 0.16.10 - ADD oe -i <client>:<version> to install a migrated branch (#125)
+- 0.16.9  - FIX oe -i <client> resolves the client name on a fresh install without a default (#123)
 - 0.16.8  - FIX -Q / -i / -u / --create-test-db omit docker -it when stdin is not a TTY (CI/headless)
 - 0.16.7  - Refactoring of the code, no changes to functionality, remove old manifest filename "__openerp__.py",
 - 0.16.6  - FIX oe -p extract-sources in version 19.0

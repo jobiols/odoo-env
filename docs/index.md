@@ -78,6 +78,7 @@ oe --restore
 | Command | Description |
 |---|---|
 | `-u` | Update modules. Use `-m module` for specific modules, or omit for all. Use `-d database` for non-default databases. |
+| `-I module` | Install a module into the client database (comma-separated for several). New modules are installed with `-i`; modules already installed are updated with `-u` instead of reinstalled. Use `-d database` for non-default databases. |
 | `--restore` | Restore a backup into the client database. By default restores the newest `.zip` in `backup_dir`. Use `-f` for a specific file, `-d` for a target database. |
 | `--no-deactivate` | Skip database deactivation before restore. **Deprecated.** |
 | `--create-test-db` | Create a `[client]_test` database: restores the test seed, then installs every module found in the repository. |
@@ -145,12 +146,14 @@ The manifest is a standard Odoo `__manifest__.py` with extra keys that only odoo
 reads. Odoo itself ignores them, so the module remains installable.
 
 Required keys:
+
 - `name`, `version` (standard Odoo)
 - `env-ver: '2'` (must be exactly '2')
 - `git-repos` — list of repositories to clone
 - `docker-images` — list of Docker images to pull
 
 Optional keys:
+
 - `odoo-license` — `'CE'` (default) or `'EE'`
 - `config` — production odoo.conf parameters
 - `config-local` — debug mode odoo.conf parameters

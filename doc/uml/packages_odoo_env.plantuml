@@ -76,6 +76,8 @@ package "odoo_env.test_helpers" as odoo_env.test_helpers {
 }
 package "odoo_env.test_image_manager" as odoo_env.test_image_manager {
 }
+package "odoo_env.test_install_module" as odoo_env.test_install_module {
+}
 package "odoo_env.test_oe" as odoo_env.test_oe {
 }
 package "odoo_env.test_oe_args" as odoo_env.test_oe_args {
@@ -172,6 +174,11 @@ odoo_env.test_image_manager --> odoo_env.constants
 odoo_env.test_image_manager --> odoo_env.managers.image_manager
 odoo_env.test_image_manager --> odoo_env.odooenv
 odoo_env.test_image_manager --> odoo_env.test_helpers
+odoo_env.test_install_module --> odoo_env.config
+odoo_env.test_install_module --> odoo_env.managers.environment_manager
+odoo_env.test_install_module --> odoo_env.messages
+odoo_env.test_install_module --> odoo_env.odooenv
+odoo_env.test_install_module --> odoo_env.test_helpers
 odoo_env.test_oe --> odoo_env.client
 odoo_env.test_oe --> odoo_env.command
 odoo_env.test_oe --> odoo_env.config

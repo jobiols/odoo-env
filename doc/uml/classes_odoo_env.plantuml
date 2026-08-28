@@ -108,6 +108,7 @@ class "EnvironmentManager" as odoo_env.managers.environment_manager.EnvironmentM
   discover_all_modules(base_dir)
   discover_modules_in(base_dir)
   install()
+  install_module(database, install_modules, update_modules)
   qa(database: str, install_modules: list[str], update_modules: list[str]) -> list[Command]
   run_client(write_config)
   run_environment()
@@ -189,6 +190,7 @@ class "OdooEnv" as odoo_env.odooenv.OdooEnv {
   execute(commands)
   get_packs()
   install()
+  install_module(modules_arg, database)
   pull_images()
   qa(modules_to_test)
   restore(client_name, database: 'str | bool | None', backup_file: 'str | bool | None', no_deactivate)
@@ -348,6 +350,10 @@ class "TestAnyRequestedHasTests" as odoo_env.test_qa_command.TestAnyRequestedHas
   test_env_manager_qa_returns_qacommand_with_flag()
   test_module_with_tests_dir_sets_flag_true()
   test_module_without_tests_dir_sets_flag_false()
+}
+class "TestBuildInstallDatabase" as odoo_env.test_install_module.TestBuildInstallDatabase {
+  test_build_install_defaults_to_prod_db()
+  test_build_install_honors_d_override()
 }
 class "TestBuildModuleCommandWithDemo" as odoo_env.test_environment_manager.TestBuildModuleCommandWithDemo {
   test_install_adds_with_demo_for_ge19()
@@ -523,6 +529,24 @@ class "TestImageManager" as odoo_env.test_image_manager.TestImageManager {
   test_v19_not_in_odoo_version_map()
   test_v19_rejects_versions_beyond_19()
   test_v19_resolve_targets_odoo_src_and_site_packages()
+}
+class "TestInstallModuleCommand" as odoo_env.test_install_module.TestInstallModuleCommand {
+  test_adds_with_demo_for_ge19_install()
+  test_full_command_shape()
+  test_install_new_module_uses_i()
+  test_mixed_uses_both_verbs()
+  test_omits_with_demo_for_le18()
+  test_omits_with_demo_when_only_updating()
+  test_update_installed_module_uses_u()
+}
+class "TestInstallModuleGuards" as odoo_env.test_install_module.TestInstallModuleGuards {
+  test_missing_db_raises()
+  test_unknown_module_raises()
+}
+class "TestInstallModulePartition" as odoo_env.test_install_module.TestInstallModulePartition {
+  test_installed_module_updates()
+  test_mixed_partitions()
+  test_new_module_installs()
 }
 class "TestInstallNameResolution" as odoo_env.test_oe.TestInstallNameResolution {
   discover_patcher : _patch
@@ -759,6 +783,10 @@ odoo_env.test_environment_manager.TestDebugMountings --|> odoo_env.test_helpers.
 odoo_env.test_environment_manager.TestEnvironmentManager --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_environment_manager.TestModuleCommandTty --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_image_manager.TestImageManager --|> odoo_env.test_helpers.OdooEnvTestCase
+odoo_env.test_install_module.TestBuildInstallDatabase --|> odoo_env.test_helpers.OdooEnvTestCase
+odoo_env.test_install_module.TestInstallModuleCommand --|> odoo_env.test_helpers.OdooEnvTestCase
+odoo_env.test_install_module.TestInstallModuleGuards --|> odoo_env.test_helpers.OdooEnvTestCase
+odoo_env.test_install_module.TestInstallModulePartition --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_oe.TestGetPacks --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_oe.TestInstallNameResolution --|> odoo_env.test_helpers.OdooEnvTestCase
 odoo_env.test_oe.TestRepository --|> odoo_env.test_helpers.OdooEnvTestCase

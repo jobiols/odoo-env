@@ -89,6 +89,17 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     )
 
     parser.add_argument(
+        "-I",
+        metavar="MODULE",
+        dest="install_module",
+        help="Install module(s) in the default database. Pass a module name "
+        "or a comma-separated list (e.g. -I sale,stock). Modules already "
+        "installed are updated (-u) instead of reinstalled. Optional: "
+        "-d <database> to target a database other than the default "
+        "([client]_prod).",
+    )
+
+    parser.add_argument(
         "-H",
         dest="server_help",
         action="store_true",
@@ -244,6 +255,7 @@ def main():
                 args.stop_env,
                 args.stop_cli,
                 args.update,
+                args.install_module,
                 args.deploy_keys,
                 args.modules_to_test,
                 args.server_help,

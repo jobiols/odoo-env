@@ -439,6 +439,65 @@ class EnvironmentManager:
             database, modules, "-u", usr_msg_prefix="Performing update of"
         )
 
+    def install_module(self, database, install_modules, update_modules):
+        """Build the `oe -I` docker run: install new modules (-i) and update
+        already-installed ones (-u) in a single Odoo invocation.
+
+        Reuses the same volume/network/env scaffolding as _build_module_command
+        but supports both verbs at once, mirroring qa().
+        """
+        ret = []
+        volumes = self._get_normal_mountings()
+        if self.parent.debug:
+            volumes.update(self._get_debug_mountings())
+
+        extra_args = ["-d", database]
+        if install_modules:
+            extra_args.extend(["-i", ",".join(install_modules)])
+        if update_modules:
+            extra_args.extend(["-u", ",".join(update_modules)])
+
+        # Odoo >=19 no longer loads demo data by default on -i (odoo/odoo#194585).
+        # Only relevant when installing at least one new module.
+        if install_modules and needs_with_demo_flag(self.parent._client.numeric_ver):
+            extra_args.append("--with-demo")
+
+        tty = sys.stdin.isatty()
+        cmd_list = self.docker_client.get_run_command(
+            RunSpec(
+                self.parent._client.get_image_required("odoo").name,
+                interactive=tty,
+                tty=tty,
+                remove=True,
+                network="odoo-net",
+                volumes=volumes,
+                links={f"pg-{self.parent._client.name}": "db"},
+                env={"ODOO_CONF": "/dev/null"},
+                stop_after_init=True,
+                logfile="false",
+                extra_args=extra_args,
+            )
+        )
+
+        if install_modules and update_modules:
+            action = (
+                f"Installing {', '.join(install_modules)} and updating "
+                f"{', '.join(update_modules)}"
+            )
+        elif install_modules:
+            action = f"Installing {', '.join(install_modules)}"
+        else:
+            action = f"Updating {', '.join(update_modules)}"
+
+        ret.append(
+            Command(
+                self.parent,
+                command=cmd_list,
+                usr_msg=f"{action} on database {database}",
+            )
+        )
+        return ret
+
     def qa(
         self,
         database: str,

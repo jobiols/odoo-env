@@ -57,6 +57,7 @@ class OdooEnv:
             ("stop_env", self.stop_environment),
             ("stop_cli", self.stop_client),
             ("update", self._build_update),
+            ("install_module", self._build_install),
             ("deploy_keys", self._build_deploy_keys),
             ("modules_to_test", self._build_qa),
             ("server_help", self.server_help),
@@ -79,6 +80,12 @@ class OdooEnv:
         if not modules:
             modules = ["all"]
         return self.update(database, modules)
+
+    def _build_install(self):
+        database = get_param(self._args, "database")
+        if not database:
+            database = self.client.database_default_name
+        return self.install_module(self._args.install_module, database)
 
     def _build_deploy_keys(self):
         conf = OeConfig()
@@ -424,6 +431,44 @@ class OdooEnv:
     def update(self, database, modules):
         #        self._client = Client(self, client_name)
         return EnvironmentManager(self).update(database, modules)
+
+    def install_module(self, modules_arg, database):
+        """Install one or more modules into *database* (the `oe -I` command).
+
+        New modules are installed with Odoo's -i; modules already installed in
+        the target database are updated with -u instead of reinstalled. Both
+        verbs run in a single Odoo invocation.
+
+        :param modules_arg: comma-separated module names (the -I value)
+        :param database: target database name
+        :return: list of Command objects
+        """
+        modules_list = [m.strip() for m in modules_arg.split(",")]
+
+        # Guard 1: every requested module must exist on disk. Modules may live
+        # in any repo under sources/ (the client repo or a sibling library
+        # repo), so discover across the whole sources tree (issue #129).
+        available = EnvironmentManager.discover_all_modules(self.client.sources_dir)
+        unknown = set(modules_list) - set(available)
+        if unknown:
+            msg.err(f"Module(s) not found on disk: {', '.join(sorted(unknown))}")
+
+        # Guard 2: the target database must exist.
+        if not self._db_exists(database):
+            msg.err(
+                f"Database '{database}' does not exist.\n"
+                "  Create it first (oe -i <client> or restore a backup)."
+            )
+
+        # Partition: already-installed -> update (-u), new -> install (-i).
+        installed = self._installed_modules(database)
+        requested = set(modules_list)
+        install_modules = sorted(requested - installed)
+        update_modules = sorted(requested & installed)
+
+        return EnvironmentManager(self).install_module(
+            database, install_modules, update_modules
+        )
 
     def qa(self, modules_to_test):
         """

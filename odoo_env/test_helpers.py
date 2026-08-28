@@ -22,6 +22,7 @@ class MockArgs:
             "stop_env": False,
             "stop_cli": False,
             "update": False,
+            "install_module": None,
             "deploy_keys": False,
             "modules_to_test": None,
             "server_help": False,

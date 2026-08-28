@@ -221,13 +221,10 @@ class OdooEnv:
     def _db_exists(self, database):
         """Check if a database exists in the postgres container.
 
-        Queries pg_database via docker exec on pg-{client}.
-        Returns True if the database exists.
-
-        `database` is passed as a psql variable (-v) and referenced via
-        :'dbname' rather than interpolated into the SQL text, so psql
-        quotes it as a safe string literal instead of it being pasted
-        raw into the query.
+        Connects directly to the target database (psql -d <database>) and
+        runs a fixed "SELECT 1". psql exits non-zero when the database does
+        not exist, so existence is determined by the exit code rather than
+        interpolating the database name into the SQL text.
         """
         result = subprocess.run(
             [
@@ -237,10 +234,10 @@ class OdooEnv:
                 "psql",
                 "-U",
                 "odoo",
-                "-v",
-                f"dbname={database}",
+                "-d",
+                database,
                 "-tAc",
-                "SELECT 1 FROM pg_database WHERE datname = :'dbname'",
+                "SELECT 1",
             ],
             capture_output=True,
             text=True,

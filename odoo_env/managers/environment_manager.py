@@ -517,15 +517,17 @@ class EnvironmentManager:
         if update_modules:
             extra_args.extend(["-u", ",".join(update_modules)])
 
-        # ADR-6: the PTY provides the terminal for docker's stdout, so `-t` is
-        # requested unconditionally (colors inside the container) and the PTY's
-        # ONLCR line discipline prevents the staircase effect. Parent stdin is
-        # irrelevant here, unlike _build_module_command (-i/-u install path).
+        # ``docker run -t`` allocates a container pseudo-TTY and requires the
+        # parent's stdin to be a terminal (docker aborts headless with
+        # "stdin is not a terminal"), so ``-it`` is requested only when stdin
+        # is a TTY. The PTY in QaCommand.execute() still streams stdout with
+        # ONLCR line discipline (colors + no staircase) in that case.
+        tty = sys.stdin.isatty()
         cmd_list = self.docker_client.get_run_command(
             RunSpec(
                 self.parent._client.get_image_required("odoo").name,
-                interactive=True,
-                tty=True,
+                interactive=tty,
+                tty=tty,
                 remove=True,
                 network="odoo-net",
                 volumes=volumes,

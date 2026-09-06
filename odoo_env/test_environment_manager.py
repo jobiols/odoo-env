@@ -46,11 +46,11 @@ class TestBuildModuleCommandWithDemo(OdooEnvTestCase):
 class TestModuleCommandTty(OdooEnvTestCase):
     """-Q / -i / -u / --create-test-db tty behaviour.
 
-    ``oe -Q`` (QaCommand, ADR-6) runs through a PTY and therefore ALWAYS
-    requests ``-it`` regardless of ``sys.stdin.isatty()``. The install/update
-    path (``_build_module_command``) still adapts to TTY presence because it
-    runs a non-interactive Odoo job (--stop-after-init + --test-enable)
-    without a PTY; there a piped/CI stdin must NOT hardcode ``-it``.
+    ``docker run -t`` allocates a container pseudo-TTY and requires the
+    parent's stdin to be a terminal, so every path (``oe -Q`` included) adapts
+    to ``sys.stdin.isatty()``. ``oe -Q`` keeps its PTY for stdout streaming
+    (colors + no staircase), but a piped/CI/headless stdin must NOT request
+    ``-it``: docker aborts with "stdin is not a terminal".
     """
 
     def _make_em(self):
@@ -66,16 +66,17 @@ class TestModuleCommandTty(OdooEnvTestCase):
             )
         self.assertEqual(cmds[0].command[cmds[0].command.index("--rm") + 1], "-it")
 
-    def test_qa_always_uses_it_even_when_no_tty(self):
-        # ADR-6: the PTY provides the terminal for docker's stdout, so -Q always
-        # requests -it regardless of parent stdin (unlike the -i/-u install path).
+    def test_qa_omits_it_when_no_tty(self):
+        # docker run -t requires stdin to be a terminal; headless (PI/CI) must
+        # not request -it or docker aborts with "stdin is not a terminal".
         em = self._make_em()
         with patch("sys.stdin.isatty", return_value=False):
             cmds = em.qa(
                 "test_client_test", install_modules=["mod_a"], update_modules=[]
             )
         cmd = cmds[0].command
-        self.assertEqual(cmd[cmd.index("--rm") + 1], "-it")
+        self.assertNotIn("-it", cmd)
+        self.assertEqual(cmd[cmd.index("--rm") + 1], "--network")
 
     def test_build_module_command_uses_it_when_tty(self):
         em = self._make_em()

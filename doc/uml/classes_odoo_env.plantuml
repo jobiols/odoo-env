@@ -571,7 +571,7 @@ class "TestJudgeStream" as odoo_env.test_qa_command.TestJudgeStream {
 class "TestModuleCommandTty" as odoo_env.test_environment_manager.TestModuleCommandTty {
   test_build_module_command_omits_it_when_no_tty()
   test_build_module_command_uses_it_when_tty()
-  test_qa_always_uses_it_even_when_no_tty()
+  test_qa_omits_it_when_no_tty()
   test_qa_uses_it_when_tty()
 }
 class "TestOdooVersionMap" as odoo_env.test_constants.TestOdooVersionMap {

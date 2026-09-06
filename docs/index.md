@@ -60,7 +60,7 @@ oe --restore
 
 | Command | Description |
 |---|---|
-| `-i [URL]` | Install environment. If a URL is given, clones the repo and auto-discovers the project name from the manifest. Without URL, updates all repositories for the configured client. |
+| `-i [CLIENT]` | Install environment / update repositories. With a URL, clones the repo and auto-discovers the project name from the manifest. Pass a client name to build the canonical URL `git@github.com:<org>/cl-<client>.git`; append `:VERSION` to install a migrated branch (e.g. `oe -i sama:17`). Without a value, updates all repositories for the configured client. |
 | `-p` | Pull all Docker images declared in the client manifest. In debug mode, also extracts Odoo sources to the host. |
 | `-w` | Create / overwrite the `odoo.conf` file from manifest config. |
 
@@ -87,13 +87,16 @@ oe --restore
 
 | Command | Description |
 |---|---|
-| `-Q sale,stock` | Run Odoo tests on comma-separated module list. Uses the `[client]_test` database with `admin/admin` credentials. Add `-d database` to override. |
+| `-Q sale,stock` | Run Odoo tests on a comma-separated module list. Before the tests, modules not installed are installed (`-i`) and already-installed modules are updated (`-u`) in the same Odoo invocation. Uses the `[client]_test` database with `admin/admin` credentials. Add `-d database` to override. |
+| `-Q all` | Auto-discover and run every module with a `tests/` directory in the current repository. |
+| `--test-all` | Run all module tests with coverage and enforce the coverage threshold. |
 
 ### Configuration
 
 | Command | Description |
 |---|---|
 | `-c CLIENT` | Set the default client name. **Persistent** — saved in config. |
+| `--org ORG` | Set the GitHub organization used to build canonical repo URLs (e.g. `quilsoft-org`). **Persistent.** Defaults to `quilsoft-org` when unset. |
 | `-d DATABASE` | Set the default database name. **Persistent.** |
 | `--debug` | Set environment to debug mode. **Persistent.** |
 | `--prod` | Set environment to production mode. **Persistent.** |

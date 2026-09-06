@@ -35,7 +35,7 @@ Functionality
 usage: oe [-h] [-i [CLIENT]] [--org ORG] [-R] [-p] [-w] [-r] [-S] [-s] [-u] [-I MODULE] [-H] [-V] [-Q MODULES] [-c CLIENT] [-v] [-d DATABASE] [-m MODULE] [-f BACKUP_FILE]
           [--deploy-keys] [--no-deactivate] [--debug] [--prod] [--restore] [--create-test-db] [--test-all] [--base-dir BASE_DIR]
 
-Odoo Environment Manager v0.16.14 - by jeo Software <jorge.obiols@gmail.com>
+Odoo Environment Manager v0.16.15 - by jeo Software <jorge.obiols@gmail.com>
 
 options:
   -h, --help           show this help message and exit
@@ -88,6 +88,7 @@ Installation
 Changelog
 ---------
 
+- 0.16.15 - FIX oe -Q omits docker -it when stdin is not a TTY (CI/headless)
 - 0.16.14 - ADD oe -I <module> to install a module in the client database (already-installed modules are updated with -u instead of reinstalled)
 - 0.16.13 - FIX oe -Q accepts modules in sibling library repos under sources/ (#129)
 - 0.16.12 - FIX database existence check works with psql 18 (direct connection instead of variable interpolation)

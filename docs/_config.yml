@@ -1,4 +1,4 @@
-title: ODOO-ENV Version 0.16.8
+title: ODOO-ENV Version 0.16.15
 author: Jorge Obiols
 theme: jekyll-theme-leap-day
 markdown: kramdown
@@ -6,6 +6,7 @@ markdown: kramdown
 defaults:
     - scope:
           path: "assets/img"
+      values:
           image: true
 
 social-network-links:

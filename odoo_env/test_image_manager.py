@@ -170,3 +170,15 @@ class TestImageManager(OdooEnvTestCase):
         )
         self.assertEqual(creates, [], f"must not use docker create: {creates}")
         self.assertEqual(docker_cps, [], f"must not use docker cp: {docker_cps}")
+
+    def test_extract_sources_no_recursive_chmod(self):
+        # Los permisos se aplican solo al crear el directorio (chmod og+w
+        # no recursivo). El chmod -R o+w post-cp ya no debe existir.
+        self.mock_config_data.return_value["environment"] = "debug"
+        options = MockArgs(debug=True, client="test_client")
+        oe = OdooEnv(options)
+        cmds = oe.pull_images()
+        for c in cmds:
+            cmd = c.command
+            if cmd and cmd[0] == "chmod":
+                self.assertNotIn("-R", cmd, f"chmod recursivo inesperado: {cmd}")

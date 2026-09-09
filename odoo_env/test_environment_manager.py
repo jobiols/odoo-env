@@ -1,5 +1,7 @@
 from unittest.mock import PropertyMock, patch
 
+from odoo_env.command import MakedirCommand
+from odoo_env.config import OeConfig
 from odoo_env.managers.environment_manager import EnvironmentManager
 from odoo_env.odooenv import OdooEnv
 from odoo_env.test_helpers import MockArgs, OdooEnvTestCase
@@ -267,3 +269,53 @@ class TestEnvironmentManager(OdooEnvTestCase):
                 cmd_str,
                 f"install() references dist-local-packages: {c.command}",
             )
+
+    def test_install_applies_permissions_only_via_makedir(self):
+        """chown/chmod van atados al mkdir (MakedirCommand.permissions),
+        nunca como Command sueltos que se reaplican en cada corrida."""
+        options = MockArgs(debug=False, client="test_client")
+        oe = OdooEnv(options)
+        cmds = oe.install()
+
+        for c in cmds:
+            if isinstance(c, MakedirCommand):
+                continue
+            first = c.command[0] if c.command else None
+            self.assertNotIn(
+                first,
+                ("chmod", "chown"),
+                f"chmod/chown suelto fuera del mkdir: {c.command}",
+            )
+
+    def test_install_config_dir_permissions(self):
+        options = MockArgs(debug=False, client="test_client")
+        oe = OdooEnv(options)
+        cmds = oe.install()
+
+        config_dir = f"{OeConfig().base_dir}odoo-14.0/test_client/config"
+        makedir = next(
+            c for c in cmds if isinstance(c, MakedirCommand) and c.args == config_dir
+        )
+        self.assertEqual(
+            makedir.permissions,
+            [
+                ["sudo", "chown", "-R", "1100:1100", config_dir],
+                ["sudo", "chmod", "o+w", config_dir],
+            ],
+        )
+
+    def test_install_backup_dir_only_chmod(self):
+        # backup_dir no lleva chown: solo odoo (uid 1100) necesita ser owner
+        # de config/data_dir/log. backup_dir solo debe ser escribible por el host.
+        options = MockArgs(debug=False, client="test_client")
+        oe = OdooEnv(options)
+        cmds = oe.install()
+
+        backup_dir = f"{OeConfig().base_dir}odoo-14.0/test_client/backup_dir"
+        makedir = next(
+            c for c in cmds if isinstance(c, MakedirCommand) and c.args == backup_dir
+        )
+        self.assertEqual(
+            makedir.permissions,
+            [["sudo", "chmod", "o+w", backup_dir]],
+        )

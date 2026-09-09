@@ -166,6 +166,8 @@ odoo_env.test_create_test_db --> odoo_env.messages
 odoo_env.test_create_test_db --> odoo_env.odooenv
 odoo_env.test_create_test_db --> odoo_env.test_helpers
 odoo_env.test_docker_client --> odoo_env.services.docker_client
+odoo_env.test_environment_manager --> odoo_env.command
+odoo_env.test_environment_manager --> odoo_env.config
 odoo_env.test_environment_manager --> odoo_env.managers.environment_manager
 odoo_env.test_environment_manager --> odoo_env.odooenv
 odoo_env.test_environment_manager --> odoo_env.test_helpers

@@ -86,7 +86,11 @@ class EnvironmentManager:
             )
         )
 
-        # Client hierarchy
+        # Client hierarchy: cada directorio se crea y recibe sus permisos una
+        # sola vez, atados al mkdir. En instalaciones posteriores el directorio
+        # ya existe y MakedirCommand no ejecuta ni el mkdir ni los permisos.
+        chown_dirs = ("config", "data_dir", "log")
+        chmod_dirs = ("config", "data_dir", "log", "backup_dir")
         for w_dir in [
             "postgresql",
             "config",
@@ -96,31 +100,26 @@ class EnvironmentManager:
             "sources",
         ]:
             r_dir = f"{self._client.base_dir}{w_dir}"
-            cmd_list = self.system_client.make_mkdir_command(r_dir)
-            ret.append(MakedirCommand(self.parent, command=cmd_list, args=r_dir))
-
-        # Chown pone el owner como 1100 que es lo que hay en la imagen de odoo
-        for w_dir in [
-            "config",
-            "data_dir",
-            "log",
-        ]:
-            r_dir = f"{self._client.base_dir}{w_dir}"
-            cmd_list = self.system_client.get_chown_command(
-                r_dir, owner="1100:1100", recursive=True
+            permissions = []
+            if w_dir in chown_dirs:
+                # Chown pone el owner como 1100, lo que hay en la imagen de odoo
+                permissions.append(
+                    self.system_client.get_chown_command(
+                        r_dir, owner="1100:1100", recursive=True
+                    )
+                )
+            if w_dir in chmod_dirs:
+                permissions.append(
+                    self.system_client.get_chmod_command(r_dir, "o+w", sudo=True)
+                )
+            ret.append(
+                MakedirCommand(
+                    self.parent,
+                    command=self.system_client.make_mkdir_command(r_dir),
+                    args=r_dir,
+                    permissions=permissions,
+                )
             )
-            ret.append(Command(self.parent, command=cmd_list))
-
-        # Chmod
-        for w_dir in [
-            "config",
-            "data_dir",
-            "log",
-            "backup_dir",
-        ]:
-            r_dir = f"{self._client.base_dir}{w_dir}"
-            cmd_list = self.system_client.get_chmod_command(r_dir, "o+w", sudo=True)
-            ret.append(Command(self.parent, command=cmd_list))
 
         # Repos
         ret.extend(self.parent._process_repos())

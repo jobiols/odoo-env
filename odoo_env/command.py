@@ -117,9 +117,27 @@ class CreateGitignore(Command):
 
 
 class MakedirCommand(Command):
+    permissions: list[list[str]]
+
+    def __init__(
+        self,
+        parent,
+        command,
+        args,
+        permissions: list[list[str]] | None = None,
+        **kwargs,
+    ):
+        super().__init__(parent, command=command, args=args, **kwargs)
+        self.permissions: list[list[str]] = permissions or []
+
     def check_args(self):
-        # si el directorio existe no lo creamos
+        # si el directorio existe no lo creamos (y tampoco tocamos permisos)
         return not os.path.isdir(self._args)
+
+    def execute(self):
+        self.subprocess_call(self.command)
+        for perm in self.permissions:
+            self.subprocess_call(perm)
 
 
 class EnsureNetworkCommand(Command):

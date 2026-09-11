@@ -152,7 +152,9 @@ class "ImageManager" as odoo_env.managers.image_manager.ImageManager {
   pull_images()
 }
 class "MakedirCommand" as odoo_env.command.MakedirCommand {
+  permissions : list[list[str]]
   check_args()
+  execute()
 }
 class "MessageOnly" as odoo_env.command.MessageOnly {
   check_args()
@@ -430,6 +432,9 @@ class "TestDockerClient" as odoo_env.test_docker_client.TestDockerClient {
   test_get_pull_command_returns_docker_pull_image()
 }
 class "TestEnvironmentManager" as odoo_env.test_environment_manager.TestEnvironmentManager {
+  test_install_applies_permissions_only_via_makedir()
+  test_install_backup_dir_only_chmod()
+  test_install_config_dir_permissions()
   test_install_does_not_call_extract_sources_in_debug_mode()
   test_install_does_not_call_extract_sources_in_non_debug_mode()
   test_install_does_not_reference_dist_dirs()
@@ -518,6 +523,7 @@ class "TestImageManager" as odoo_env.test_image_manager.TestImageManager {
   test_extract_run_always_uses_entrypoint_cp()
   test_extract_sources_legacy_cleanup_uses_force()
   test_extract_sources_no_extract_sh_reference()
+  test_extract_sources_no_recursive_chmod()
   test_extract_sources_removes_legacy_lib()
   test_extract_sources_removes_legacy_src()
   test_extract_uses_entrypoint_cp_per_target()

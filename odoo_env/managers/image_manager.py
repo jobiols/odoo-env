@@ -118,15 +118,4 @@ class ImageManager:
                 )
             )
 
-        for host_dir, _ in targets:
-            r_dir = f"{cvd}{host_dir}"
-            cmd_list = self.system_client.get_chmod_command(
-                f"{r_dir}/", "o+w", recursive=True, sudo=True
-            )
-            ret.append(
-                Command(
-                    self.parent, command=cmd_list, usr_msg=f"Making writable {r_dir}"
-                )
-            )
-
         return ret

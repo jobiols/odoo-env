@@ -73,7 +73,7 @@ options:
   --restore            Restore a backup into the client database. By default restores the newest .zip file found in backup_dir into the default database
                        ([client]_prod). Use -f to specify a particular backup file and -d to target a different database. The restored database is deactivated
                        automatically unless --no-deactivate is passed.
-  --create-test-db     Create a test database with all project modules.
+  --create-test-db     Create a test database installing only the testable modules (those with a tests/ directory) of the current directory.
   --test-all           Run all module tests with coverage and enforce the coverage threshold.
   --base-dir BASE_DIR  Set the root directory where all client environments are stored (e.g. /odoo_ar/). Saved persistently in the config file; subsequent commands
                        will use this value as the default until changed.

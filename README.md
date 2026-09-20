@@ -32,51 +32,64 @@ Functionality
 -------------
 
 ```
-usage: oe [-h] [-i [CLIENT]] [--org ORG] [-R] [-p] [-w] [-r] [-S] [-s] [-u] [-I MODULE] [-H] [-V] [-Q MODULES] [-c CLIENT] [-v] [-d DATABASE] [-m MODULE] [-f BACKUP_FILE]
-          [--deploy-keys] [--no-deactivate] [--debug] [--prod] [--restore] [--create-test-db] [--test-all] [--base-dir BASE_DIR]
+usage: oe [-h] [-i [CLIENT]] [--org ORG] [-R] [-p] [-w] [-r] [-S] [-s] [-u] [-I MODULE] [-H] [-V] [-Q MODULES] [-c CLIENT] [-v] [-d DATABASE] [-m MODULE] [-f BACKUP_FILE] [--deploy-keys] [--no-deactivate] [--debug] [--prod] [--restore]
+          [--create-test-db] [--test-all] [--base-dir BASE_DIR]
 
 Odoo Environment Manager v0.16.16 - by jeo Software <jorge.obiols@gmail.com>
 
 options:
   -h, --help           show this help message and exit
-  -i [CLIENT]          Install environment / update repositories. With no value, repositories are taken from the manifest. Pass a CLIENT name to build the canonical
-                       repo URL git@github.com:<org>/cl-<client>.git for the first installation (e.g. oe -i labutic). A full git URL (git@... or https://...) is also
-                       accepted.
-  --org ORG            Set the GitHub organization used to build canonical repo URLs (e.g. quilsoft-org). This parameter is persistent. Defaults to quilsoft-org when
-                       unset.
+  -i [CLIENT]          Install environment / update repositories. With no value, repositories are taken
+                       from the manifest. Pass a CLIENT name to build the canonical repo URL git@github.com:<org>/cl-<client>.git for the first
+                       installation (e.g. oe -i labutic). Use CLIENT:VERSION to select a migrated branch,
+                       e.g. oe -i sama:17 clones cl-sama at branch 17.0 (:17 and :17.0 both work).
+                       A full git URL (git@... or https://...) is also accepted.
+  --org ORG            Set the GitHub organization used to build canonical repo URLs (e.g. quilsoft-org).
+                       This parameter is persistent. Defaults to quilsoft-org when unset.
   -R                   Run postgres, wdb and aeroo images (aeroo only for old odoo versions).
   -p                   Pull Images. Download all images declared in client manifest.
   -w                   Create / Overwrite config file.
   -r                   Run odoo image
   -S                   Stop postgres, wdb and aeroo images.
   -s                   Stop odoo image.
-  -u                   Updates modules in the database. With no parameters, all modules are updated. Use -m list-modules to update only the specified modules Use -d
-                       databasename to update a database other than the default database.
-  -I MODULE            Install module(s) in the default database. Pass a module name or a comma-separated list (e.g. -I sale,stock). Modules already installed
-                       are updated (-u) instead of reinstalled. Optional: -d <database> to target a database other than the default ([client]_prod).
-  -H                   Show odoo server help, it shows the help from the odoo image declared in the cliente manifest
+  -u                   Updates modules in the database. With no parameters, all modules are updated.
+                       Use -m list-modules to update only the specified modules Use -d databasename
+                       to update a database other than the default database.
+  -I MODULE            Install module(s) in the default database. Pass a module name or a comma-separated
+                       list (e.g. -I sale,stock). Modules already installed are updated (-u) instead of reinstalled. Optional: -d <database> to target a
+                       database other than the default ([client]_prod).
+  -H                   Show odoo server help, it shows the help from the odoo image declared in the
+                       cliente manifest
   -V                   Show version number and exit.
-  -Q MODULES           Run the tests. Required parameters: list of modules to test separate by commas (without spaces) e.g. -Q sale,stock. Use -Q all to auto-discover
-                       and run every module with a tests/ directory in the current repository. Optional parameters: -d <database>; if omitted, the default
-                       [project]_test database will be used, NOTE: The database used for testing must be created with demo data and must have admin/admin credentials.
+  -Q MODULES           Run the tests. Required parameters: list of modules to test separate by commas
+                       (without spaces) e.g. -Q sale,stock. Use -Q all to auto-discover and run every
+                       module with a tests/ directory in the current
+                       repository. Optional parameters: -d <database>; if omitted, the default [project]_test database will be used, NOTE: The database used for testing must be created with
+                       demo data and must have admin/admin credentials.
   -c CLIENT            Set default client name. This parameter is persistent
   -v                   Go verbose mode. Prints every command
   -d DATABASE          Set default Database name. This option is persistent
-  -m MODULE            Module to update. Used with -u (update) i.e. -m sale for updating sale module -m all for updating all modules. NOTE: if you perform -u without
-                       -m it asumes all modules
-  -f BACKUP_FILE       Filename to restore. Used with --restore. To get the name of If ommited the newest file will be restored
-  --deploy-keys        Available only in production mode. It creates a pair of deploy keys for each private repository found in the manifest, lists the public keys
-                       for adding to the repositories.
+  -m MODULE            Module to update. Used with -u (update) i.e. -m sale for updating sale module
+                       -m all for updating all modules. NOTE: if you perform -u without -m it asumes
+                       all modules -f BACKUP_FILE Filename to restore. Used with --restore.
+                       To get the name of If ommited the newest file will be restored
+  --deploy-keys        Available only in production mode. It creates a pair of deploy keys for each
+                       private repository found in the manifest, lists the public keys for adding to
+                       the repositories.
   --no-deactivate      No Deactivate database before restore. WARNING this command is deprecated
   --debug              Set default environment mode to debug. This parameter is persistent.
   --prod               Set default environment mode to production. This parameter is persistent.
-  --restore            Restore a backup into the client database. By default restores the newest .zip file found in backup_dir into the default database
-                       ([client]_prod). Use -f to specify a particular backup file and -d to target a different database. The restored database is deactivated
-                       automatically unless --no-deactivate is passed.
-  --create-test-db     Create a test database installing only the testable modules (those with a tests/ directory) of the current directory.
+  --restore            Restore a backup into the client database. By default restores the newest .zip
+                       file found in backup_dir into the default database ([client]_prod). Use -f to
+                       specify a particular backup file and -d to target a different database.
+                       The restored database is deactivated automatically unless --no-deactivate is
+                       passed.
+  --create-test-db     Create a test database installing only the testable modules (those with a
+                       tests/ directory) of the current directory.
   --test-all           Run all module tests with coverage and enforce the coverage threshold.
-  --base-dir BASE_DIR  Set the root directory where all client environments are stored (e.g. /odoo_ar/). Saved persistently in the config file; subsequent commands
-                       will use this value as the default until changed.
+  --base-dir BASE_DIR  Set the root directory where all client environments are stored (e.g. /odoo_ar/).
+                       Saved persistently in the config file; subsequent commands will use this value
+                       as the default until changed. will use this value as the default until changed.
 ```
 
 Installation
@@ -88,16 +101,21 @@ Installation
 Changelog
 ---------
 
-- 0.16.16 - FIX apply directory permissions (chmod/chown) only once, when creating each directory
+- 0.16.16 - FIX: Apply directory permissions (chmod/chown) only once during creation. Updated oe
+            --create-test-db install to install only current directory modules and avoid appending
+            the version to the root directory.
 - 0.16.15 - FIX oe -Q omits docker -it when stdin is not a TTY (CI/headless)
-- 0.16.14 - ADD oe -I <module> to install a module in the client database (already-installed modules are updated with -u instead of reinstalled)
+- 0.16.14 - ADD oe -I <module> to install a module in the client database (already-installed modules
+            are updated with -u instead of reinstalled)
 - 0.16.13 - FIX oe -Q accepts modules in sibling library repos under sources/ (#129)
-- 0.16.12 - FIX database existence check works with psql 18 (direct connection instead of variable interpolation)
+- 0.16.12 - FIX database existence check works with psql 18 (direct connection instead of variable
+            interpolation)
 - 0.16.11 - FIX oe -Q selects -i/-u per module state and detects zero-test modules as failures (#128)
 - 0.16.10 - ADD oe -i <client>:<version> to install a migrated branch (#125)
 - 0.16.9  - FIX oe -i <client> resolves the client name on a fresh install without a default (#123)
 - 0.16.8  - FIX -Q / -i / -u / --create-test-db omit docker -it when stdin is not a TTY (CI/headless)
-- 0.16.7  - Refactoring of the code, no changes to functionality, remove old manifest filename "__openerp__.py",
+- 0.16.7  - Refactoring of the code, no changes to functionality, remove old manifest filename
+            "__openerp__.py",
 - 0.16.6  - FIX oe -p extract-sources in version 19.0
 - 0.16.5  - FIX oe -p extract-sources in version 19.0
 - 0.16.4  - FIX oe -p extract-sources in version 19.0

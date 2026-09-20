@@ -314,15 +314,20 @@ class OdooEnv:
 
         Order: discovery → zero-module guard → seed guard →
                db-exists confirm → cp → restore → rm → install (-i)
+
+        Modules are discovered recursively across the whole sources tree
+        (via EnvironmentManager.discover_all_modules), so project modules in
+        any repo under sources/ are found regardless of the repo directory
+        name.
         """
-        modules_dir = self.client.custom_modules_dir
-        modules = EnvironmentManager.discover_modules_in(modules_dir)
+        modules = EnvironmentManager.discover_all_modules(self.client.sources_dir)
         if not modules:
             msg.err(
-                f"No module found in '{modules_dir}'. "
+                f"No module found in '{self.client.sources_dir}'. "
                 "That directory must contain at least one subdirectory "
                 "with an __manifest__.py file."
             )
+        module_names = sorted(modules)
 
         database = f"{self.client.name}_test"
 
@@ -337,9 +342,10 @@ class OdooEnv:
             )
 
         # Guard: confirm overwrite if target DB already exists
-        if self._db_exists(database):
-            if not self._confirm_overwrite(f"Database '{database}'"):
-                msg.err("Aborted by user. Test database was not modified.")
+        if self._db_exists(database) and not self._confirm_overwrite(
+            f"Database '{database}'"
+        ):
+            msg.err("Aborted by user. Test database was not modified.")
 
         commands = []
 
@@ -351,9 +357,8 @@ class OdooEnv:
         # path and removed once the restore is done, so an unrelated file
         # with the same name would otherwise be destroyed with no warning.
         staging_path = backup_dir / "test.zip"
-        if staging_path.exists():
-            if not self._confirm_overwrite(f"'{staging_path}'"):
-                msg.err(f"Aborted by user. '{staging_path}' was not modified.")
+        if staging_path.exists() and not self._confirm_overwrite(f"'{staging_path}'"):
+            msg.err(f"Aborted by user. '{staging_path}' was not modified.")
 
         commands.append(
             Command(
@@ -383,7 +388,7 @@ class OdooEnv:
 
         # Step 4: Install all discovered modules with -i
         env_mgr = EnvironmentManager(self)
-        commands += env_mgr._build_module_command(database, modules, "-i")
+        commands += env_mgr._build_module_command(database, module_names, "-i")
 
         return commands
 

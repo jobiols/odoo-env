@@ -564,7 +564,7 @@ class TestCreateTestDb(OdooEnvTestCase):
     def test_create_test_db_zero_modules_aborts(self):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
-        with patch.object(EnvironmentManager, "discover_modules_in", return_value=[]):
+        with patch.object(EnvironmentManager, "discover_all_modules", return_value={}):
             with patch.object(
                 OdooEnv, "_db_exists", return_value=False
             ) as mock_db_exists:
@@ -573,27 +573,31 @@ class TestCreateTestDb(OdooEnvTestCase):
                 self.assertIn("No module", str(ctx.exception))
                 mock_db_exists.assert_not_called()
 
-    def test_create_test_db_discovers_from_custom_modules_dir(self):
-        """Regresión: los módulos custom viven en sources/<cliente>/, no en
-        sources/ a secas.
+    def test_create_test_db_discovers_modules_across_all_sources(self):
+        """Regresión: los módulos del proyecto pueden vivir en cualquier repo
+        bajo sources/, no necesariamente en sources/<cliente>/.
 
-        Bajo sources_dir/ cuelgan varios repos (cl-<cliente>, <cliente>,
-        y posibles dependencias como odoo-addons/). Los módulos
-        customizados a testear/instalar viven específicamente en
-        sources_dir/<cliente>/, así que create_test_db debe descubrir
-        módulos ahí, no en sources_dir directo (que solo tiene carpetas de
-        repos como hijos inmediatos, no módulos).
+        El cliente villandry18 tiene sus módulos custom en sources/villandry/
+        (el repo se llama villandry, sin el sufijo de versión), así que
+        apuntar a sources/<cliente>/ (= sources/villandry18/) era un
+        directorio inexistente. create_test_db debe recorrer todo el árbol
+        de sources con discover_all_modules e instalar todos los módulos
+        descubiertos, incluidos los de repos hermanos.
         """
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
+        discovered = module_map("module_a", "library_mod")
         with patch.object(
-            EnvironmentManager, "discover_modules_in", return_value=["module_a"]
+            EnvironmentManager, "discover_all_modules", return_value=discovered
         ) as mock_discover:
             with patch.object(OdooEnv, "_db_exists", return_value=False):
                 with patch.object(Path, "is_file", return_value=True):
-                    oe.create_test_db()
+                    result = oe.create_test_db()
 
-        mock_discover.assert_called_once_with(oe.client.custom_modules_dir)
+        mock_discover.assert_called_once_with(oe.client.sources_dir)
+        install_cmd = result[-1].command
+        self.assertIn("-i", install_cmd)
+        self.assertIn("library_mod,module_a", install_cmd)
 
     # ------- 4.2 confirm-yes proceeds (RED) -------
 
@@ -601,7 +605,9 @@ class TestCreateTestDb(OdooEnvTestCase):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
         with patch.object(
-            EnvironmentManager, "discover_modules_in", return_value=["module_a"]
+            EnvironmentManager,
+            "discover_all_modules",
+            return_value=module_map("module_a"),
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
                 with patch("sys.stdin.isatty", return_value=True):
@@ -616,7 +622,9 @@ class TestCreateTestDb(OdooEnvTestCase):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
         with patch.object(
-            EnvironmentManager, "discover_modules_in", return_value=["module_a"]
+            EnvironmentManager,
+            "discover_all_modules",
+            return_value=module_map("module_a"),
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
                 with patch.object(Path, "is_file", return_value=True):
@@ -632,7 +640,9 @@ class TestCreateTestDb(OdooEnvTestCase):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
         with patch.object(
-            EnvironmentManager, "discover_modules_in", return_value=["module_a"]
+            EnvironmentManager,
+            "discover_all_modules",
+            return_value=module_map("module_a"),
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
                 with patch.object(Path, "is_file", return_value=True):
@@ -647,7 +657,9 @@ class TestCreateTestDb(OdooEnvTestCase):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
         with patch.object(
-            EnvironmentManager, "discover_modules_in", return_value=["module_a"]
+            EnvironmentManager,
+            "discover_all_modules",
+            return_value=module_map("module_a"),
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
                 with patch.object(Path, "is_file", return_value=True):
@@ -666,8 +678,8 @@ class TestCreateTestDb(OdooEnvTestCase):
         backup_dir = "/odoo_ar/odoo-14.0/test_client/backup_dir/"
         with patch.object(
             EnvironmentManager,
-            "discover_modules_in",
-            return_value=["module_a", "module_b"],
+            "discover_all_modules",
+            return_value=module_map("module_a", "module_b"),
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=False):
                 with patch.object(
@@ -713,7 +725,9 @@ class TestCreateTestDb(OdooEnvTestCase):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
         with patch.object(
-            EnvironmentManager, "discover_modules_in", return_value=["module_a"]
+            EnvironmentManager,
+            "discover_all_modules",
+            return_value=module_map("module_a"),
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=False):
                 with patch.object(Path, "is_file", return_value=False):
@@ -733,7 +747,9 @@ class TestCreateTestDb(OdooEnvTestCase):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
         with patch.object(
-            EnvironmentManager, "discover_modules_in", return_value=["module_a"]
+            EnvironmentManager,
+            "discover_all_modules",
+            return_value=module_map("module_a"),
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=True):
                 with patch.object(Path, "is_file", return_value=False):
@@ -751,7 +767,9 @@ class TestCreateTestDb(OdooEnvTestCase):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
         with patch.object(
-            EnvironmentManager, "discover_modules_in", return_value=["module_a"]
+            EnvironmentManager,
+            "discover_all_modules",
+            return_value=module_map("module_a"),
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=False):
                 with patch.object(Path, "is_file", return_value=True):
@@ -766,7 +784,9 @@ class TestCreateTestDb(OdooEnvTestCase):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
         with patch.object(
-            EnvironmentManager, "discover_modules_in", return_value=["module_a"]
+            EnvironmentManager,
+            "discover_all_modules",
+            return_value=module_map("module_a"),
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=False):
                 with patch.object(Path, "is_file", return_value=True):
@@ -782,7 +802,9 @@ class TestCreateTestDb(OdooEnvTestCase):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
         with patch.object(
-            EnvironmentManager, "discover_modules_in", return_value=["module_a"]
+            EnvironmentManager,
+            "discover_all_modules",
+            return_value=module_map("module_a"),
         ):
             with patch.object(OdooEnv, "_db_exists", return_value=False):
                 with patch.object(Path, "is_file", return_value=True):

@@ -81,7 +81,7 @@ oe --restore
 | `-I module` | Install a module into the client database (comma-separated for several). New modules are installed with `-i`; modules already installed are updated with `-u` instead of reinstalled. Use `-d database` for non-default databases. |
 | `--restore` | Restore a backup into the client database. By default restores the newest `.zip` in `backup_dir`. Use `-f` for a specific file, `-d` for a target database. |
 | `--no-deactivate` | Skip database deactivation before restore. **Deprecated.** |
-| `--create-test-db` | Create a `[client]_test` database: restores the test seed, then installs every module found in the repository. |
+| `--create-test-db` | Create a `[client]_test` database: restores the test seed, then installs only the testable modules (with a `tests/` directory) of the current directory. |
 
 ### Testing
 

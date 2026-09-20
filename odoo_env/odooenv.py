@@ -315,17 +315,17 @@ class OdooEnv:
         Order: discovery → zero-module guard → seed guard →
                db-exists confirm → cp → restore → rm → install (-i)
 
-        Modules are discovered recursively across the whole sources tree
-        (via EnvironmentManager.discover_all_modules), so project modules in
-        any repo under sources/ are found regardless of the repo directory
-        name.
+        Only testable modules in the current working directory are installed:
+        immediate subdirectories with a __manifest__.py and a tests/ folder
+        (via TestRunner.discover_test_modules). Sibling repos under sources/
+        are ignored.
         """
-        modules = EnvironmentManager.discover_all_modules(self.client.sources_dir)
+        modules = TestRunner.discover_test_modules()
         if not modules:
             msg.err(
-                f"No module found in '{self.client.sources_dir}'. "
-                "That directory must contain at least one subdirectory "
-                "with an __manifest__.py file."
+                "No modules with tests found in the current directory. "
+                "'oe --create-test-db' requires at least one module with a "
+                "__manifest__.py and a tests/ directory."
             )
         module_names = sorted(modules)
 

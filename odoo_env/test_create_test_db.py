@@ -564,37 +564,43 @@ class TestCreateTestDb(OdooEnvTestCase):
     def test_create_test_db_zero_modules_aborts(self):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
-        with patch.object(EnvironmentManager, "discover_all_modules", return_value={}):
-            with patch.object(
-                OdooEnv, "_db_exists", return_value=False
-            ) as mock_db_exists:
-                with self.assertRaises(OeError) as ctx:
-                    oe.create_test_db()
-                self.assertIn("No module", str(ctx.exception))
-                mock_db_exists.assert_not_called()
+        with (
+            patch(
+                "odoo_env.odooenv.TestRunner.discover_test_modules",
+                return_value=[],
+            ),
+            patch.object(OdooEnv, "_db_exists", return_value=False) as mock_db_exists,
+            self.assertRaises(OeError) as ctx,
+        ):
+            oe.create_test_db()
+        self.assertIn("No module", str(ctx.exception))
+        mock_db_exists.assert_not_called()
 
-    def test_create_test_db_discovers_modules_across_all_sources(self):
-        """Regresión: los módulos del proyecto pueden vivir en cualquier repo
-        bajo sources/, no necesariamente en sources/<cliente>/.
+    def test_create_test_db_discovers_testable_modules_in_cwd(self):
+        """create_test_db descubre solo los módulos del CWD con tests/.
 
-        El cliente villandry18 tiene sus módulos custom en sources/villandry/
-        (el repo se llama villandry, sin el sufijo de versión), así que
-        apuntar a sources/<cliente>/ (= sources/villandry18/) era un
-        directorio inexistente. create_test_db debe recorrer todo el árbol
-        de sources con discover_all_modules e instalar todos los módulos
-        descubiertos, incluidos los de repos hermanos.
+        Reemplaza el descubrimiento global sobre todo el árbol de sources/
+        (issue #129): ahora se instalan únicamente los módulos del directorio
+        actual (nivel superior) que tengan __manifest__.py y un subdirectorio
+        tests/, descubiertos por TestRunner.discover_test_modules.
         """
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
-        discovered = module_map("module_a", "library_mod")
-        with patch.object(
-            EnvironmentManager, "discover_all_modules", return_value=discovered
-        ) as mock_discover:
-            with patch.object(OdooEnv, "_db_exists", return_value=False):
-                with patch.object(Path, "is_file", return_value=True):
-                    result = oe.create_test_db()
+        with (
+            patch(
+                "odoo_env.odooenv.TestRunner.discover_test_modules",
+                return_value=["module_a", "library_mod"],
+            ) as mock_discover,
+            patch.object(
+                EnvironmentManager, "discover_all_modules"
+            ) as mock_discover_all,
+            patch.object(OdooEnv, "_db_exists", return_value=False),
+            patch.object(Path, "is_file", return_value=True),
+        ):
+            result = oe.create_test_db()
 
-        mock_discover.assert_called_once_with(oe.client.sources_dir)
+        mock_discover.assert_called_once_with()
+        mock_discover_all.assert_not_called()
         install_cmd = result[-1].command
         self.assertIn("-i", install_cmd)
         self.assertIn("library_mod,module_a", install_cmd)
@@ -604,16 +610,17 @@ class TestCreateTestDb(OdooEnvTestCase):
     def test_create_test_db_confirm_yes_proceeds(self):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
-        with patch.object(
-            EnvironmentManager,
-            "discover_all_modules",
-            return_value=module_map("module_a"),
+        with (
+            patch(
+                "odoo_env.odooenv.TestRunner.discover_test_modules",
+                return_value=["module_a"],
+            ),
+            patch.object(OdooEnv, "_db_exists", return_value=True),
+            patch("sys.stdin.isatty", return_value=True),
+            patch("builtins.input", return_value="y"),
+            patch.object(Path, "is_file", return_value=True),
         ):
-            with patch.object(OdooEnv, "_db_exists", return_value=True):
-                with patch("sys.stdin.isatty", return_value=True):
-                    with patch("builtins.input", return_value="y"):
-                        with patch.object(Path, "is_file", return_value=True):
-                            result = oe.create_test_db()
+            result = oe.create_test_db()
         self.assertGreater(len(result), 0)
 
     # ------- 4.3 confirm-no aborts (RED) -------
@@ -621,53 +628,56 @@ class TestCreateTestDb(OdooEnvTestCase):
     def test_create_test_db_confirm_no_aborts(self):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
-        with patch.object(
-            EnvironmentManager,
-            "discover_all_modules",
-            return_value=module_map("module_a"),
+        with (
+            patch(
+                "odoo_env.odooenv.TestRunner.discover_test_modules",
+                return_value=["module_a"],
+            ),
+            patch.object(OdooEnv, "_db_exists", return_value=True),
+            patch.object(Path, "is_file", return_value=True),
+            patch("sys.stdin.isatty", return_value=True),
+            patch("builtins.input", return_value="n"),
+            self.assertRaises(OeError) as ctx,
         ):
-            with patch.object(OdooEnv, "_db_exists", return_value=True):
-                with patch.object(Path, "is_file", return_value=True):
-                    with patch("sys.stdin.isatty", return_value=True):
-                        with patch("builtins.input", return_value="n"):
-                            with self.assertRaises(OeError) as ctx:
-                                oe.create_test_db()
-                            self.assertIn("Aborted", str(ctx.exception))
+            oe.create_test_db()
+        self.assertIn("Aborted", str(ctx.exception))
 
     # ------- 4.4 non-interactive aborts (RED) -------
 
     def test_create_test_db_non_interactive_aborts(self):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
-        with patch.object(
-            EnvironmentManager,
-            "discover_all_modules",
-            return_value=module_map("module_a"),
+        with (
+            patch(
+                "odoo_env.odooenv.TestRunner.discover_test_modules",
+                return_value=["module_a"],
+            ),
+            patch.object(OdooEnv, "_db_exists", return_value=True),
+            patch.object(Path, "is_file", return_value=True),
+            patch("sys.stdin.isatty", return_value=False),
+            self.assertRaises(OeError) as ctx,
         ):
-            with patch.object(OdooEnv, "_db_exists", return_value=True):
-                with patch.object(Path, "is_file", return_value=True):
-                    with patch("sys.stdin.isatty", return_value=False):
-                        with self.assertRaises(OeError) as ctx:
-                            oe.create_test_db()
-                        self.assertIn("not a terminal", str(ctx.exception))
+            oe.create_test_db()
+        self.assertIn("not a terminal", str(ctx.exception))
 
     # ------- 4.5 EOFError aborts (RED) -------
 
     def test_create_test_db_eof_aborts(self):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
-        with patch.object(
-            EnvironmentManager,
-            "discover_all_modules",
-            return_value=module_map("module_a"),
+        with (
+            patch(
+                "odoo_env.odooenv.TestRunner.discover_test_modules",
+                return_value=["module_a"],
+            ),
+            patch.object(OdooEnv, "_db_exists", return_value=True),
+            patch.object(Path, "is_file", return_value=True),
+            patch("sys.stdin.isatty", return_value=True),
+            patch("builtins.input", side_effect=EOFError),
+            self.assertRaises(OeError) as ctx,
         ):
-            with patch.object(OdooEnv, "_db_exists", return_value=True):
-                with patch.object(Path, "is_file", return_value=True):
-                    with patch("sys.stdin.isatty", return_value=True):
-                        with patch("builtins.input", side_effect=EOFError):
-                            with self.assertRaises(OeError) as ctx:
-                                oe.create_test_db()
-                            self.assertIn("input stream ended", str(ctx.exception))
+            oe.create_test_db()
+        self.assertIn("input stream ended", str(ctx.exception))
 
     # ------- 4.6 full command composition (RED) -------
 
@@ -676,20 +686,21 @@ class TestCreateTestDb(OdooEnvTestCase):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
         backup_dir = "/odoo_ar/odoo-14.0/test_client/backup_dir/"
-        with patch.object(
-            EnvironmentManager,
-            "discover_all_modules",
-            return_value=module_map("module_a", "module_b"),
+        with (
+            patch(
+                "odoo_env.odooenv.TestRunner.discover_test_modules",
+                return_value=["module_a", "module_b"],
+            ),
+            patch.object(OdooEnv, "_db_exists", return_value=False),
+            patch.object(
+                type(oe._client),
+                "backup_dir",
+                new_callable=PropertyMock,
+                return_value=backup_dir,
+            ),
+            patch.object(Path, "is_file", return_value=True),
         ):
-            with patch.object(OdooEnv, "_db_exists", return_value=False):
-                with patch.object(
-                    type(oe._client),
-                    "backup_dir",
-                    new_callable=PropertyMock,
-                    return_value=backup_dir,
-                ):
-                    with patch.object(Path, "is_file", return_value=True):
-                        result = oe.create_test_db()
+            result = oe.create_test_db()
 
         self.assertEqual(len(result), 4)
 
@@ -724,16 +735,17 @@ class TestCreateTestDb(OdooEnvTestCase):
     def test_create_test_db_seed_missing_aborts(self):
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
-        with patch.object(
-            EnvironmentManager,
-            "discover_all_modules",
-            return_value=module_map("module_a"),
+        with (
+            patch(
+                "odoo_env.odooenv.TestRunner.discover_test_modules",
+                return_value=["module_a"],
+            ),
+            patch.object(OdooEnv, "_db_exists", return_value=False),
+            patch.object(Path, "is_file", return_value=False),
+            self.assertRaises(OeError) as ctx,
         ):
-            with patch.object(OdooEnv, "_db_exists", return_value=False):
-                with patch.object(Path, "is_file", return_value=False):
-                    with self.assertRaises(OeError) as ctx:
-                        oe.create_test_db()
-                    self.assertIn("Seed", str(ctx.exception))
+            oe.create_test_db()
+        self.assertIn("Seed", str(ctx.exception))
 
     def test_create_test_db_seed_guard_runs_before_db_confirm_prompt(self):
         """El seed guard corre antes del prompt interactivo de la DB.
@@ -746,18 +758,19 @@ class TestCreateTestDb(OdooEnvTestCase):
         """
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
-        with patch.object(
-            EnvironmentManager,
-            "discover_all_modules",
-            return_value=module_map("module_a"),
+        with (
+            patch(
+                "odoo_env.odooenv.TestRunner.discover_test_modules",
+                return_value=["module_a"],
+            ),
+            patch.object(OdooEnv, "_db_exists", return_value=True),
+            patch.object(Path, "is_file", return_value=False),
+            patch("builtins.input") as mock_input,
+            self.assertRaises(OeError) as ctx,
         ):
-            with patch.object(OdooEnv, "_db_exists", return_value=True):
-                with patch.object(Path, "is_file", return_value=False):
-                    with patch("builtins.input") as mock_input:
-                        with self.assertRaises(OeError) as ctx:
-                            oe.create_test_db()
-                        self.assertIn("Seed", str(ctx.exception))
-                        mock_input.assert_not_called()
+            oe.create_test_db()
+        self.assertIn("Seed", str(ctx.exception))
+        mock_input.assert_not_called()
 
     # ------- 4.9 staging-collision guard: never silently clobbers an
     # existing backup that happens to be named test.zip; prompts instead -------
@@ -766,53 +779,56 @@ class TestCreateTestDb(OdooEnvTestCase):
         """Si el usuario confirma, sí puede pisar el test.zip existente."""
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
-        with patch.object(
-            EnvironmentManager,
-            "discover_all_modules",
-            return_value=module_map("module_a"),
+        with (
+            patch(
+                "odoo_env.odooenv.TestRunner.discover_test_modules",
+                return_value=["module_a"],
+            ),
+            patch.object(OdooEnv, "_db_exists", return_value=False),
+            patch.object(Path, "is_file", return_value=True),
+            patch.object(Path, "exists", return_value=True),
+            patch("sys.stdin.isatty", return_value=True),
+            patch("builtins.input", return_value="y"),
         ):
-            with patch.object(OdooEnv, "_db_exists", return_value=False):
-                with patch.object(Path, "is_file", return_value=True):
-                    with patch.object(Path, "exists", return_value=True):
-                        with patch("sys.stdin.isatty", return_value=True):
-                            with patch("builtins.input", return_value="y"):
-                                result = oe.create_test_db()
+            result = oe.create_test_db()
         self.assertGreater(len(result), 0)
 
     def test_create_test_db_staging_collision_confirm_no_aborts(self):
         """Si el usuario NO confirma, aborta sin tocar el archivo existente."""
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
-        with patch.object(
-            EnvironmentManager,
-            "discover_all_modules",
-            return_value=module_map("module_a"),
+        with (
+            patch(
+                "odoo_env.odooenv.TestRunner.discover_test_modules",
+                return_value=["module_a"],
+            ),
+            patch.object(OdooEnv, "_db_exists", return_value=False),
+            patch.object(Path, "is_file", return_value=True),
+            patch.object(Path, "exists", return_value=True),
+            patch("sys.stdin.isatty", return_value=True),
+            patch("builtins.input", return_value="n"),
+            self.assertRaises(OeError) as ctx,
         ):
-            with patch.object(OdooEnv, "_db_exists", return_value=False):
-                with patch.object(Path, "is_file", return_value=True):
-                    with patch.object(Path, "exists", return_value=True):
-                        with patch("sys.stdin.isatty", return_value=True):
-                            with patch("builtins.input", return_value="n"):
-                                with self.assertRaises(OeError) as ctx:
-                                    oe.create_test_db()
-                                self.assertIn("Aborted", str(ctx.exception))
+            oe.create_test_db()
+        self.assertIn("Aborted", str(ctx.exception))
 
     def test_create_test_db_staging_collision_non_interactive_aborts(self):
         """Sin terminal interactiva no se puede confirmar: aborta, no pisa."""
         options = MockArgs(create_test_db=True, client="test_client")
         oe = OdooEnv(options)
-        with patch.object(
-            EnvironmentManager,
-            "discover_all_modules",
-            return_value=module_map("module_a"),
+        with (
+            patch(
+                "odoo_env.odooenv.TestRunner.discover_test_modules",
+                return_value=["module_a"],
+            ),
+            patch.object(OdooEnv, "_db_exists", return_value=False),
+            patch.object(Path, "is_file", return_value=True),
+            patch.object(Path, "exists", return_value=True),
+            patch("sys.stdin.isatty", return_value=False),
+            self.assertRaises(OeError) as ctx,
         ):
-            with patch.object(OdooEnv, "_db_exists", return_value=False):
-                with patch.object(Path, "is_file", return_value=True):
-                    with patch.object(Path, "exists", return_value=True):
-                        with patch("sys.stdin.isatty", return_value=False):
-                            with self.assertRaises(OeError) as ctx:
-                                oe.create_test_db()
-                            self.assertIn("not a terminal", str(ctx.exception))
+            oe.create_test_db()
+        self.assertIn("not a terminal", str(ctx.exception))
 
     # ------- 4.8 dispatch from build_commands (RED: old msg.err still fires) -------
 

@@ -204,7 +204,10 @@ Odoo Environment Manager v{__version__} - by jeo Software <jorge.obiols@gmail.co
     parser.add_argument(
         "--create-test-db",
         action="store_true",
-        help="Create a test database with all project modules.",
+        help=(
+            "Create a test database installing only the testable modules "
+            "(those with a tests/ directory) of the current directory."
+        ),
     )
 
     parser.add_argument(

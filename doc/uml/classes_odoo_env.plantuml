@@ -385,7 +385,7 @@ class "TestCreateTestDb" as odoo_env.test_create_test_db.TestCreateTestDb {
   test_create_test_db_command_composition()
   test_create_test_db_confirm_no_aborts()
   test_create_test_db_confirm_yes_proceeds()
-  test_create_test_db_discovers_modules_across_all_sources()
+  test_create_test_db_discovers_testable_modules_in_cwd()
   test_create_test_db_dispatched_from_build_commands()
   test_create_test_db_eof_aborts()
   test_create_test_db_non_interactive_aborts()

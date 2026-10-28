@@ -48,6 +48,17 @@ ODOO_VERSION_MAP: dict[int, OdooVersionInfo] = {
     ),
 }
 
+# Layout venv (Odoo 19+): el core vive en /odoo/odoo-src y los paquetes en un
+# venv (/odoo/venv). El mount de site-packages en debug necesita el path EXACTO
+# (los bind mounts no expanden globs) y la version menor de python cambia entre
+# releases (19 -> 3.10, 20 -> 3.12). La extraccion usa el glob python3.* que
+# cubre cualquier bump sin tocar codigo.
+ODOO_VENV_SRC = "/odoo/odoo-src"
+ODOO_VENV_PYTHON: dict[int, str] = {
+    19: "3.10",
+    20: "3.12",
+}
+
 IN_BACKUP_DIR = "/var/odoo/backups/"
 
 # Images

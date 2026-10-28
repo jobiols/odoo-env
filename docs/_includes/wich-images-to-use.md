@@ -2,7 +2,7 @@
 
 ### Odoo Images
 
-Pre-built Odoo images for all Community versions from 8.0 to 19.0 are hosted on
+Pre-built Odoo images for all Community versions from 8.0 to 20.0 are hosted on
 [Docker Hub](https://registry.hub.docker.com/r/jobiols/odoo-jeo/tags).
 
 The Dockerfiles to build these images (or create your own) are at
@@ -26,6 +26,7 @@ You are encouraged to fork the repo and customize images for your needs.
 | 17.0 | `jobiols/odoo-jeo:17.0` | `postgres:17.5-alpine` | `jobiols/wdb:3.3.2` |
 | 18.0 | `jobiols/odoo-jeo:18.0` | `postgres:17.5-alpine` | `jobiols/wdb:3.3.2` |
 | 19.0 | `jobiols/odoo-jeo:19.0` | `postgres:17.5-alpine` | `jobiols/wdb:3.3.2` |
+| 20.0 | `jobiols/odoo-jeo:20.0` | `postgres:17.5-alpine` | `jobiols/wdb:3.3.2` |
 
 > **Note:** For Odoo 19+, the entrypoint changes from `odoo.py` to `odoo-bin`.
 

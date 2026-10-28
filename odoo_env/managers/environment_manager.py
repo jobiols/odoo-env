@@ -19,6 +19,8 @@ from odoo_env.constants import (
     IN_EXTRA_ADDONS,
     IN_LOG,
     ODOO_V14_DEBUG_MOUNTS,
+    ODOO_VENV_PYTHON,
+    ODOO_VENV_SRC,
     ODOO_VERSION_MAP,
     WDB_IMAGE_16,
     WDB_IMAGE_DEFAULT,
@@ -589,11 +591,12 @@ class EnvironmentManager:
                 f"{cvd}src": {"bind": info.src},
                 f"{cvd}lib": {"bind": info.lib + "/"},
             }
-        if version == 19:
+        venv_python = ODOO_VENV_PYTHON.get(version)
+        if venv_python is not None:
             return {
-                f"{cvd}src": {"bind": "/odoo/odoo-src"},
+                f"{cvd}src": {"bind": ODOO_VENV_SRC},
                 f"{cvd}site-packages": {
-                    "bind": "/odoo/venv/lib/python3.10/site-packages"
+                    "bind": f"/odoo/venv/lib/python{venv_python}/site-packages"
                 },
             }
         if version < 14:

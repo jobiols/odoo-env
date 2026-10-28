@@ -1,7 +1,12 @@
 from odoo_env.client import Client
 from odoo_env.command import Command
 from odoo_env.config import OeConfig
-from odoo_env.constants import ODOO_V14_DEBUG_MOUNTS, ODOO_VERSION_MAP
+from odoo_env.constants import (
+    ODOO_V14_DEBUG_MOUNTS,
+    ODOO_VENV_PYTHON,
+    ODOO_VENV_SRC,
+    ODOO_VERSION_MAP,
+)
 from odoo_env.services.docker_client import DockerClient
 from odoo_env.services.system import SystemClient
 
@@ -34,15 +39,16 @@ class ImageManager:
         """Devuelve (targets, legacy_dirs) segun la tecnica de la version.
 
         v14 usa el layout .deb viejo (dist-packages entero); 15-18 usan el
-        layout src/lib de ODOO_VERSION_MAP. legacy_dirs son los dirs host del
-        OTRO layout, que se limpian al extraer.
+        layout src/lib de ODOO_VERSION_MAP; 19+ usan el layout venv
+        (ODOO_VENV_PYTHON). legacy_dirs son los dirs host del OTRO layout, que
+        se limpian al extraer.
         """
         if version == 14:
             return list(ODOO_V14_DEBUG_MOUNTS.items()), ("src", "lib")
-        if version == 19:
+        if version in ODOO_VENV_PYTHON:
             return (
                 [
-                    ("src", "/odoo/odoo-src"),
+                    ("src", ODOO_VENV_SRC),
                     # python3.* (glob): la version de python del venv es un
                     # detalle de la imagen que cambia entre builds (3.10 ->
                     # 3.12 ...). El glob lo resuelve el shell en el extract,
@@ -54,7 +60,7 @@ class ImageManager:
         info = ODOO_VERSION_MAP.get(version)
         if info is None:
             raise ValueError(
-                f"extract_sources is only supported for Odoo v14-19, got v{version}"
+                f"extract_sources is only supported for Odoo v14-20, got v{version}"
             )
         return (
             [("src", info.src), ("lib", info.lib)],
@@ -85,7 +91,9 @@ class ImageManager:
 
         for host_dir, _ in targets:
             r_dir = f"{cvd}{host_dir}"
-            cmd_list = self.system_client.get_rm_command(r_dir, recursive=True)
+            cmd_list = self.system_client.get_rm_command(
+                r_dir, recursive=True, force=True
+            )
             ret.append(
                 Command(self.parent, command=cmd_list, usr_msg=f"Removing {r_dir}")
             )

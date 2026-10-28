@@ -238,10 +238,14 @@ class WriteConfigFile(Command):
 
         odoo_conf.add_list_data(client.config)
 
-        # siempre sobreescribimos estas tres cosas.
+        # siempre sobreescribimos estas opciones.
         odoo_conf.add_line(f"addons_path = {repos}")
         odoo_conf.add_line("unaccent = True")
         odoo_conf.add_line("data_dir = /opt/odoo/data")
+        # Odoo 20 cambió el default de http_interface a 127.0.0.1; el
+        # contenedor se publica con -p, así que debe escuchar en todas las
+        # interfaces para que el mapeo de puertos de Docker llegue a Odoo.
+        odoo_conf.add_line("http_interface = 0.0.0.0")
 
         # si estoy en modo debug, sobreescribo esto
         if client.debug:

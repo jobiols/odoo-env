@@ -173,6 +173,18 @@ class TestDebugMountings(OdooEnvTestCase):
             },
         )
 
+    def test_odoo20_mount_python312(self):
+        result = self._make_em(20)
+        self.assertEqual(
+            result,
+            {
+                "/odoo_ar/odoo-20.0/src": {"bind": "/odoo/odoo-src"},
+                "/odoo_ar/odoo-20.0/site-packages": {
+                    "bind": "/odoo/venv/lib/python3.12/site-packages"
+                },
+            },
+        )
+
     def test_legacy_11_has_extra_addons(self):
         result = self._make_em(11)
         self.assertIn("/odoo_ar/odoo-11.0/extra-addons", result)
@@ -187,7 +199,7 @@ class TestDebugMountings(OdooEnvTestCase):
 
     def test_unknown_version_raises_value_error(self):
         with self.assertRaises(ValueError):
-            self._make_em(20)
+            self._make_em(21)
 
     def test_odoo14_uses_dist_packages_keys(self):
         result = self._make_em(14)

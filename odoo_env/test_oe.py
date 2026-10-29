@@ -60,6 +60,17 @@ PGVECTOR_CLIENT_MANIFEST = {
     "git-repos": ["https://github.com/jobiols/cl-test-client.git"],
 }
 
+CUSTOM_PG_CLIENT_MANIFEST = {
+    "name": "test_client",
+    "version": "14.0.1.0.0",
+    "env-ver": "2",
+    "docker-images": [
+        "odoo jobiols/odoo-jeo:14.0",
+        "postgres jobiols/mypostgres:ultima-version 18",
+    ],
+    "git-repos": ["https://github.com/jobiols/cl-test-client.git"],
+}
+
 
 class TestRepository(OdooEnvTestCase):
     def setUp(self):
@@ -526,6 +537,35 @@ class TestRepository(OdooEnvTestCase):
             "-e",
             "POSTGRES_PASSWORD=odoo",
             "pgvector/pgvector:pg18",
+        ]
+        self.assertEqual(cmds[1].command, expected_postgres)
+
+    def test_run_environment_declared_postgres_major(self):
+        """oe -R con tag opaco + major declarado monta el PGDATA de postgres 18."""
+        self.mock_get_manifest.side_effect = lambda path=None: CUSTOM_PG_CLIENT_MANIFEST
+        options = MockArgs(debug=False, client="test_client")
+        oe = OdooEnv(options)
+        cmds = oe.run_environment()
+
+        psql_dir = f"{OeConfig().base_dir}odoo-14.0/test_client/postgresql/"
+
+        expected_postgres = [
+            "docker",
+            "run",
+            "-d",
+            "--name",
+            "pg-test_client",
+            "--network",
+            "odoo-net",
+            "--restart",
+            "unless-stopped",
+            "-v",
+            f"{psql_dir}:/var/lib/postgresql/18/docker:rw",
+            "-e",
+            "POSTGRES_USER=odoo",
+            "-e",
+            "POSTGRES_PASSWORD=odoo",
+            "jobiols/mypostgres:ultima-version",
         ]
         self.assertEqual(cmds[1].command, expected_postgres)
 

@@ -46,20 +46,31 @@ You are encouraged to fork the repo and customize images for your needs.
 
 ### How images are declared
 
-In the manifest `docker-images` list, each entry is a pair:
+In the manifest `docker-images` list, each entry is:
 
 ```
-'short-name image:tag'
+'short-name image:tag [postgres-major]'
 ```
 
 The `short-name` tells odoo-env which role the image plays. Recognized names:
 `odoo`, `postgres`, `aeroo`, `nginx`.
+
+For the `postgres` image, an optional third field declares the Postgres major
+version explicitly. It is needed when the image tag does not encode the version
+(e.g. a custom image like `jobiols/mypostgres:ultima-version 18`). When omitted,
+odoo-env derives the major from the tag.
 
 Example:
 ```python
 'docker-images': [
     'odoo jobiols/odoo-jeo:18.0',
     'postgres postgres:17.5-alpine',
+]
+
+# Custom postgres image with an opaque tag: declare the major explicitly
+'docker-images': [
+    'odoo jobiols/odoo-jeo:18.0',
+    'postgres jobiols/mypostgres:ultima-version 18',
 ]
 ```
 

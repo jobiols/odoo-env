@@ -95,15 +95,25 @@ sources/
 
 ### `docker-images`
 
-Syntax: `<short-name> <image:tag>`
+Syntax: `<short-name> <image:tag> [postgres-major]`
 
 The `short-name` is how odoo-env refers to the image internally.
 `odoo`, `postgres`, `aeroo`, and `nginx` are recognized names.
+
+For `postgres`, an optional third field declares the major version explicitly,
+for images whose tag does not encode it (e.g. a custom image with an opaque tag).
+When omitted, odoo-env derives the major from the tag.
 
 ```python
 'docker-images': [
     'odoo jobiols/odoo-jeo:18.0',
     'postgres postgres:17.5-alpine',
+]
+
+# Custom postgres image with an opaque tag: declare the major explicitly
+'docker-images': [
+    'odoo jobiols/odoo-jeo:18.0',
+    'postgres jobiols/mypostgres:ultima-version 18',
 ]
 ```
 

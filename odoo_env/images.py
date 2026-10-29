@@ -40,10 +40,13 @@ class DockerImage:
     def __init__(self, values, debug=False):
         _odoo_image = "odoo" in values
         values = values.split()
-        if len(values) != 2:
+        if len(values) not in (2, 3):
             msg.err(f"Bad image definition {values}")
         self._name = values[0]
         self._url = values[1]
+        # Tercer campo opcional: major de postgres declarado explícitamente
+        # (para imágenes custom con tags opacos, p.ej. `...:ultima-version 18`).
+        self._declared_major = values[2] if len(values) == 3 else None
         if _odoo_image and debug:
             self._url += ".debug"
 
@@ -65,14 +68,26 @@ class DockerImage:
 
     @property
     def major_ver(self):
-        """Major de postgres derivado del tag de la imagen.
+        """Major de postgres, derivado del tag o declarado en el manifiesto.
 
-        Entiende los tags reales del ecosistema postgres, incluido pgvector
-        (`pg18`, `0.8.0-pg18`), y aborta con msg.err (OeError) en vez de un
-        traceback si el tag no es legible.
+        Primero se intenta inferir del tag (pg18, 0.8.0-pg18, 17.5-alpine, ...).
+        Si el tag no es legible, se usa el major declarado como tercer campo de
+        la imagen postgres (p.ej. `...:ultima-version 18`). Si no hay tag
+        legible ni major declarado, aborta con un error amigable.
         """
         tag = self._url.split(":")[1] if ":" in self._url else ""
         m = _PG_TAG_RE.search(tag) or _MAJOR_RE.match(tag)
-        if not m:
-            msg.err(f"Cannot read the postgres major version from image '{self._url}'")
-        return int(m.group(1))
+        if m:
+            return int(m.group(1))
+        if self._declared_major is not None:
+            try:
+                return int(self._declared_major)
+            except ValueError:
+                msg.err(
+                    f"Bad postgres major '{self._declared_major}' in image '{self._url}'"
+                )
+        msg.err(
+            f"Cannot determine the postgres version for image '{self._url}'. "
+            f"Declare it explicitly with a third field, e.g. "
+            f"'postgres {self._url} 18'."
+        )

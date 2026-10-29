@@ -35,7 +35,7 @@ Functionality
 usage: oe [-h] [-i [CLIENT]] [--org ORG] [-R] [-p] [-w] [-r] [-S] [-s] [-u] [-I MODULE] [-H] [-V] [-Q MODULES] [-c CLIENT] [-v] [-d DATABASE] [-m MODULE] [-f BACKUP_FILE] [--deploy-keys] [--no-deactivate] [--debug] [--prod] [--restore]
           [--create-test-db] [--test-all] [--base-dir BASE_DIR]
 
-Odoo Environment Manager v0.16.18 - by jeo Software <jorge.obiols@gmail.com>
+Odoo Environment Manager v0.16.19 - by jeo Software <jorge.obiols@gmail.com>
 
 options:
   -h, --help           show this help message and exit
@@ -101,6 +101,8 @@ Installation
 Changelog
 ---------
 
+- 0.16.19 - ADD: declare the postgres major explicitly in the manifest (optional third
+            field of the postgres image) for custom images with opaque tags.
 - 0.16.18 - FIX oe -R with the postgres image pgvector/pgvector:pg18 (tag 'pg18' now
             parsed, mounting the correct PGDATA at /var/lib/postgresql/18/docker).
 - 0.16.17 - ADD: Support for Odoo 20.0 (venv layout with python3.12).

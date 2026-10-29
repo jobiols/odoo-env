@@ -30,3 +30,32 @@ class TestDockerImageMajorVer(unittest.TestCase):
         di = DockerImage("postgres postgres:latest")
         with self.assertRaises(OeError):
             _ = di.major_ver
+
+
+class TestDockerImageDeclaredMajor(unittest.TestCase):
+    """Tercer campo del manifiesto declara el major de postgres explícitamente.
+
+    Cubre imágenes custom con tags opacos (sin número parseable), donde la
+    heurística del tag no puede adivinar la versión.
+    """
+
+    def test_declared_major_overrides_opaque_tag(self):
+        di = DockerImage("postgres jobiols/mypostgres:ultima-version 18")
+        self.assertEqual(di.major_ver, 18)
+
+    def test_tag_wins_when_parseable(self):
+        """El tag parseable es la fuente primaria; el major declarado es fallback."""
+        di = DockerImage("postgres postgres:13 18")
+        self.assertEqual(di.major_ver, 13)
+
+    def test_declared_major_bad_value_raises(self):
+        di = DockerImage("postgres jobiols/mypostgres:ultima-version ultima")
+        with self.assertRaises(OeError):
+            _ = di.major_ver
+
+    def test_opaque_tag_without_declared_major_shows_friendly_error(self):
+        """Sin tag legible y sin major declarado, el error debe indicar cómo resolverlo."""
+        di = DockerImage("postgres jobiols/mypostgres:ultima-version")
+        with self.assertRaises(OeError) as ctx:
+            _ = di.major_ver
+        self.assertIn("Declare it explicitly", str(ctx.exception))

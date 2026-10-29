@@ -68,8 +68,13 @@ class TestOdooVersionMap(unittest.TestCase):
         )
 
     def test_legacy_and_future_keys_absent(self):
-        for key in (11, 12, 13, 14, 19):
+        for key in (11, 12, 13, 14, 19, 20):
             self.assertNotIn(key, ODOO_VERSION_MAP)
+
+    def test_venv_layout_constants(self):
+        self.assertEqual(constants.ODOO_VENV_SRC, "/odoo/odoo-src")
+        self.assertEqual(constants.ODOO_VENV_PYTHON[19], "3.10")
+        self.assertEqual(constants.ODOO_VENV_PYTHON[20], "3.12")
 
     def test_odoo_python_map_absent(self):
         self.assertFalse(

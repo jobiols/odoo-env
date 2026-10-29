@@ -424,6 +424,7 @@ class "TestDebugMountings" as odoo_env.test_environment_manager.TestDebugMountin
   test_odoo17_lib_mount()
   test_odoo18_lib_mount()
   test_odoo19_unchanged()
+  test_odoo20_mount_python312()
   test_unknown_version_raises_value_error()
 }
 class "TestDockerClient" as odoo_env.test_docker_client.TestDockerClient {
@@ -526,15 +527,19 @@ class "TestImageManager" as odoo_env.test_image_manager.TestImageManager {
   test_extract_sources_no_recursive_chmod()
   test_extract_sources_removes_legacy_lib()
   test_extract_sources_removes_legacy_src()
+  test_extract_sources_target_cleanup_uses_force()
   test_extract_uses_entrypoint_cp_per_target()
   test_pull_images_calls_extract_sources_in_debug_mode()
   test_pull_images_command_starts_with_docker_pull()
   test_pull_images_no_extract_sources_in_non_debug_mode()
   test_pull_images_uses_pull_not_run()
+  test_rejects_versions_beyond_20()
   test_v19_legacy_dirs_clean_all_other_layouts()
   test_v19_not_in_odoo_version_map()
-  test_v19_rejects_versions_beyond_19()
   test_v19_resolve_targets_odoo_src_and_site_packages()
+  test_v20_legacy_dirs_clean_all_other_layouts()
+  test_v20_not_in_odoo_version_map()
+  test_v20_resolve_targets_odoo_src_and_site_packages()
 }
 class "TestInstallModuleCommand" as odoo_env.test_install_module.TestInstallModuleCommand {
   test_adds_with_demo_for_ge19_install()
@@ -587,6 +592,7 @@ class "TestOdooVersionMap" as odoo_env.test_constants.TestOdooVersionMap {
   test_v14_debug_mounts_dist_local_packages()
   test_v14_debug_mounts_has_no_src_lib()
   test_v14_debug_mounts_whole_dist_packages()
+  test_venv_layout_constants()
   test_version14_not_in_version_map()
   test_version15_layout()
   test_version16_same_as_14()
@@ -738,6 +744,10 @@ class "TestValidateManifestKeys" as odoo_env.test_client.TestValidateManifestKey
   test_typo_underscore_instead_of_hyphen_raises_with_suggestion()
   test_unknown_key_raises_not_recognized()
   test_valid_manifest_passes()
+}
+class "TestWriteConfigFile" as odoo_env.test_command.TestWriteConfigFile {
+  test_http_interface_written_in_debug()
+  test_http_interface_written_in_prod()
 }
 class "ThresholdEnforcementTests" as odoo_env.test_qa.ThresholdEnforcementTests {
   config

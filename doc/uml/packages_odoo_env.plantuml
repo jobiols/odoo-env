@@ -62,6 +62,8 @@ package "odoo_env.test_backup_guard" as odoo_env.test_backup_guard {
 }
 package "odoo_env.test_client" as odoo_env.test_client {
 }
+package "odoo_env.test_command" as odoo_env.test_command {
+}
 package "odoo_env.test_config" as odoo_env.test_config {
 }
 package "odoo_env.test_constants" as odoo_env.test_constants {
@@ -155,6 +157,7 @@ odoo_env.test_client --> odoo_env.client
 odoo_env.test_client --> odoo_env.config
 odoo_env.test_client --> odoo_env.messages
 odoo_env.test_client --> odoo_env.test_helpers
+odoo_env.test_command --> odoo_env.command
 odoo_env.test_config --> odoo_env.config
 odoo_env.test_config --> odoo_env.messages
 odoo_env.test_config --> odoo_env.test_helpers

@@ -121,6 +121,30 @@ class TestImageManager(OdooEnvTestCase):
         for cmd in legacy_rm_cmds:
             self.assertIn("-f", cmd, f"Legacy cleanup must use -f, got: {cmd}")
 
+    def test_extract_sources_target_cleanup_uses_force(self):
+        # El rm de los dirs target (los que se van a re-extraer) tambien debe
+        # ser idempotente: en una instalacion limpia el dir aun no existe y
+        # `rm -r` sin -f falla (exit 1) abortando el `oe -p`.
+        self.mock_config_data.return_value["environment"] = "debug"
+        options = MockArgs(debug=True, client="test_client")
+        oe = OdooEnv(options)
+        cmds = oe.pull_images()
+        target_rm_cmds = [
+            c.command
+            for c in cmds
+            if "rm" in c.command
+            and any(
+                tok.rstrip("/").endswith("/dist-packages")
+                or tok.rstrip("/").endswith("/dist-local-packages")
+                for tok in c.command
+            )
+        ]
+        self.assertEqual(
+            len(target_rm_cmds), 2, f"Expected 2 target rm cmds, got: {target_rm_cmds}"
+        )
+        for cmd in target_rm_cmds:
+            self.assertIn("-f", cmd, f"Target cleanup must use -f, got: {cmd}")
+
     # ── v19 _resolve_extract_targets ──────────────────────────────
 
     def test_v19_resolve_targets_odoo_src_and_site_packages(self):
@@ -144,10 +168,33 @@ class TestImageManager(OdooEnvTestCase):
         """v19 tiene layout propio; NO debe ir en ODOO_VERSION_MAP."""
         self.assertNotIn(19, ODOO_VERSION_MAP)
 
-    def test_v19_rejects_versions_beyond_19(self):
+    # ── v20 _resolve_extract_targets ──────────────────────────────
+
+    def test_v20_resolve_targets_odoo_src_and_site_packages(self):
+        targets, _ = ImageManager._resolve_extract_targets(20)
+        self.assertEqual(
+            targets,
+            [
+                ("src", "/odoo/odoo-src"),
+                ("site-packages", "/odoo/venv/lib/python3.*/site-packages"),
+            ],
+        )
+
+    def test_v20_legacy_dirs_clean_all_other_layouts(self):
+        _, legacy = ImageManager._resolve_extract_targets(20)
+        self.assertCountEqual(
+            legacy,
+            ("dist-packages", "dist-local-packages", "lib"),
+        )
+
+    def test_v20_not_in_odoo_version_map(self):
+        """v20 usa el layout venv; NO debe ir en ODOO_VERSION_MAP."""
+        self.assertNotIn(20, ODOO_VERSION_MAP)
+
+    def test_rejects_versions_beyond_20(self):
         with self.assertRaises(ValueError) as ctx:
-            ImageManager._resolve_extract_targets(20)
-        self.assertIn("v14-19", str(ctx.exception))
+            ImageManager._resolve_extract_targets(21)
+        self.assertIn("v14-20", str(ctx.exception))
 
     # ── existing tests ────────────────────────────────────────────
 

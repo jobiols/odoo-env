@@ -139,6 +139,7 @@ oe --restore
 | 17 | 3.10 | Uses `src` + `lib` mounts |
 | 18 | 3.12 | Uses `src` + `lib` mounts |
 | 19 | 3.10 (venv) | Uses `odoo-bin`, `src` + `site-packages` |
+| 20 | 3.12 (venv) | Uses `odoo-bin`, `src` + `site-packages` |
 
 Docker images are hosted at [Docker Hub](https://registry.hub.docker.com/r/jobiols/odoo-jeo/tags)
 and Dockerfiles at [GitHub](https://github.com/jobiols/docker-odoo-jeo).

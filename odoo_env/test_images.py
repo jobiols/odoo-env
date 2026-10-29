@@ -43,13 +43,19 @@ class TestDockerImageDeclaredMajor(unittest.TestCase):
         di = DockerImage("postgres jobiols/mypostgres:ultima-version 18")
         self.assertEqual(di.major_ver, 18)
 
-    def test_tag_wins_when_parseable(self):
-        """El tag parseable es la fuente primaria; el major declarado es fallback."""
+    def test_declared_major_wins_over_parseable_tag(self):
+        """El major declarado es autoritativo: gana sobre el tag parseable."""
         di = DockerImage("postgres postgres:13 18")
-        self.assertEqual(di.major_ver, 13)
+        self.assertEqual(di.major_ver, 18)
 
     def test_declared_major_bad_value_raises(self):
         di = DockerImage("postgres jobiols/mypostgres:ultima-version ultima")
+        with self.assertRaises(OeError):
+            _ = di.major_ver
+
+    def test_invalid_declared_major_aborts_even_when_tag_parses(self):
+        """Un major declarado inválido aborta aunque el tag sea parseable (R3)."""
+        di = DockerImage("postgres postgres:13 ultima")
         with self.assertRaises(OeError):
             _ = di.major_ver
 

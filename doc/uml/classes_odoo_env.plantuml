@@ -435,8 +435,9 @@ class "TestDockerClient" as odoo_env.test_docker_client.TestDockerClient {
 class "TestDockerImageDeclaredMajor" as odoo_env.test_images.TestDockerImageDeclaredMajor {
   test_declared_major_bad_value_raises()
   test_declared_major_overrides_opaque_tag()
+  test_declared_major_wins_over_parseable_tag()
+  test_invalid_declared_major_aborts_even_when_tag_parses()
   test_opaque_tag_without_declared_major_shows_friendly_error()
-  test_tag_wins_when_parseable()
 }
 class "TestDockerImageMajorVer" as odoo_env.test_images.TestDockerImageMajorVer {
   CASES : dict

@@ -68,17 +68,14 @@ class DockerImage:
 
     @property
     def major_ver(self):
-        """Major de postgres, derivado del tag o declarado en el manifiesto.
+        """Major de postgres, declarado en el manifiesto o derivado del tag.
 
-        Primero se intenta inferir del tag (pg18, 0.8.0-pg18, 17.5-alpine, ...).
-        Si el tag no es legible, se usa el major declarado como tercer campo de
-        la imagen postgres (p.ej. `...:ultima-version 18`). Si no hay tag
-        legible ni major declarado, aborta con un error amigable.
+        El major declarado (tercer campo de la imagen postgres) es
+        autoritativo: si está presente, se valida y se usa; un valor inválido
+        aborta, sin importar que el tag sea parseable. Si no hay major
+        declarado, se deriva del tag (pg18, 0.8.0-pg18, 17.5-alpine, ...). Si
+        no hay tag legible ni major declarado, aborta con un error amigable.
         """
-        tag = self._url.split(":")[1] if ":" in self._url else ""
-        m = _PG_TAG_RE.search(tag) or _MAJOR_RE.match(tag)
-        if m:
-            return int(m.group(1))
         if self._declared_major is not None:
             try:
                 return int(self._declared_major)
@@ -86,8 +83,12 @@ class DockerImage:
                 msg.err(
                     f"Bad postgres major '{self._declared_major}' in image '{self._url}'"
                 )
-        msg.err(
-            f"Cannot determine the postgres version for image '{self._url}'. "
-            f"Declare it explicitly with a third field, e.g. "
-            f"'postgres {self._url} 18'."
-        )
+        tag = self._url.split(":")[1] if ":" in self._url else ""
+        m = _PG_TAG_RE.search(tag) or _MAJOR_RE.match(tag)
+        if not m:
+            msg.err(
+                f"Cannot determine the postgres version for image '{self._url}'. "
+                f"Declare it explicitly with a third field, e.g. "
+                f"'postgres {self._url} 18'."
+            )
+        return int(m.group(1))

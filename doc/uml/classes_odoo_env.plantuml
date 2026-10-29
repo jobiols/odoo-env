@@ -93,8 +93,8 @@ class "DockerClient" as odoo_env.services.docker_client.DockerClient {
   get_stop_command(container_name: str) -> list[str]
 }
 class "DockerImage" as odoo_env.images.DockerImage {
+  major_ver
   name
-  numeric_ver
   short_name
   version
 }
@@ -432,6 +432,11 @@ class "TestDockerClient" as odoo_env.test_docker_client.TestDockerClient {
   test_get_pull_command_has_no_flags()
   test_get_pull_command_returns_docker_pull_image()
 }
+class "TestDockerImageMajorVer" as odoo_env.test_images.TestDockerImageMajorVer {
+  CASES : dict
+  test_major_ver_parses_real_tags()
+  test_major_ver_raises_on_unreadable_tag()
+}
 class "TestEnvironmentManager" as odoo_env.test_environment_manager.TestEnvironmentManager {
   test_install_applies_permissions_only_via_makedir()
   test_install_backup_dir_only_chmod()
@@ -703,6 +708,7 @@ class "TestRepository" as odoo_env.test_oe.TestRepository {
   test_restore_uses_client_name_not_database()
   test_run_cli()
   test_run_environment_debug()
+  test_run_environment_pgvector_pg18()
   test_run_environment_prod()
   test_save_multiple_clients()
   test_server_help()

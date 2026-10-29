@@ -1,4 +1,14 @@
+import re
+
 from odoo_env.messages import msg
+
+# Tag de postgres del estilo pg18 / 0.8.0-pg18 / pg18-bookworm.
+# Se busca `pg<digitos>` primero porque en las imagenes pgvector el numero
+# que aparece antes es la version de la extension (p.ej. 0.8.0), no la de
+# postgres. El lookbehind negativo evita matchear "pg" dentro de una palabra.
+_PG_TAG_RE = re.compile(r"(?:^|[^a-z])pg(\d{1,2})(?:[^\d]|$)", re.IGNORECASE)
+# Tag numerico clasico: 17.5-alpine, 13, v16, ...
+_MAJOR_RE = re.compile(r"^v?(\d{1,2})")
 
 # class Image:
 #     def __init__(self, values):
@@ -54,6 +64,15 @@ class DockerImage:
         return self._url
 
     @property
-    def numeric_ver(self):
-        s = self._url
-        return int(float(s.split(":")[1].split("-")[0]))
+    def major_ver(self):
+        """Major de postgres derivado del tag de la imagen.
+
+        Entiende los tags reales del ecosistema postgres, incluido pgvector
+        (`pg18`, `0.8.0-pg18`), y aborta con msg.err (OeError) en vez de un
+        traceback si el tag no es legible.
+        """
+        tag = self._url.split(":")[1] if ":" in self._url else ""
+        m = _PG_TAG_RE.search(tag) or _MAJOR_RE.match(tag)
+        if not m:
+            msg.err(f"Cannot read the postgres major version from image '{self._url}'")
+        return int(m.group(1))

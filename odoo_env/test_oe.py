@@ -48,6 +48,18 @@ TEST2E_CLIENT_MANIFEST = {
     "git-repos": ["https://github.com/jobiols/odoo-enterprise.git"],
 }
 
+PGVECTOR_CLIENT_MANIFEST = {
+    "name": "test_client",
+    "version": "14.0.1.0.0",
+    "env-ver": "2",
+    "docker-images": [
+        "odoo jobiols/odoo-jeo:14.0",
+        "postgres pgvector/pgvector:pg18",
+        "aeroo jobiols/aeroo-docs",
+    ],
+    "git-repos": ["https://github.com/jobiols/cl-test-client.git"],
+}
+
 
 class TestRepository(OdooEnvTestCase):
     def setUp(self):
@@ -487,6 +499,35 @@ class TestRepository(OdooEnvTestCase):
         ]
         self.assertEqual(cmds[2].command, expected_aeroo)
         self.assertEqual(len(cmds), 3)
+
+    def test_run_environment_pgvector_pg18(self):
+        """oe -R con pgvector/pgvector:pg18 monta el PGDATA de postgres 18."""
+        self.mock_get_manifest.side_effect = lambda path=None: PGVECTOR_CLIENT_MANIFEST
+        options = MockArgs(debug=False, client="test_client")
+        oe = OdooEnv(options)
+        cmds = oe.run_environment()
+
+        psql_dir = f"{OeConfig().base_dir}odoo-14.0/test_client/postgresql/"
+
+        expected_postgres = [
+            "docker",
+            "run",
+            "-d",
+            "--name",
+            "pg-test_client",
+            "--network",
+            "odoo-net",
+            "--restart",
+            "unless-stopped",
+            "-v",
+            f"{psql_dir}:/var/lib/postgresql/18/docker:rw",
+            "-e",
+            "POSTGRES_USER=odoo",
+            "-e",
+            "POSTGRES_PASSWORD=odoo",
+            "pgvector/pgvector:pg18",
+        ]
+        self.assertEqual(cmds[1].command, expected_postgres)
 
     def test_run_environment_debug(self):
         """oe -R modo debug: EnsureNetwork + postgres (con port 5432) + aeroo + wdb."""

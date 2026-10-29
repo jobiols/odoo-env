@@ -171,10 +171,10 @@ class EnvironmentManager:
 
         step_msg = f"Starting postgres image {image.version}"
 
-        if image.numeric_ver >= 18:
+        if image.major_ver >= 18:
             volumes = {
                 self.parent._client.psql_dir: {
-                    "bind": f"/var/lib/postgresql/{image.numeric_ver}/docker"
+                    "bind": f"/var/lib/postgresql/{image.major_ver}/docker"
                 }
             }
         else:

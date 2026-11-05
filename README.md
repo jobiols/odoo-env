@@ -35,7 +35,7 @@ Functionality
 usage: oe [-h] [-i [CLIENT]] [--org ORG] [-R] [-p] [-w] [-r] [-S] [-s] [-u] [-I MODULE] [-H] [-V] [-Q MODULES] [-c CLIENT] [-v] [-d DATABASE] [-m MODULE] [-f BACKUP_FILE] [--deploy-keys] [--no-deactivate] [--debug] [--prod] [--restore]
           [--create-test-db] [--test-all] [--base-dir BASE_DIR]
 
-Odoo Environment Manager v0.16.19 - by jeo Software <jorge.obiols@gmail.com>
+Odoo Environment Manager v0.16.20 - by jeo Software <jorge.obiols@gmail.com>
 
 options:
   -h, --help           show this help message and exit
@@ -101,6 +101,15 @@ Installation
 Changelog
 ---------
 
+- 0.16.20 - FIX: the postgres major declared in the manifest is now authoritative and
+            always validated (a mismatch between the declared major and the actual image
+            is rejected).
+          - FIX: include core addons (community + enterprise) in addons_path for the venv
+            layout (17); Odoo only auto-attaches the base addons, so WriteConfigFile now
+            prepends the core paths for venv versions (17/19/20); .deb layout unchanged.
+          - FIX: migrate 18 to the venv layout in the version map (the 18.0e image is already
+            venv with Python 3.12); WriteConfigFile now prepends core addons and the debug
+            mounts point to the correct paths.
 - 0.16.19 - ADD: declare the postgres major explicitly in the manifest (optional third
             field of the postgres image) for custom images with opaque tags.
 - 0.16.18 - FIX oe -R with the postgres image pgvector/pgvector:pg18 (tag 'pg18' now

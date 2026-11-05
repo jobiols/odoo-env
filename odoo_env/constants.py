@@ -36,21 +36,17 @@ ODOO_VERSION_MAP: dict[int, OdooVersionInfo] = {
         src="/usr/lib/python3/dist-packages/odoo",
         lib="/usr/local/lib/python3.9/dist-packages",
     ),
-    18: OdooVersionInfo(
-        python="3.12",
-        src="/usr/lib/python3/dist-packages/odoo",
-        lib="/usr/local/lib/python3.12/dist-packages",
-    ),
 }
 
 # Layout venv (Odoo 17+): el core vive en /odoo/odoo-src y los paquetes en un
 # venv (/odoo/venv). El mount de site-packages en debug necesita el path EXACTO
 # (los bind mounts no expanden globs) y la version menor de python cambia entre
-# releases (17/19 -> 3.10, 20 -> 3.12). La extraccion usa el glob python3.* que
-# cubre cualquier bump sin tocar codigo.
+# releases (17/19 -> 3.10, 18/20 -> 3.12). La extraccion usa el glob python3.*
+# que cubre cualquier bump sin tocar codigo.
 ODOO_VENV_SRC = "/odoo/odoo-src"
 ODOO_VENV_PYTHON: dict[int, str] = {
     17: "3.10",
+    18: "3.12",
     19: "3.10",
     20: "3.12",
 }

@@ -168,6 +168,29 @@ class TestImageManager(OdooEnvTestCase):
         """v17 migró al layout venv; NO debe ir en ODOO_VERSION_MAP."""
         self.assertNotIn(17, ODOO_VERSION_MAP)
 
+    # ── v18 (migrada a layout venv) ──────────────────────────────
+
+    def test_v18_resolve_targets_odoo_src_and_site_packages(self):
+        targets, _ = ImageManager._resolve_extract_targets(18)
+        self.assertEqual(
+            targets,
+            [
+                ("src", "/odoo/odoo-src"),
+                ("site-packages", "/odoo/venv/lib/python3.*/site-packages"),
+            ],
+        )
+
+    def test_v18_legacy_dirs_clean_all_other_layouts(self):
+        _, legacy = ImageManager._resolve_extract_targets(18)
+        self.assertCountEqual(
+            legacy,
+            ("dist-packages", "dist-local-packages", "lib"),
+        )
+
+    def test_v18_not_in_odoo_version_map(self):
+        """v18 migró al layout venv; NO debe ir en ODOO_VERSION_MAP."""
+        self.assertNotIn(18, ODOO_VERSION_MAP)
+
     # ── v19 _resolve_extract_targets ──────────────────────────────
 
     def test_v19_resolve_targets_odoo_src_and_site_packages(self):

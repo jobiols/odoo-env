@@ -422,7 +422,7 @@ class "TestDebugMountings" as odoo_env.test_environment_manager.TestDebugMountin
   test_odoo16_lib_mount()
   test_odoo17_site_packages_python310()
   test_odoo17_venv_mounts()
-  test_odoo18_lib_mount()
+  test_odoo18_venv_mounts()
   test_odoo19_unchanged()
   test_odoo20_mount_python312()
   test_unknown_version_raises_value_error()
@@ -530,7 +530,8 @@ class "TestGetManifest" as odoo_env.test_client.TestGetManifest {
 class "TestGetPacks" as odoo_env.test_oe.TestGetPacks {
   test_get_packs_v14_not_dist_packages()
   test_get_packs_v14_returns_src_lib()
-  test_get_packs_v18_returns_src_lib()
+  test_get_packs_v17_returns_src_site_packages()
+  test_get_packs_v18_returns_src_site_packages()
 }
 class "TestImageManager" as odoo_env.test_image_manager.TestImageManager {
   test_extract_run_always_uses_entrypoint_cp()
@@ -549,6 +550,9 @@ class "TestImageManager" as odoo_env.test_image_manager.TestImageManager {
   test_v17_legacy_dirs_clean_all_other_layouts()
   test_v17_not_in_odoo_version_map()
   test_v17_resolve_targets_odoo_src_and_site_packages()
+  test_v18_legacy_dirs_clean_all_other_layouts()
+  test_v18_not_in_odoo_version_map()
+  test_v18_resolve_targets_odoo_src_and_site_packages()
   test_v19_legacy_dirs_clean_all_other_layouts()
   test_v19_not_in_odoo_version_map()
   test_v19_resolve_targets_odoo_src_and_site_packages()
@@ -613,7 +617,7 @@ class "TestOdooVersionMap" as odoo_env.test_constants.TestOdooVersionMap {
   test_version15_layout()
   test_version16_same_as_14()
   test_version17_uses_venv_layout()
-  test_version18_python312()
+  test_version18_uses_venv_layout()
 }
 class "TestOrganizationConfig" as odoo_env.test_config.TestOrganizationConfig {
   test_org_default_when_missing_persists()

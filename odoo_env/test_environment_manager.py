@@ -155,11 +155,12 @@ class TestDebugMountings(OdooEnvTestCase):
             {"bind": "/odoo/venv/lib/python3.10/site-packages"},
         )
 
-    def test_odoo18_lib_mount(self):
+    def test_odoo18_venv_mounts(self):
         result = self._make_em(18)
+        self.assertEqual(result["/odoo_ar/odoo-18.0/src"], {"bind": "/odoo/odoo-src"})
         self.assertEqual(
-            result["/odoo_ar/odoo-18.0/lib"],
-            {"bind": "/usr/local/lib/python3.12/dist-packages/"},
+            result["/odoo_ar/odoo-18.0/site-packages"],
+            {"bind": "/odoo/venv/lib/python3.12/site-packages"},
         )
 
     def test_odoo19_unchanged(self):

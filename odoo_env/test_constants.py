@@ -61,20 +61,20 @@ class TestOdooVersionMap(unittest.TestCase):
         self.assertNotIn(17, ODOO_VERSION_MAP)
         self.assertEqual(ODOO_VENV_PYTHON[17], "3.10")
 
-    def test_version18_python312(self):
-        self.assertEqual(ODOO_VERSION_MAP[18].python, "3.12")
-        self.assertEqual(
-            ODOO_VERSION_MAP[18].lib, "/usr/local/lib/python3.12/dist-packages"
-        )
+    def test_version18_uses_venv_layout(self):
+        # v18 migró al layout venv: NO va en ODOO_VERSION_MAP (src/lib .deb).
+        self.assertNotIn(18, ODOO_VERSION_MAP)
+        self.assertEqual(ODOO_VENV_PYTHON[18], "3.12")
 
     def test_legacy_and_future_keys_absent(self):
-        # 17, 19 y 20 usan el layout venv; 11-14 el .deb viejo.
-        for key in (11, 12, 13, 14, 17, 19, 20):
+        # 17-20 usan el layout venv; 11-14 el .deb viejo.
+        for key in (11, 12, 13, 14, 17, 18, 19, 20):
             self.assertNotIn(key, ODOO_VERSION_MAP)
 
     def test_venv_layout_constants(self):
         self.assertEqual(constants.ODOO_VENV_SRC, "/odoo/odoo-src")
         self.assertEqual(constants.ODOO_VENV_PYTHON[17], "3.10")
+        self.assertEqual(constants.ODOO_VENV_PYTHON[18], "3.12")
         self.assertEqual(constants.ODOO_VENV_PYTHON[19], "3.10")
         self.assertEqual(constants.ODOO_VENV_PYTHON[20], "3.12")
 

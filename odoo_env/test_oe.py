@@ -789,9 +789,14 @@ class TestGetPacks(OdooEnvTestCase):
         result = self._make_oe_with_version(14)
         self.assertEqual(result, ["src", "lib"])
 
-    def test_get_packs_v18_returns_src_lib(self):
+    def test_get_packs_v18_returns_src_site_packages(self):
+        # v18 migró al layout venv (ODOO_VENV_PYTHON), igual que 17/19/20.
         result = self._make_oe_with_version(18)
-        self.assertEqual(result, ["src", "lib"])
+        self.assertEqual(result, ["src", "site-packages"])
+
+    def test_get_packs_v17_returns_src_site_packages(self):
+        result = self._make_oe_with_version(17)
+        self.assertEqual(result, ["src", "site-packages"])
 
     def test_get_packs_v14_not_dist_packages(self):
         result = self._make_oe_with_version(14)

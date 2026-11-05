@@ -38,8 +38,8 @@ class ImageManager:
     def _resolve_extract_targets(version):
         """Devuelve (targets, legacy_dirs) segun la tecnica de la version.
 
-        v14 usa el layout .deb viejo (dist-packages entero); 15-18 usan el
-        layout src/lib de ODOO_VERSION_MAP; 19+ usan el layout venv
+        v14 usa el layout .deb viejo (dist-packages entero); 15-16 usan el
+        layout src/lib de ODOO_VERSION_MAP; 17+ usan el layout venv
         (ODOO_VENV_PYTHON). legacy_dirs son los dirs host del OTRO layout, que
         se limpian al extraer.
         """

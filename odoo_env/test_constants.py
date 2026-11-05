@@ -3,6 +3,7 @@ import unittest
 from odoo_env import constants
 from odoo_env.constants import (
     ODOO_V14_DEBUG_MOUNTS,
+    ODOO_VENV_PYTHON,
     ODOO_VERSION_MAP,
     OdooVersionInfo,
 )
@@ -55,11 +56,10 @@ class TestOdooVersionMap(unittest.TestCase):
             ODOO_VERSION_MAP[16].lib, "/usr/local/lib/python3.9/dist-packages"
         )
 
-    def test_version17_python310(self):
-        self.assertEqual(ODOO_VERSION_MAP[17].python, "3.10")
-        self.assertEqual(
-            ODOO_VERSION_MAP[17].lib, "/usr/local/lib/python3.10/dist-packages"
-        )
+    def test_version17_uses_venv_layout(self):
+        # v17 migró al layout venv: NO va en ODOO_VERSION_MAP (src/lib .deb).
+        self.assertNotIn(17, ODOO_VERSION_MAP)
+        self.assertEqual(ODOO_VENV_PYTHON[17], "3.10")
 
     def test_version18_python312(self):
         self.assertEqual(ODOO_VERSION_MAP[18].python, "3.12")
@@ -68,13 +68,26 @@ class TestOdooVersionMap(unittest.TestCase):
         )
 
     def test_legacy_and_future_keys_absent(self):
-        for key in (11, 12, 13, 14, 19, 20):
+        # 17, 19 y 20 usan el layout venv; 11-14 el .deb viejo.
+        for key in (11, 12, 13, 14, 17, 19, 20):
             self.assertNotIn(key, ODOO_VERSION_MAP)
 
     def test_venv_layout_constants(self):
         self.assertEqual(constants.ODOO_VENV_SRC, "/odoo/odoo-src")
+        self.assertEqual(constants.ODOO_VENV_PYTHON[17], "3.10")
         self.assertEqual(constants.ODOO_VENV_PYTHON[19], "3.10")
         self.assertEqual(constants.ODOO_VENV_PYTHON[20], "3.12")
+
+    def test_venv_core_addons_paths(self):
+        # En el layout venv, community y enterprise viven fuera del base_path
+        # que Odoo auto-engancha; hay que listarlos explícitos en addons_path.
+        self.assertEqual(
+            constants.ODOO_VENV_CORE_ADDONS,
+            [
+                "/odoo/odoo-src/addons",
+                "/usr/lib/python3/dist-packages/odoo/addons",
+            ],
+        )
 
     def test_odoo_python_map_absent(self):
         self.assertFalse(

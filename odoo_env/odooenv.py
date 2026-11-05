@@ -11,6 +11,7 @@ from odoo_env.command import (
     WriteConfigFile,
 )
 from odoo_env.config import OeConfig
+from odoo_env.constants import ODOO_VENV_PYTHON
 from odoo_env.deploy_keys import deploy_keys
 from odoo_env.managers.backup_manager import BackupManager
 from odoo_env.managers.environment_manager import EnvironmentManager
@@ -179,10 +180,10 @@ class OdooEnv:
         if ver < 11:
             return ["dist-packages", "dist-local-packages", "extra-addons"]
 
-        if ver <= 18:
-            return ["src", "lib"]
+        if int(ver) in ODOO_VENV_PYTHON:
+            return ["src", "site-packages"]
 
-        return ["src", "site-packages"]
+        return ["src", "lib"]
 
     def _process_repos(self):
         """Clone or update repos as needed"""

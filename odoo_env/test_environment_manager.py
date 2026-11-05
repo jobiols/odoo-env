@@ -147,11 +147,12 @@ class TestDebugMountings(OdooEnvTestCase):
             {"bind": "/usr/local/lib/python3.9/dist-packages/"},
         )
 
-    def test_odoo17_lib_mount(self):
+    def test_odoo17_venv_mounts(self):
         result = self._make_em(17)
+        self.assertEqual(result["/odoo_ar/odoo-17.0/src"], {"bind": "/odoo/odoo-src"})
         self.assertEqual(
-            result["/odoo_ar/odoo-17.0/lib"],
-            {"bind": "/usr/local/lib/python3.10/dist-packages/"},
+            result["/odoo_ar/odoo-17.0/site-packages"],
+            {"bind": "/odoo/venv/lib/python3.10/site-packages"},
         )
 
     def test_odoo18_lib_mount(self):
@@ -212,10 +213,10 @@ class TestDebugMountings(OdooEnvTestCase):
         self.assertNotIn("/odoo_ar/odoo-14.0/src", result)
         self.assertNotIn("/odoo_ar/odoo-14.0/lib", result)
 
-    def test_odoo17_lib_contains_python310(self):
+    def test_odoo17_site_packages_python310(self):
         result = self._make_em(17)
-        lib_bind = result.get("/odoo_ar/odoo-17.0/lib", {}).get("bind", "")
-        self.assertIn("python3.10", lib_bind)
+        site_bind = result.get("/odoo_ar/odoo-17.0/site-packages", {}).get("bind", "")
+        self.assertIn("python3.10", site_bind)
 
     def test_odoo14_core_bind_is_whole_dist_packages(self):
         # El core se monta entero, NO solo .../odoo.

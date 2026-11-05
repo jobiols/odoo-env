@@ -96,6 +96,7 @@ odoo_env.client --> odoo_env.config
 odoo_env.client --> odoo_env.images
 odoo_env.client --> odoo_env.messages
 odoo_env.client --> odoo_env.repos
+odoo_env.command --> odoo_env.constants
 odoo_env.command --> odoo_env.messages
 odoo_env.command --> odoo_env.odoo_conf
 odoo_env.command --> odoo_env.qa.failures
@@ -125,6 +126,7 @@ odoo_env.odoo_conf --> odoo_env
 odoo_env.odooenv --> odoo_env.client
 odoo_env.odooenv --> odoo_env.command
 odoo_env.odooenv --> odoo_env.config
+odoo_env.odooenv --> odoo_env.constants
 odoo_env.odooenv --> odoo_env.deploy_keys
 odoo_env.odooenv --> odoo_env.managers.backup_manager
 odoo_env.odooenv --> odoo_env.managers.environment_manager

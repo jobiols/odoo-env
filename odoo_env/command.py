@@ -5,6 +5,7 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import Any
 
+from odoo_env.constants import ODOO_VENV_CORE_ADDONS, ODOO_VENV_PYTHON
 from odoo_env.messages import msg
 from odoo_env.odoo_conf import OdooConf
 from odoo_env.qa.failures import is_error_line, parse_test_count
@@ -228,6 +229,15 @@ class WriteConfigFile(Command):
                 repos.append(module_path)
 
         repos = ["/opt/odoo/custom-addons/" + x for x in repos]
+
+        # Layout venv: los addons del core (community + enterprise) viven
+        # fuera del base_path que Odoo engancha solo (/odoo/odoo-src/odoo/
+        # addons, donde vive `base`), asi que hay que anteponerlos en
+        # addons_path. En el layout .deb el core ya queda cubierto por el
+        # base_path y no se agrega nada.
+        if int(client.numeric_ver) in ODOO_VENV_PYTHON:
+            repos = ODOO_VENV_CORE_ADDONS + repos
+
         repos = ",".join(repos)
 
         # Actualizar el archivo odoo.conf

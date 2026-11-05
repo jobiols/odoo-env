@@ -36,11 +36,6 @@ ODOO_VERSION_MAP: dict[int, OdooVersionInfo] = {
         src="/usr/lib/python3/dist-packages/odoo",
         lib="/usr/local/lib/python3.9/dist-packages",
     ),
-    17: OdooVersionInfo(
-        python="3.10",
-        src="/usr/lib/python3/dist-packages/odoo",
-        lib="/usr/local/lib/python3.10/dist-packages",
-    ),
     18: OdooVersionInfo(
         python="3.12",
         src="/usr/lib/python3/dist-packages/odoo",
@@ -48,16 +43,27 @@ ODOO_VERSION_MAP: dict[int, OdooVersionInfo] = {
     ),
 }
 
-# Layout venv (Odoo 19+): el core vive en /odoo/odoo-src y los paquetes en un
+# Layout venv (Odoo 17+): el core vive en /odoo/odoo-src y los paquetes en un
 # venv (/odoo/venv). El mount de site-packages en debug necesita el path EXACTO
 # (los bind mounts no expanden globs) y la version menor de python cambia entre
-# releases (19 -> 3.10, 20 -> 3.12). La extraccion usa el glob python3.* que
+# releases (17/19 -> 3.10, 20 -> 3.12). La extraccion usa el glob python3.* que
 # cubre cualquier bump sin tocar codigo.
 ODOO_VENV_SRC = "/odoo/odoo-src"
 ODOO_VENV_PYTHON: dict[int, str] = {
+    17: "3.10",
     19: "3.10",
     20: "3.12",
 }
+
+# En el layout venv los modulos community (/odoo/odoo-src/addons) y enterprise
+# (/usr/lib/python3/dist-packages/odoo/addons) viven FUERA del base_path que
+# Odoo engancha solo (/odoo/odoo-src/odoo/addons, donde vive `base`), asi que
+# hay que listarlos explicitamente en addons_path. El path enterprise no
+# existe en la imagen community y Odoo lo ignora sin error.
+ODOO_VENV_CORE_ADDONS = [
+    "/odoo/odoo-src/addons",
+    "/usr/lib/python3/dist-packages/odoo/addons",
+]
 
 IN_BACKUP_DIR = "/var/odoo/backups/"
 

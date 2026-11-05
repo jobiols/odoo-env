@@ -420,8 +420,8 @@ class "TestDebugMountings" as odoo_env.test_environment_manager.TestDebugMountin
   test_odoo14_uses_dist_packages_keys()
   test_odoo15_lib_mount()
   test_odoo16_lib_mount()
-  test_odoo17_lib_contains_python310()
-  test_odoo17_lib_mount()
+  test_odoo17_site_packages_python310()
+  test_odoo17_venv_mounts()
   test_odoo18_lib_mount()
   test_odoo19_unchanged()
   test_odoo20_mount_python312()
@@ -546,6 +546,9 @@ class "TestImageManager" as odoo_env.test_image_manager.TestImageManager {
   test_pull_images_no_extract_sources_in_non_debug_mode()
   test_pull_images_uses_pull_not_run()
   test_rejects_versions_beyond_20()
+  test_v17_legacy_dirs_clean_all_other_layouts()
+  test_v17_not_in_odoo_version_map()
+  test_v17_resolve_targets_odoo_src_and_site_packages()
   test_v19_legacy_dirs_clean_all_other_layouts()
   test_v19_not_in_odoo_version_map()
   test_v19_resolve_targets_odoo_src_and_site_packages()
@@ -604,11 +607,12 @@ class "TestOdooVersionMap" as odoo_env.test_constants.TestOdooVersionMap {
   test_v14_debug_mounts_dist_local_packages()
   test_v14_debug_mounts_has_no_src_lib()
   test_v14_debug_mounts_whole_dist_packages()
+  test_venv_core_addons_paths()
   test_venv_layout_constants()
   test_version14_not_in_version_map()
   test_version15_layout()
   test_version16_same_as_14()
-  test_version17_python310()
+  test_version17_uses_venv_layout()
   test_version18_python312()
 }
 class "TestOrganizationConfig" as odoo_env.test_config.TestOrganizationConfig {
@@ -760,6 +764,8 @@ class "TestValidateManifestKeys" as odoo_env.test_client.TestValidateManifestKey
   test_valid_manifest_passes()
 }
 class "TestWriteConfigFile" as odoo_env.test_command.TestWriteConfigFile {
+  test_addons_path_custom_only_for_deb_layout()
+  test_addons_path_includes_core_addons_for_venv_layout()
   test_http_interface_written_in_debug()
   test_http_interface_written_in_prod()
 }
